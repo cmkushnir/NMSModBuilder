@@ -53,6 +53,7 @@ Build Mod:
 - if saved in game MODS folder then mod will now appear in PAK Viewer tab pak combobox.
 
 
-Requires system to have .NET 5 installed:
+Requires system to have .NET 5 installed: e.g. .NET Desktop Runtime 5.0.6
+
 https://dotnet.microsoft.com/download/dotnet/5.0
 
