@@ -51,3 +51,8 @@ Build Mod:
 - the build mod pak stream (in memory).  after this you can use last tab to preview side-by-side changes made to files.
 - finally save mod pak to disk, will default to game MODS folder but can save anywhere.
 - if saved in game MODS folder then mod will now appear in PAK Viewer tab pak combobox.
+
+
+Requires system to have .NET 5 installed:
+https://dotnet.microsoft.com/download/dotnet/5.0
+
