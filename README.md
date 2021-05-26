@@ -52,8 +52,6 @@ Build Mod:
 - finally save mod pak to disk, will default to game MODS folder but can save anywhere.
 - if saved in game MODS folder then mod will now appear in PAK Viewer tab pak combobox.
 
-
 Requires system to have .NET 5 installed:
-
 https://dotnet.microsoft.com/download
 
