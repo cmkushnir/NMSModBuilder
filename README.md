@@ -34,15 +34,12 @@ PAK Viewer:
 Query Scripts:
 - use C# to query game pak items.
 - each script creates a distinct assembly that is loaded when run then unloaded.
-- renaming the IScriptQuery class will auto-rename the script file after you stop editing for 2 sec.
 - it's up to you to check the Cancel token when looping through many files.
 
 Mod Scripts:
 - use C# to mod game pak items, mainly mbin's.
 - compiling individual scripts is just to verify syntax, use the build button to build the assembly w/ all mod script contents.
-- renaming the IScriptMod class will auto-rename the script file after you stop editing for 2 sec.
-  - critical to keep class and script file names in-sync.
-  - there is also a folder created for each mod with the same name as the script, it is for loose files specific to the script - experimental.
+- there is a folder created for each mod with the same name as the script, it is for loose files specific to the script - experimental.
 - must build assembly here before can build mod pak in Build tab.
 
 Build Mod:
