@@ -14,6 +14,9 @@ Whatever version of libMBIN.dll is in the app folder will dictate the game relea
 
 All tabs are now active for use, from left-to-right:
 
+libMBIN API:
+- searchable field, enum, class lists.  todo: display relationships on selection.
+
 Language:
 - select language for language id lookups (not app language).
 - search all language id's and localized strings for case-insensitive search string.
