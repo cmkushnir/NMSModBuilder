@@ -21,10 +21,10 @@ A one-stop solution for creating NMS mods using C#:</br>
 
 ## Contents
 <!--ts-->
-* [Install]
-* [Startup]
-* [Toolbar]
-* [Statusbar]
+* [Install](#Install)
+* [Startup](#Startup)
+* [Toolbar](#Toolbar)
+* [Statusbar](#Statusbar)
 * Tabs
   * [Application](Doc/Tab_Application.md)
   * [libMBIN API](Doc/Tab_libMBIN.md)
@@ -37,7 +37,7 @@ A one-stop solution for creating NMS mods using C#:</br>
   * [Mod Builder](Doc/Tab_ModBuilder.md)
   * [Mod Diffs](Doc/Tab_ModDiffs.md)
 * [Script API](Doc/Script_API.md)
-* [Dependencies]
+* [Dependencies](#Dependencies)
 <!--te-->
 
 ![](Doc/Tab_Application.png)
@@ -69,7 +69,7 @@ and searching for installed Steam and GoG game instances.
 
 You will only see the GoG or Steam button if the app found a corresponding installed instance of the game.
 
-Once the main window is displayed, select the game instance by clicking the GoG, Steam, or Select Folder button on the application [toolbar](Doc/cmkNMSModBuilder#Toolbar)).
+Once the main window is displayed, select the game instance by clicking the GoG, Steam, or Select Folder button on the application toolbar.
 It will take 6 - 15 sec to load and index the language, substance, product, technology, and recipe mbin files.
 The [Application tab](Doc/Tab_Application.md) log window will update as tasks are started and completed.
 
