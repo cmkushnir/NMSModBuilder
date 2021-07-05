@@ -2,6 +2,7 @@
 First select the pak tree you wish to browse, by selecting an item from the pak combobox.
 The pak combobox list: merged game paks (default - first blank item), individual mod paks, individual game paks.
 Usually you will either select a mod pak (if you want to look at the changes it makes), or the merged game paks.
+
 ![](Tab_PakItems1.png)
 
 Once a pak item tree is specified you can use the breadcrumb control to pick a pak item.</br>
