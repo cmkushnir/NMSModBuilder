@@ -2,25 +2,8 @@
 
 No Man's Sky Mod Builder.
 
-A one-stop solution for creating NMS mods using C#:</br>
-- Automatically detects normally installed Steam and GoG game instances.
-  - Optionally select game instance using folder browser dialog, for non-standard installs.
-- View MBINCompiler | libMBIN Enums, Classes, Fields.
-- Select NMS language to view all language ID's and their localized values.
-- View all substances, products, and technologies - ID, icon, localized names.
-- View all refiner and cooking recipes - ID's, icons, localized names.
-- View all game and mod pak items without having to unpack or decompile anything - it's all done on-demand in-memory.
-- Specialized viewers for common pak item types e.g. .mbin, .dds, .xml, .cs, .lua, ... .
-- Side-by-side views of game & mod pak items, with built-in differ for text-based views.
-- Use C# to create query scripts that search game and mod pak items.
-- Use C# to create mod scripts that modify pak item data.
-- Compile, select, and execute mod scripts to create modified pak items, save the modified pak items in new mod pak files.
-- Includes a number of query and mod scripts to get you started.
-
-</br>
-
-## Contents
 <!--ts-->
+* [Features](#Features)
 * [Install](#Install)
 * [Startup](#Startup)
 * [Toolbar](#Toolbar)
@@ -40,7 +23,53 @@ A one-stop solution for creating NMS mods using C#:</br>
 * [Dependencies](#Dependencies)
 <!--te-->
 
-![](Doc/Tab_Application.png)
+</br>
+
+## Features
+A one-stop solution for creating NMS mods using C#:</br>
+- Automatically detects normally installed Steam and GoG game instances.
+  - Optionally select game instance using folder browser dialog, for non-standard installs.
+- View MBINCompiler | libMBIN Enums, Classes, Fields.
+- Select NMS language to view all language ID's and their localized values.
+- View all substances, products, and technologies - ID, icon, localized names.
+- View all refiner and cooking recipes - ID's, icons, localized names.
+- View all game and mod pak items without having to unpack or decompile anything - it's all done on-demand in-memory.
+  - Specialized viewers for common pak item types e.g. .mbin, .dds, .xml, .cs, .lua, ... .
+  - Side-by-side views of game & mod pak items, with built-in differ for text-based views.
+- Use C# to create query scripts that search game and mod pak items.
+- Use C# to create mod scripts that modify pak items.
+- Compile, select, and execute mod scripts to create modified pak items, save the modified pak items in new mod pak files.
+- Includes a number of query and mod scripts to get you started.
+
+Some of the included mod scripts (easily adjustable, select which you want to use):
+  - Increase base radius, wire lengths, extractor and power rates and storage limits, ...
+  - Adjust C,B,A,S class probabilities for poor, average, wealthy systems (e.g. ships, multitools).
+  - Enable all creatures to become pets, enable all creatures to be ridable.
+  - Adjust frequency of freighter battles.
+  - Adjust C,B,A,S class probabilities for freighter tech quality.
+  - Increase freighter warp distance.
+  - Reduce negative penalties for frigates.
+  - Remove camera shake effects.
+  - Adjust maximum stack sizes.
+  - Make all upgrades install with maximum bonus'.
+  - Remove lower-right notifications, shorten display time for other notifications.
+  - Make all portal runes known, make portal buttons no-cost.
+  - Adjust reward locations and chances for star charts, add portal as possible ancient chart location.
+  - Make ship salvage terminals placeable anywhere, in bases or right beside crashed ships.
+  - Auto-mark various locations e.g. crashed ships, portals, when you get within range.
+  - Remove bloom and star twinkle effect, make space darker.
+  - Increase interation and teleport distance between player and ship.
+  - Make all ship weapons auto-aim.
+  - Ship hover.
+  - Increase spawn chance for royals, or increase number of royals per system.
+  - Adjust asteroid spacing.
+  - Make water clearer.
+  - Many adjustments when starting a new game:
+    - Random suit, ship, multitool.
+    - Specify min|max distance to ship.
+    - Specify starting units, nanites, quicksilver.
+    - Specify number of inventory slots for suit, ship, multitool.
+    - Easily add starting items to various inventories, many already defined.
 
 </br>
 </br>
@@ -69,6 +98,8 @@ and searching for installed Steam and GoG game instances.
 
 You will only see the GoG or Steam button if the app found a corresponding installed instance of the game.
 
+![](Doc/Tab_Application.png)
+
 Once the main window is displayed, select the game instance by clicking the GoG, Steam, or Select Folder button on the application toolbar.
 It will take 6 - 15 sec to load and index the language, substance, product, technology, and recipe mbin files.
 The [Application tab](Doc/Tab_Application.md) log window will update as tasks are started and completed.
@@ -93,7 +124,8 @@ Selecting a valid game folder will display the build date of the NMS.exe and the
 If the selected path matches a discovered GoG or Steam install path, then any pre-loaded GoG or Steam game instance data will be used i.e. you cannot load two instances of the same game instance.
 
 Since there is no official way to determine the game release from an installed instance, the application does the following:
-- For GoG, the release information is embedded in a string in the registry.
+- For GoG, the release information is extracted from a string in the registry.</br>
+  e.g. 3.53 is extracted from Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\ver = "3.53_Prisms_73811"
 - For Steam, the release is looked up in cmkNMSReleases.txt based on the NMS.exe build date.
 - For Selected Folders, the release is looked up in cmkNMSReleases.txt based on the NMS.exe build date, but the user can override by selecting a different release in the Select Game Location dialog.
 
