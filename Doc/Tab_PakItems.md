@@ -1,9 +1,9 @@
 # PAK Items
 First select the pak tree you wish to browse, by selecting an item from the pak combobox.</br>
-The first blank entry (default) represents the merged game pak item tree (all pak items from all game pak files), it is followed by the individual mod paks.
+The first entry (blank, default) represents the merged game pak item tree (all pak items from all game pak files), it is followed by the individual mod paks.
 
 > The app used to display all the game pak files in the combobox as well,
-> but without a real use-case for selecting a specific game pak file that code has been commented out.
+> but without a real use-case for selecting a specific game pak file that code has been disabled.
 
 ![](Tab_PakItems1.png)
 
@@ -35,7 +35,8 @@ Background renderer for colour values:
 ![](Tab_PakItems4.png)
 Ebin uses (...) to wrap colours, [...] to wrap vectors, and |...| to wrap quaternions.
 
-Double-click a language, substance, product, or technology Id to put the language Id in the toolbar along with the localized string (if found):
+Double-click a language, substance, product, or technology Id to put the language Id in the toolbar along with the localized string (if found).
+You can also type a language Id string in the language Id textbox, but it is usually easier to use the Language tab.
 ![](Tab_PakItems5.png)
 
 Double-click a pak item path to view the item:

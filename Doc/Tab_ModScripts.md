@@ -18,7 +18,7 @@ Every query script must be derived from cmk.NMS.ModScript.
 New scripts are created from a template that already does this.
 
 Every mod script has an Execute method.
-This is the method that is called when the execute button is clicked.
+This is the method that is called when the Execute button is clicked in the Mod Builder tab.
 
 When you create|rename|delete a script the app will automatically create|rename|delete a subfolder with the same name as the script.
 e.g. app/Scripts/Mod/MyScript.cs will have a corresponding app/Scripts/Mod/MyScript/ folder.
@@ -29,9 +29,9 @@ A 'dummy' Loose_files script is provided as somewhere to place loose files that 
 
 ## Editing
 
-See: [Query Scripts](Tab_QueryScripts.md)
+See: [Query Scripts](Tab_QueryScripts.md#Editing)
 
-Most mods will do the same thing:
+Most mods tend to follow the same pattern:
 - Get the mbin data for a specific pak mbin item.
 - Modify field(s) in the mbin data object.
 
@@ -60,7 +60,7 @@ Once all scripts are complete you must build a mod assembly.
 This is an in-memory dll that contains all the code defined in all the scripts.
 
 Due to how the scripts are currently associated with the mod assembly project, all scripts must compile without errors in order to build the mod assembly, even if the are disabled.
-However, only enabled mods will be executed and have any of their loose files included in the built mod pak.
+However, only enabled mods will be executed and have their loose files included in the built mod pak.
 
 Once the mod assembly is built goto the [Mod Builder](Tab_ModBuilder.md) tab.
 

@@ -22,6 +22,8 @@ In general you will only see 3 types of log items for a given script:
 - Warning|Error.  Something bad happened, hopefully the message and stack dump provide enough information to fix.
   Warnings and errors should be rare, as all field name errors are caught when the mod assembly is compiled.
 
+The log will also list any loose files found for each script.
+
 After Executing all enabled mods you can use the [Mod Diffs](Tab_ModDiffs.md) tab to view the diffs for the edited pak items.
 You may want to do this before building the mod pak to verify all expected changes were made
 e.g. if you are creating a mod with many large loose files (like textures), it could take a while to build the pak.

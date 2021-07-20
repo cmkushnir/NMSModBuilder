@@ -29,7 +29,7 @@ No Man's Sky Mod Builder.
 A one-stop solution for creating NMS mods using C#:</br>
 - Automatically detects normally installed Steam and GoG game instances.
   - Optionally select game instance using folder browser dialog, for non-standard installs.
-- View MBINCompiler | libMBIN Enums, Classes, Fields.
+- View MBINCompiler|libMBIN Enums, Classes, Fields.
 - Select NMS language to view all language ID's and their localized values.
 - View all substances, products, and technologies - ID, icon, localized names.
 - View all refiner and cooking recipes - ID's, icons, localized names.
@@ -38,10 +38,10 @@ A one-stop solution for creating NMS mods using C#:</br>
   - Side-by-side views of game & mod pak items, with built-in differ for text-based views.
 - Use C# to create query scripts that search game and mod pak items.
 - Use C# to create mod scripts that modify pak items.
-- Compile, select, and execute mod scripts to create modified pak items, save the modified pak items in new mod pak files.
+- Compile, enable, and execute mod scripts to create modified pak items, save the modified pak items in new mod pak files.
 - Includes a number of query and mod scripts to get you started.
 
-Some of the included mod scripts (easily adjustable, select which you want to use):
+Some of the included mod scripts (easily adjustable values, easily enable only those you want to use):
   - Increase base radius, wire lengths, extractor and power rates and storage limits, ...
   - Adjust C,B,A,S class probabilities for poor, average, wealthy systems (e.g. ships, multitools).
   - Enable all creatures to become pets, enable all creatures to be ridable.
@@ -50,15 +50,15 @@ Some of the included mod scripts (easily adjustable, select which you want to us
   - Increase freighter warp distance.
   - Reduce negative penalties for frigates.
   - Remove camera shake effects.
-  - Adjust maximum stack sizes.
+  - Adjust stack sizes, current script sets max stack size to 100,000 for everything.
   - Make all upgrades install with maximum bonus'.
   - Remove lower-right notifications, shorten display time for other notifications.
   - Make all portal runes known, make portal buttons no-cost.
   - Adjust reward locations and chances for star charts, add portal as possible ancient chart location.
-  - Make ship salvage terminals placeable anywhere, in bases or right beside crashed ships.
+  - Make ship salvage terminals placeable anywhere e.g. in bases or right beside crashed ships.
   - Auto-mark various locations e.g. crashed ships, portals, when you get within range.
   - Remove bloom and star twinkle effect, make space darker.
-  - Increase interation and teleport distance between player and ship.
+  - Increase interaction and teleport distance between player and ship.
   - Make all ship weapons auto-aim.
   - Ship hover.
   - Increase spawn chance for royals, or increase number of royals per system.
@@ -66,10 +66,11 @@ Some of the included mod scripts (easily adjustable, select which you want to us
   - Make water clearer.
   - Many adjustments when starting a new game:
     - Random suit, ship, multitool.
-    - Specify min|max distance to ship.
+    - Specify min|max starting distance to ship.
     - Specify starting units, nanites, quicksilver.
     - Specify number of inventory slots for suit, ship, multitool.
     - Easily add starting items to various inventories, many already defined.
+    - Specify known tech and products.
 
 </br>
 </br>
