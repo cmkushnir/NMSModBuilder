@@ -26,6 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+3.67.2, Frontiers, 2021-09-27, 3.68.0.2, v3.68.0-pre2
+3.67.1, Frontiers, 2021-09-17, 3.68.0.1, v3.68.0-pre1
 3.67,   Frontiers, 2021-09-15, 3.65.0.1, v3.65.0-pre1
 3.66,   Frontiers, 2021-09-12, 3.65.0.1, v3.65.0-pre1
 3.64,   Frontiers, 2021-09-07, 3.64.0.1, v3.64.0-pre1
