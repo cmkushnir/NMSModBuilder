@@ -1,8 +1,8 @@
 # NMS Mod Builder
 
-No Man's Sky Mod Builder.
-
 <div align="center"> <img src="Splash.png" width="719px"> </div>
+
+No Man's Sky Mod Builder.
 
 <!--ts-->
 * [Features](#Features)
