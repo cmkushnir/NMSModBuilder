@@ -1,6 +1,8 @@
 # NMS Mod Builder
 
-<div align="center"> <img src="Splash.png" width="719px"> </div>
+<div align="center"> <img src="Splash.png" width="540px"> </div>
+</br>
+</br>
 
 No Man's Sky Mod Builder.
 
