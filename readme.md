@@ -2,6 +2,8 @@
 
 No Man's Sky Mod Builder.
 
+<div align="center"> <img src="Splash.png" width="719px"> </div>
+
 <!--ts-->
 * [Features](#Features)
 * [Install](#Install)
