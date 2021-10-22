@@ -26,17 +26,19 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-3.70,   Frontiers - Emergence,     2021-10-18, 3.70.0.2, v3.70.0-pre2
+3.70, Frontiers - Emergence, 2021-10-18, 3.70.0.2, v3.70.0-pre2
+
 3.68,   Frontiers - Cartographers, 2021-09-28, 3.68.0.2, v3.68.0-pre2
 3.67.2, Frontiers - Cartographers, 2021-09-27, 3.68.0.2, v3.68.0-pre2
 3.67.1, Frontiers - Cartographers, 2021-09-17, 3.68.0.1, v3.68.0-pre1
 3.67,   Frontiers - Cartographers, 2021-09-15, 3.65.0.1, v3.65.0-pre1
 3.66,   Frontiers - Cartographers, 2021-09-12, 3.65.0.1, v3.65.0-pre1
 3.64,   Frontiers - Cartographers, 2021-09-07, 3.64.0.1, v3.64.0-pre1
-3.63,   Frontiers,                 2021-09-05, 3.63.0.1, v3.63.0-pre1
-3.62,   Frontiers,                 2021-09-02, 3.62.0.1, v3.62.0-pre1
-3.61,   Frontiers,                 2021-09-01, 3.62.0.1, v3.62.0-pre1
-3.60,   Frontiers,                 2021-08-30, 3.62.0.1, v3.62.0-pre1
+
+3.63, Frontiers, 2021-09-05, 3.63.0.1, v3.63.0-pre1
+3.62, Frontiers, 2021-09-02, 3.62.0.1, v3.62.0-pre1
+3.61, Frontiers, 2021-09-01, 3.62.0.1, v3.62.0-pre1
+3.60, Frontiers, 2021-08-30, 3.62.0.1, v3.62.0-pre1
 
 3.53, Prisms, 2021-06-11, 3.53.0.2, v3.53.0-pre2
 3.52, Prisms, 2021-06-08, 3.52.0.2, v3.52.0-pre2
