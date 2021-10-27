@@ -26,8 +26,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-3.71, Frontiers - Emergence, 2021-10-22, 3.71.0.1, v3.71.0-pre1
-3.70, Frontiers - Emergence, 2021-10-18, 3.70.0.2, v3.70.0-pre2
+3.70.2, Frontiers - Emergence, 2021-10-25, 3.71.0.2, v3.71.0-pre2
+3.70.1, Frontiers - Emergence, 2021-10-22, 3.71.0.1, v3.71.0-pre1
+3.70,   Frontiers - Emergence, 2021-10-18, 3.70.0.2, v3.70.0-pre2
 
 3.68,   Frontiers - Cartographers, 2021-09-28, 3.68.0.2, v3.68.0-pre2
 3.67.2, Frontiers - Cartographers, 2021-09-27, 3.68.0.2, v3.68.0-pre2
