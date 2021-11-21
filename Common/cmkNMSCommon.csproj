@@ -1,0 +1,239 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\NMS.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <Authors>Chris Kushnir</Authors>
+    <Description>cmk common library for working with No Man's Sky game data.</Description>
+    <RootNamespace>cmk.Common</RootNamespace>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <Copyright>Copyright ©  2021 Chris Kushnir</Copyright>
+    <Version>3.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\About.png" />
+    <None Remove="Resources\Avalon_csx.xshd" />
+    <None Remove="Resources\Avalon_ebin.xshd" />
+    <None Remove="Resources\Avalon_exml.xshd" />
+    <None Remove="Resources\BaseComputer.png" />
+    <None Remove="Resources\BinocsMod.png" />
+    <None Remove="Resources\Black.png" />
+    <None Remove="Resources\Build.png" />
+    <None Remove="Resources\CaseSensitive.png" />
+    <None Remove="Resources\Center.png" />
+    <None Remove="Resources\CheckAll.png" />
+    <None Remove="Resources\Checker.png" />
+    <None Remove="Resources\Chromatic.png" />
+    <None Remove="Resources\Clear.png" />
+    <None Remove="Resources\Click.png" />
+    <None Remove="Resources\CollapseAll.png" />
+    <None Remove="Resources\Compile.png" />
+    <None Remove="Resources\Configure.png" />
+    <None Remove="Resources\Copy.png" />
+    <None Remove="Resources\CSharp.png" />
+    <None Remove="Resources\Diff.png" />
+    <None Remove="Resources\Egg.png" />
+    <None Remove="Resources\Error.png" />
+    <None Remove="Resources\ExpandAll.png" />
+    <None Remove="Resources\FileCreate.png" />
+    <None Remove="Resources\FileDelete.png" />
+    <None Remove="Resources\FindNext.png" />
+    <None Remove="Resources\FindPrevious.png" />
+    <None Remove="Resources\First.png" />
+    <None Remove="Resources\FlagBrazil.png" />
+    <None Remove="Resources\FlagCanada.png" />
+    <None Remove="Resources\FlagChina.png" />
+    <None Remove="Resources\FlagFrance.png" />
+    <None Remove="Resources\FlagGermany.png" />
+    <None Remove="Resources\FlagItaly.png" />
+    <None Remove="Resources\FlagJapan.png" />
+    <None Remove="Resources\FlagMexico.png" />
+    <None Remove="Resources\FlagNetherlands.png" />
+    <None Remove="Resources\FlagPoland.png" />
+    <None Remove="Resources\FlagPortugal.png" />
+    <None Remove="Resources\FlagRussia.png" />
+    <None Remove="Resources\FlagSouthKorea.png" />
+    <None Remove="Resources\FlagSpain.png" />
+    <None Remove="Resources\FlagUSA.png" />
+    <None Remove="Resources\Folder.png" />
+    <None Remove="Resources\GitHub.png" />
+    <None Remove="Resources\GOG.png" />
+    <None Remove="Resources\Gray.png" />
+    <None Remove="Resources\Grouping.png" />
+    <None Remove="Resources\Last.png" />
+    <None Remove="Resources\MergeTabs.png" />
+    <None Remove="Resources\Mirror.png" />
+    <None Remove="Resources\Next.png" />
+    <None Remove="Resources\NMS.ico" />
+    <None Remove="Resources\Paste.png" />
+    <None Remove="Resources\Prev.png" />
+    <None Remove="Resources\RecipesFood.png" />
+    <None Remove="Resources\RecipesRefiner.png" />
+    <None Remove="Resources\Regex.png" />
+    <None Remove="Resources\Rename.png" />
+    <None Remove="Resources\Reset.png" />
+    <None Remove="Resources\Run.png" />
+    <None Remove="Resources\Save.png" />
+    <None Remove="Resources\SaveDisabled.png" />
+    <None Remove="Resources\Script.png" />
+    <None Remove="Resources\ScriptMod.png" />
+    <None Remove="Resources\ScriptPlugin.png" />
+    <None Remove="Resources\ScriptQuery.png" />
+    <None Remove="Resources\Search.png" />
+    <None Remove="Resources\Select.png" />
+    <None Remove="Resources\SelectFolder.png" />
+    <None Remove="Resources\Settings.png" />
+    <None Remove="Resources\Smiley_Green.png" />
+    <None Remove="Resources\Smiley_Red.png" />
+    <None Remove="Resources\Smiley_Yellow.png" />
+    <None Remove="Resources\SplitTabs.png" />
+    <None Remove="Resources\Steam.png" />
+    <None Remove="Resources\Stop.png" />
+    <None Remove="Resources\Stretch.png" />
+    <None Remove="Resources\Tile.png" />
+    <None Remove="Resources\TypeArray.png" />
+    <None Remove="Resources\TypeEvent.png" />
+    <None Remove="Resources\TypeField.png" />
+    <None Remove="Resources\TypeProp.png" />
+    <None Remove="Resources\UncheckAll.png" />
+    <None Remove="Resources\Viewer.ico" />
+    <None Remove="Resources\Warning.png" />
+    <None Remove="Resources\WarpCell.png" />
+    <None Remove="Resources\White.png" />
+    <None Remove="Resources\WholeWord.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\About.png" />
+    <Resource Include="Resources\Avalon_csx.xshd" />
+    <Resource Include="Resources\Avalon_ebin.xshd" />
+    <Resource Include="Resources\Avalon_exml.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.1.2.30" />
+    <PackageReference Include="DiffPlex" Version="1.7.0" />
+    <PackageReference Include="Octokit" Version="0.50.0" />
+    <PackageReference Include="Pfim" Version="0.10.1" />
+    <PackageReference Include="SharpZipLib" Version="1.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="libMBIN">
+      <HintPath>libMBIN.dll</HintPath>
+      <Private>true</Private>
+      <SpecificVersion>false</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\BaseComputer.png" />
+    <Resource Include="Resources\BinocsMod.png" />
+    <Resource Include="Resources\Black.png" />
+    <Resource Include="Resources\Build.png" />
+    <Resource Include="Resources\CaseSensitive.png" />
+    <Resource Include="Resources\Center.png" />
+    <Resource Include="Resources\CheckAll.png" />
+    <Resource Include="Resources\Checker.png" />
+    <Resource Include="Resources\Chromatic.png" />
+    <Resource Include="Resources\Clear.png" />
+    <Resource Include="Resources\CollapseAll.png" />
+    <Resource Include="Resources\Compile.png" />
+    <Resource Include="Resources\Configure.png" />
+    <Resource Include="Resources\Copy.png" />
+    <Resource Include="Resources\CSharp.png" />
+    <Resource Include="Resources\Diff.png" />
+    <Resource Include="Resources\Egg.png" />
+    <Resource Include="Resources\Error.png" />
+    <Resource Include="Resources\ExpandAll.png" />
+    <Resource Include="Resources\FileCreate.png" />
+    <Resource Include="Resources\FileDelete.png" />
+    <Resource Include="Resources\First.png" />
+    <Resource Include="Resources\FlagBrazil.png" />
+    <Resource Include="Resources\FlagCanada.png" />
+    <Resource Include="Resources\FlagChina.png" />
+    <Resource Include="Resources\FlagFrance.png" />
+    <Resource Include="Resources\FlagGermany.png" />
+    <Resource Include="Resources\FlagItaly.png" />
+    <Resource Include="Resources\FlagJapan.png" />
+    <Resource Include="Resources\FlagMexico.png" />
+    <Resource Include="Resources\FlagNetherlands.png" />
+    <Resource Include="Resources\FlagPoland.png" />
+    <Resource Include="Resources\FlagPortugal.png" />
+    <Resource Include="Resources\FlagRussia.png" />
+    <Resource Include="Resources\FlagSouthKorea.png" />
+    <Resource Include="Resources\FlagSpain.png" />
+    <Resource Include="Resources\FlagUSA.png" />
+    <Resource Include="Resources\Folder.png" />
+    <Resource Include="Resources\GitHub.png" />
+    <Resource Include="Resources\GOG.png" />
+    <Resource Include="Resources\Gray.png" />
+    <Resource Include="Resources\Grouping.png" />
+    <Resource Include="Resources\Last.png" />
+    <Resource Include="Resources\MergeTabs.png" />
+    <Resource Include="Resources\Mirror.png" />
+    <Resource Include="Resources\Next.png" />
+    <Resource Include="Resources\NMS.ico" />
+    <Resource Include="Resources\Prev.png" />
+    <Resource Include="Resources\RecipesFood.png" />
+    <Resource Include="Resources\RecipesRefiner.png" />
+    <Resource Include="Resources\Regex.png" />
+    <Resource Include="Resources\Rename.png" />
+    <Resource Include="Resources\Run.png" />
+    <Resource Include="Resources\Save.png" />
+    <Resource Include="Resources\ScriptMod.png" />
+    <Resource Include="Resources\ScriptPlugin.png" />
+    <Resource Include="Resources\ScriptQuery.png" />
+    <Resource Include="Resources\Settings.png" />
+    <Resource Include="Resources\Smiley_Green.png" />
+    <Resource Include="Resources\Smiley_Red.png" />
+    <Resource Include="Resources\Smiley_Yellow.png" />
+    <Resource Include="Resources\SplitTabs.png" />
+    <Resource Include="Resources\Steam.png" />
+    <Resource Include="Resources\Stop.png" />
+    <Resource Include="Resources\Stretch.png" />
+    <Resource Include="Resources\Tile.png" />
+    <Resource Include="Resources\TypeArray.png" />
+    <Resource Include="Resources\TypeEvent.png" />
+    <Resource Include="Resources\TypeField.png" />
+    <Resource Include="Resources\TypeProp.png" />
+    <Resource Include="Resources\UncheckAll.png" />
+    <Resource Include="Resources\Viewer.ico" />
+    <Resource Include="Resources\Warning.png" />
+    <Resource Include="Resources\WarpCell.png" />
+    <Resource Include="Resources\White.png" />
+    <Resource Include="Resources\WholeWord.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="cmkNMSReleases.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="libMBIN.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="spirv-cross.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
