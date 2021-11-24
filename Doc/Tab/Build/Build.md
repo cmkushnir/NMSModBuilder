@@ -28,7 +28,7 @@ In general you will see 3 types of log items when executing a given mod:
   Warnings and errors should be rare, as all field name errors are caught when the mod Assembly is compiled.
   This generally happens when libMBIN can't decompile a mbin i.e. libMBIN hasn't been updated to handle recent game updates.
   > There are two steps when libMBIN extracts a mbin for viewing:</br>
-  > i) Decompile from binary mbin to .NET object.
+  > i) Decompile from binary mbin to .NET object.</br>
   > ii) Convert from .NET object to exml | ebin.</br></br>
   > 
   > Since the mods are only doing i) you will only see those errors.
