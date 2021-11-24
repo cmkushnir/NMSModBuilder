@@ -30,7 +30,6 @@ In general you will see 3 types of log items when executing a given mod:
   > There are two steps when libMBIN extracts a mbin for viewing:</br>
   > i) Decompile from binary mbin to .NET object.</br>
   > ii) Convert from .NET object to exml | ebin.</br></br>
-  > 
   > Since the mods are only doing i) you will only see those errors.
   > For example, a new game release breaks a class in a way that isn't detected by i) but is by ii),
   > you will not get an error on Build, but there may be a GUID mismatch error in the Application tab log.
