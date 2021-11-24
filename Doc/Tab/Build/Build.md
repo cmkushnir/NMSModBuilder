@@ -27,6 +27,14 @@ In general you will see 3 types of log items when executing a given mod:
 - **Warning | Error**  Something bad happened, hopefully the message provides enough information to fix.
   Warnings and errors should be rare, as all field name errors are caught when the mod Assembly is compiled.
   This generally happens when libMBIN can't decompile a mbin i.e. libMBIN hasn't been updated to handle recent game updates.
+  > There are two steps when libMBIN extracts a mbin for viewing:
+  > i) Decompile from binary mbin to .NET object.
+  > ii) Convert from .NET object to exml | ebin.</br></br>
+  > 
+  > Since the mods are only doing i) you will only see those errors.
+  > For example, a new game release breaks a class in a way that isn't detected by i) but is by ii),
+  > you will not get an error on Build, but there may be a GUID mismatch error in the Application tab log.
+  > Regardless, you should always view the built mod diffs to verify that the mod data is valid.
 
 The log will also list any loose files added by each mod.  Loose files are only added if the mod Execute runs without throwing an uncaught exception.
 
