@@ -26,7 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-3.80, Sentinel, 2022-02-14, 3.75.0.1, v3.75.0-pre1
+3.81, Sentinel, 2022-02-17, 3.81.0.3, v3.81.0-pre3
+3.80, Sentinel, 2022-02-14, 3.81.0.3, v3.81.0-pre3
 
 3.75, Expeditions - Revisited, 2021-11-30, 3.75.0.1, v3.75.0-pre1
 3.74, Expeditions - Revisited, 2021-11-26, 3.73.0.1, v3.73.0-pre1
