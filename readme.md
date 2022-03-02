@@ -20,6 +20,7 @@
   * [Application](Doc/Tab/Application/Application.md)
   * [libMBIN API](Doc/Tab/MBINC/MBINC.md)
   * [Language](Doc/Tab/Language/Language.md)
+  * [DDS](Doc/Tab/Dds/Dds.md)
   * [Substances, Products, Technologies](Doc/Tab/Items/Items.md)
   * [Refiner & Cooking Recipes](Doc/Tab/Recipes/Recipes.md)
   * [PAK Conflicts](Doc/Tab/PakConflicts/PakConflicts.md)
@@ -40,6 +41,7 @@ A one-stop solution for creating NMS mods using C#</br>
   - Optionally specify a custom install location via the command-line to have a toolbar button added for it.
 - View MBINCompiler | libMBIN Enums, Classes, Fields.
 - Select NMS language to view all language ID's and their localized values.
+- Search for DDS image paths, in the game pak files, using wildcards 
 - View all substances, products, and technologies - ID, icon, localized names.
 - View all refiner and cooking recipes - ID's, icons, localized names.
 - Auto-generates list of conflicts between PCBANKS/MODS/*.pak files.
@@ -106,10 +108,6 @@ By default the application will connect to GitHub to get:
 - A list of all MBINCompiler releases the first time the application needs to use a libMBIN.dll version other than the one in the application folder.
   e.g. when trying to view a mod mbin item compiled with an older MBINC version.
   The list is only retrieved once per application run and cached in-memory.
-
-#### no_big_icons
-Prevent the application from using large icons for Substances, Products, Teechnologies, Recipes - all icons will be 32x32 pixels.<br/>
-Legacy support, may be removed in future releases.
 
 #### no_persist_ui
 Prevent the application from storing window state in the registry when it closes and restoring it from the registry when it starts.<br/>
