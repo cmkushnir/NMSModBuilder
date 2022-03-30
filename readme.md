@@ -68,6 +68,7 @@ A competing product would be one that can compile and execute .NET (e.g. C#) cod
 Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed.</br>
 Select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
 There is no installer, simply unzip the contents of NMSModBuilder.7z into a (new) folder.</br>
+> Starting with 3.82.2, application now requires .NET Desktop Runtime 6.x x64.
 
 > When updating, remember to backup any bundled [Query Scripts](Doc/Scripts/Query/Query.md) or [Mod Scripts](Doc/Scripts/Mod/Mod.md) you may have modified, before overwritting them with those from a newer Release.
 
