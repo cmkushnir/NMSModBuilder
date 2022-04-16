@@ -3,6 +3,8 @@
 <div align="center"><img src="Doc/Splash.png" width="540px"></div>
 </br>
 
+[Public Contributiuons](https://github.com/cmkushnir/NMSModBuilderContrib)</br>
+
 <!--ts-->
 * [Features](#Features)
 * [License](#License)
