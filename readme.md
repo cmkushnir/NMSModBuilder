@@ -3,8 +3,6 @@
 <div align="center"><img src="Doc/Splash.png" width="540px"></div>
 </br>
 
-[Public Contributiuons](https://github.com/cmkushnir/NMSModBuilderContrib)</br>
-
 <!--ts-->
 * [Features](#Features)
 * [License](#License)
@@ -73,6 +71,12 @@ Select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and down
 There is no installer, simply unzip the contents of NMSModBuilder.7z into a (new) folder.</br>
 
 > When updating, remember to backup any bundled [Query Scripts](Doc/Scripts/Query/Query.md) or [Mod Scripts](Doc/Scripts/Mod/Mod.md) you may have modified, before overwritting them with those from a newer Release.
+
+</br>
+</br>
+
+## Public Contributions
+User contributed c# scripts and plugins can be found [here](https://github.com/cmkushnir/NMSModBuilderContrib).</br>
 
 </br>
 </br>
