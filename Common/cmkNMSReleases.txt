@@ -26,8 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-3.87.1, Outlaws, 2022-04-19, 3.87.0.1, v3.87.0-pre1
-3.87,   Outlaws, 2022-04-14, 3.87.0.1, v3.87.0-pre1
+3.87.1, Outlaws, 2022-04-19, 3.87.0.2, v3.87.0-pre2
+3.87,   Outlaws, 2022-04-14, 3.87.0.2, v3.87.0-pre2
 3.85,   Outlaws, 2022-04-10, 3.82.0.2, v3.82.0-pre2
 
 3.84, Sentinel, 2022-03-01, 3.82.0.2, v3.82.0-pre2
