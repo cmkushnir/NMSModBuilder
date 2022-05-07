@@ -27,7 +27,7 @@
 - but if they do make local edits we don't overwrite them.
 
 3.89, Outlaws, 2022-04-26, 3.88.0.2, v3.88.0-pre2
-3.88, Outlaws, 2022-04-19, 3.88.0.1, v3.88.0-pre1
+3.88, Outlaws, 2022-04-19, 3.87.0.3, v3.87.0-pre3
 3.87, Outlaws, 2022-04-14, 3.87.0.3, v3.87.0-pre3
 3.85, Outlaws, 2022-04-10, 3.82.0.2, v3.82.0-pre2
 
