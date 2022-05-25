@@ -67,7 +67,7 @@ namespace cmk.NMS.Game.Location
 		protected readonly Grid  Grid  = new();
 		protected readonly Label Label = new() {
 			VerticalAlignment = VerticalAlignment.Top,
-			Content = "Select game install folder, and optionallly correct the detected version.",
+			Content = "Select game install directory and correct the detected version if needed.",
 			Margin  = new(10,10,10,0),
 		};
 		protected readonly Label PathLabel = new() {
@@ -163,7 +163,7 @@ namespace cmk.NMS.Game.Location
 			IEnumerable<DirectoryInfo> subs;
 
 			try   { subs = folder.EnumerateDirectories(); }
-			catch { return; }  // e.g. access denined 'c:\System Volume Information'
+			catch { return; }  // e.g. access denied 'c:\System Volume Information'
 
 			foreach( var sub in subs ) {
 				if(  sub.Name.First() == '$' ||
