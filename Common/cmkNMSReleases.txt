@@ -26,7 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-3.90, Leviathan, 2022-05-24, 3.90.0.2, v3.90.0-pre2
+3.90.1, Leviathan, 2022-05-26, 3.91.0.1, v3.91.0-pre1
+3.90,   Leviathan, 2022-05-24, 3.90.0.2, v3.90.0-pre2
 
 3.89, Outlaws, 2022-04-26, 3.88.0.2, v3.88.0-pre2
 3.88, Outlaws, 2022-04-19, 3.87.0.3, v3.87.0-pre3
