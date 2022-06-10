@@ -1,0 +1,194 @@
+- 5 column csv: [release version],[name],[release date],[mbin version],[mbin tag]
+-
+- [release version] is used to lookup GoG game instances, and must match what is in the
+- registry Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\ver value
+- e.g. "3.67_Frontiers_78072" -> release version = 3.67.
+- [name] is only used for titlebar display, you can put anything you want there.
+- [release date] is used to lookup Steam game instances and must be <= the NMS.exe build date (in PE header).
+- [mbin version] is from libMBIN.dll|MBINCompiler.exe assembly version.
+- [mbin tag] is the TagName of the release on GitHub.
+- Could use Steam and GoG buildid instead, but difficult to find good record for older versions.
+- List releases in descending order.
+-
+- Lines starting w/ '-' are skipped.
+- Leading|trailing whitespace in each part is trimmed.
+- Date in yyyy-MM-dd format.
+- Lines w/ < 5 parts are skipped, others had better be valid or parser will throw-up.
+-
+- Source for guess at older NMS.exe dates: https://nomanssky.fandom.com/wiki/Patch_notes
+- The mbin version is a best-guess, it may need adjustment based on actual encountered data.
+-
+- When app starts it loads this file from the app folder
+- and downloads the current version from GitHub.
+- If the GitHub version has entries for newer releases
+- they are added to the in-memory list, the local file is not updated.
+- This allows us to keep the GitHub version updated
+- so users in general wouldn't need to edit this file,
+- but if they do make local edits we don't overwrite them.
+
+3.91, Leviathan, 2022-05-26, 3.91.0.1, v3.91.0-pre1
+3.90, Leviathan, 2022-05-24, 3.90.0.2, v3.90.0-pre2
+
+3.89, Outlaws, 2022-04-26, 3.88.0.2, v3.88.0-pre2
+3.88, Outlaws, 2022-04-19, 3.87.0.3, v3.87.0-pre3
+3.87, Outlaws, 2022-04-14, 3.87.0.3, v3.87.0-pre3
+3.85, Outlaws, 2022-04-10, 3.82.0.2, v3.82.0-pre2
+
+3.84, Sentinel, 2022-03-01, 3.82.0.2, v3.82.0-pre2
+3.82, Sentinel, 2022-02-21, 3.82.0.2, v3.82.0-pre2
+3.81, Sentinel, 2022-02-17, 3.81.0.3, v3.81.0-pre3
+3.80, Sentinel, 2022-02-14, 3.81.0.3, v3.81.0-pre3
+
+3.75, Expeditions - Revisited, 2021-11-30, 3.75.0.1, v3.75.0-pre1
+3.74, Expeditions - Revisited, 2021-11-26, 3.73.0.1, v3.73.0-pre1
+3.73, Expeditions - Revisited, 2021-11-22, 3.73.0.1, v3.73.0-pre1
+
+3.71.2, Frontiers - Emergence, 2021-11-11, 3.72.0.2, v3.72.0-pre2
+3.71.1, Frontiers - Emergence, 2021-11-02, 3.72.0.1, v3.72.0-pre1
+3.71,   Frontiers - Emergence, 2021-10-25, 3.71.0.2, v3.71.0-pre2
+3.70.1, Frontiers - Emergence, 2021-10-22, 3.71.0.1, v3.71.0-pre1
+3.70,   Frontiers - Emergence, 2021-10-18, 3.70.0.2, v3.70.0-pre2
+
+3.68,   Frontiers - Cartographers, 2021-09-28, 3.68.0.2, v3.68.0-pre2
+3.67.2, Frontiers - Cartographers, 2021-09-27, 3.68.0.2, v3.68.0-pre2
+3.67.1, Frontiers - Cartographers, 2021-09-17, 3.68.0.1, v3.68.0-pre1
+3.67,   Frontiers - Cartographers, 2021-09-15, 3.65.0.1, v3.65.0-pre1
+3.66,   Frontiers - Cartographers, 2021-09-12, 3.65.0.1, v3.65.0-pre1
+3.64,   Frontiers - Cartographers, 2021-09-07, 3.64.0.1, v3.64.0-pre1
+
+3.63, Frontiers, 2021-09-05, 3.63.0.1, v3.63.0-pre1
+3.62, Frontiers, 2021-09-02, 3.62.0.1, v3.62.0-pre1
+3.61, Frontiers, 2021-09-01, 3.62.0.1, v3.62.0-pre1
+3.60, Frontiers, 2021-08-30, 3.62.0.1, v3.62.0-pre1
+
+3.53, Prisms, 2021-06-11, 3.53.0.2, v3.53.0-pre2
+3.52, Prisms, 2021-06-08, 3.52.0.2, v3.52.0-pre2
+3.51, Prisms, 2021-06-02, 3.52.0.2, v3.52.0-pre2
+3.50, Prisms, 2021-06-01, 3.51.0.1, v3.51.0-pre1
+
+3.42, Expeditions - Beachhead, 2021-05-21, 3.42.0.2, v3.42.0-pre2
+3.41, Expeditions - Beachhead, 2021-05-20, 3.40.0.1, v3.40.0-pre1
+3.40, Expeditions - Beachhead, 2021-05-13, 3.40.0.1, v3.40.0-pre1
+
+3.38, Expeditions - Pioneers, 2021-04-28, 3.38.0.1, v3.38.0-pre1
+3.37, Expeditions - Pioneers, 2021-04-15, 3.37.0.1, v3.37.0-pre1
+3.35, Expeditions - Pioneers, 2021-04-07, 3.35.0.1, v3.35.0-pre1
+3.34, Expeditions - Pioneers, 2021-04-05, 3.34.0.2, v3.34.0-pre2
+3.33, Expeditions - Pioneers, 2021-04-02, 3.34.0.2, v3.34.0-pre2
+3.32, Expeditions - Pioneers, 2021-04-01, 3.34.0.2, v3.34.0-pre2
+3.30, Expeditions - Pioneers, 2021-03-31, 3.34.0.2, v3.34.0-pre2
+
+3.22, Companions, 2021-02-26, 3.21.0.2, v3.21.0-pre2
+3.21, Companions, 2021-02-19, 3.21.0.2, v3.21.0-pre2
+3.20, Companions, 2021-02-17, 3.21.0.2, v3.21.0-pre2
+
+3.15, Next Generation, 2021-01-27, 3.12.0.5, v3.12.0-pre5
+3.13, Next Generation, 2020-11-30, 3.12.0.5, v3.12.0-pre5
+3.12, Next Generation, 2020-11-25, 3.12.0.5, v3.12.0-pre5
+3.10, Next Generation, 2020-11-10, 3.10.0.1, v3.10.0-pre1
+
+3.05, Origins, 2020-10-26, 3.05.0.1, v3.05.0-pre1
+3.03, Origins, 2020-10-09, 3.03.0.1, v3.03.0-pre1
+3.02, Origins, 2020-09-29, 3.02.0.1, v3.02.0-pre1
+3.01, Origins, 2020-09-24, 3.00.0.2, v3.0.0-pre2
+3.00, Origins, 2020-09-23, 3.00.0.2, v3.0.0-pre2
+
+- removed 2.61.1
+2.62, Desolation, 2020-08-12, 2.61.1.2, v2.61.1-pre2
+2.61, Desolation, 2020-07-22, 2.61.1.2, v2.61.1-pre2
+2.60, Desolation, 2020-07-16, 2.61.1.2, v2.61.1-pre2
+
+- removed 2.55.1
+2.55, Crossplay, 2020-06-26, 2.51.0.1, v2.51.0-pre1
+2.54, Crossplay, 2020-06-18, 2.51.0.1, v2.51.0-pre1
+2.53, Crossplay, 2020-06-16, 2.51.0.1, v2.51.0-pre1
+2.52, Crossplay, 2020-06-12, 2.51.0.1, v2.51.0-pre1
+2.51, Crossplay, 2020-06-12, 2.51.0.1, v2.51.0-pre1
+2.50, Crossplay, 2020-06-11, 2.51.0.1, v2.51.0-pre1
+
+2.44, Exo Mech, 2020-05-29, 2.43.0.3, v2.43.0-pre3
+2.43, Exo Mech, 2020-04-22, 2.43.0.3, v2.43.0-pre3
+2.42, Exo Mech, 2020-04-16, 2.42.0.1, v2.42.0-pre1
+2.41, Exo Mech, 2020-04-08, 2.41.0.3, v2.41.0-pre3
+2.40, Exo Mech, 2020-04-07, 2.40.0.1, v2.40.0-pre1
+
+2.34, Living Ship, 2020-03-17, 2.34.0.1, v2.34.0-pre1
+2.33, Living Ship, 2020-03-12, 2.34.0.1, v2.34.0-pre1
+2.32, Living Ship, 2020-02-27, 2.32.0.2, v2.32.0-pre2
+2.31, Living Ship, 2020-02-21, 2.31.0.2, v2.31.0-pre2
+2.30, Living Ship, 2020-02-18, 2.30.0.1, v2.30.0-pre1
+
+2.27, Synthesis, 2020-02-04, 2.26.0.2, v2.26.0-pre2
+2.26, Synthesis, 2020-01-22, 2.26.0.2, v2.26.0-pre2
+2.24, Synthesis, 2019-12-16, 2.24.0.2, v2.24.0-pre2
+2.23, Synthesis, 2019-12-04, 2.23.0.1, v2.23.0-pre1
+2.22, Synthesis, 2019-11-29, 2.22.0.4, v2.22.0-pre4
+2.20, Synthesis, 2019-11-28, 2.22.0.4, v2.22.0-pre4
+
+- 2.06 complete mess, removed 2.06 -> 2.09.
+- 2.04 not for PC, we have it here because of libMBIN version.
+- versioning scheme changes 2.04 -> 2.0.12, then 2.13,
+- we renumbered those versions to 2.04 -> 2.12;
+- not sure what those mbin's actual show as their version
+2.16, Beyond, 2019-11-07, 2.15.0.1, v2.15.0-pre1
+2.15, Beyond, 2019-10-30, 2.15.0.1, v2.15.0-pre1
+2.14, Beyond, 2019-10-10, 2.13.0.4, v2.13.0-pre4
+2.13, Beyond, 2019-10-07, 2.13.0.4, v2.13.0-pre4
+2.12, Beyond, 2019-09-18, 2.12.0.1, v2.0.12-pre1
+2.11, Beyond, 2019-09-05, 2.11.0.2, v2.0.11-pre2
+2.09, Beyond, 2019-08-21, 2.09.0.6, v2.0.9-pre6
+2.06, Beyond, 2019-08-16, 2.06.0.4, v2.0.6-pre4
+2.04, Beyond, 2019-08-15, 2.04.0.7, v2.0.4-pre7
+2.00, Beyond, 2019-08-14, 2.04.0.7, v2.0.4-pre7
+
+- 1.78 unofficial version #
+1.78, Visions, 2019-01-09, 1.78.0.1, v1.78.0-pre1
+1.77, Visions, 2018-12-13, 1.77.0.3, v1.77.0-pre3
+1.76, Visions, 2018-11-29, 1.77.0.3, v1.77.0-pre3
+1.75, Visions, 2018-11-22, 1.75.0.4, v1.75.0-pre4
+
+1.71, Abyss, 2018-11-02, 1.71.0.1, v1.71.0-pre1
+1.70, Abyss, 2018-10-29, 1.70.0.4, v1.70.0-pre4
+
+- before 1.59.0.2 versions use 3 parts, no pre tags
+- before 1.53.0.2 use MBINCompiler, there may be no libMBIN build
+
+- removed 1.52.1, 1.52.2
+1.65, NEXT, 2018-10-19, 1.65.0.3, v1.65.0-pre3
+1.64, NEXT, 2018-10-12, 1.65.0.3, v1.65.0-pre3
+1.63, NEXT, 2018-10-05, 1.63.0.4, v1.63.0-pre4
+1.61, NEXT, 2018-09-27, 1.61.0.2, v1.61.0-pre2
+1.60, NEXT, 2018-09-20, 1.61.0.2, v1.61.0-pre2
+1.59, NEXT, 2018-09-06, 1.59.0.2, v1.59.0-pre2
+1.58, NEXT, 2018-08-30, 1.58.0,   v1.58.0
+1.57, NEXT, 2018-08-17, 1.57.0,   v1.57.0
+1.55, NEXT, 2018-08-10, 1.55.0,   v1.55.0
+1.54, NEXT, 2018-08-07, 1.55.0,   v1.55.0
+1.53, NEXT, 2018-08-01, 1.53.0,   v1.53.0
+1.52, NEXT, 2018-07-27, 1.52.0,   v1.52.0
+1.51, NEXT, 2018-07-26, 1.52.0,   v1.52.0
+1.50, NEXT, 2018-07-24, 1.52.0,   v1.52.0
+
+- 1.38.0 first libMBIN, was static linked to MBINCompiler until 1.53.0.2
+
+1.38, Atlas Rises, 2017-10-03, 1.38.3, v1.38.3
+1.37, Atlas Rises, 2017-09-15, 1.38.3, v1.38.3
+1.35, Atlas Rises, 2017-09-01, 1.34.0, v1.34.0
+1.34, Atlas Rises, 2017-08-25, 1.34.0, v1.34.0
+1.33, Atlas Rises, 2017-08-22, 1.34.0, v1.34.0
+1.32, Atlas Rises, 2017-08-17, 1.31.0, v1.31.0
+1.31, Atlas Rises, 2017-08-12, 1.31.0, v1.31.0
+1.30, Atlas Rises, 2017-08-11, 1.31.0, v1.31.0
+
+1.24, Pathfinder, 2017-03-27, 1.24.4, v1.24.4
+1.23, Pathfinder, 2017-03-17, 1.24.4, v1.24.4
+1.22, Pathfinder, 2017-03-13, 1.23.0, v1.23.0
+1.20, Pathfinder, 2017-03-08, 1.2.0,  v1.2.0
+
+- last Foundation release was 1.13
+- so no point in specifying sub-releases
+1.10, Foundation, 2016-11-26, 1.13.2, v1.13.2
+
+- 1.13.2 is earliest MBINCompiler release
+- so no point in specifying sub-releases
+1.00, Release, 2016-08-12, 1.13.2, v1.13.2
