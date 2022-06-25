@@ -20,7 +20,8 @@
   * [Application](Doc/Tab/Application/Application.md)
   * [libMBIN API](Doc/Tab/MBINC/MBINC.md)
   * [Language](Doc/Tab/Language/Language.md)
-  * [DDS](Doc/Tab/Dds/Dds.md)
+  * [Search MBIN](Doc/Tab/SearchMbin/Mbin.md)
+  * [Search DDS](Doc/Tab/SearchDds/Dds.md)
   * [Substances, Products, Technologies](Doc/Tab/Items/Items.md)
   * [Refiner & Cooking Recipes](Doc/Tab/Recipes/Recipes.md)
   * [PAK Conflicts](Doc/Tab/PakConflicts/PakConflicts.md)
@@ -65,18 +66,11 @@ A competing product would be one that can compile and execute .NET (e.g. C#) cod
 </br>
 
 ## Install
-Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed for versions up to 3.82.1.</br>
-Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions 3.82.2.2 onwards.</br>
+Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed.</br>
 Select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
 There is no installer, simply unzip the contents of NMSModBuilder.7z into a (new) folder.</br>
 
 > When updating, remember to backup any bundled [Query Scripts](Doc/Scripts/Query/Query.md) or [Mod Scripts](Doc/Scripts/Mod/Mod.md) you may have modified, before overwritting them with those from a newer Release.
-
-</br>
-</br>
-
-## Public Contributions
-User contributed c# scripts and plugins can be found [here](https://github.com/cmkushnir/NMSModBuilderContrib).</br>
 
 </br>
 </br>
@@ -99,9 +93,10 @@ unless the **no_github** command-line option is specified.  This means the user 
 ### Command-Line
 
 #### no_split_tabs
+> May be removed in future releases.
+
 Force the application to start with a single set of tabs.<br/>
 By default the application will start with [split-tabs](Doc/Tab/Tabs.md).<br/>
-Legacy support, may be removed in future releases.
 
 #### no_github
 Prevent the application from connecting to GitHub.<br/>
@@ -120,6 +115,15 @@ By default the application will connect to GitHub to get:
 Prevent the application from storing window state in the registry when it closes and restoring it from the registry when it starts.<br/>
 By default the application will store window state in **HKCU\SOFTWARE\cmkushnir\NMSMB\Windows**.
 Note that the user is responsible for deleting the registry information if they remove the application, there is no uninstaller. 
+
+#### log_mbin_guid_mismatch
+Add warnings to the current Log when extracting mbin's and the mbin guid != libMBIN guid. 
+
+#### prompt_del_on_exec
+When Executing mod scripts, check if the game has a mod pak with the same name as the mod project.  If it does then prompt the user to delete the mod pak before Executing the mod scripts.  This is for users that are using Game as the script IPakItemCollection, to prevent the scripts from patching an old version of the project mod pak.
+
+#### no_mbin_cache
+By default extracted mbin's are cached with the corresponding Info object.  This can give significant performance benefits, especially to the Search MBIN tab (2 min w/o cache, 1 sec w/ cache).  However, caching all mbin objects requires 36 - 42GB of memory, so you system would need more that that or you will get significant memory page thrashing.  If your system has < 48GB of physical memory you should enable this.
 
 #### -p"path"
 Add a single game location to the toolbar.  A button will be added to the left of the GoG, Steam, Select buttons.
@@ -279,9 +283,6 @@ Microsoft .NET C# compiler, used to compile C# scripts.
 
 - https://github.com/icsharpcode/AvalonEdit</br>
 AvalonEdit view|edit items that can be converted to text.
-
-- https://github.com/icsharpcode/SharpZipLib</br>
-SharpZipLib decompress' *.pak item data.
 
 - https://github.com/nickbabcock/Pfim</br>
 Pfim converts (most) .dds items to bitmaps for viewing.
