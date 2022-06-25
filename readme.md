@@ -66,7 +66,8 @@ A competing product would be one that can compile and execute .NET (e.g. C#) cod
 </br>
 
 ## Install
-Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed.</br>
+Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed for versions up to 3.82.1.</br>
+Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions 3.82.2.2 onwards.</br>
 Select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
 There is no installer, simply unzip the contents of NMSModBuilder.7z into a (new) folder.</br>
 
