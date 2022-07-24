@@ -26,6 +26,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+3.96, Endurance, 2022-07-22, 3.94.0.1, v3.94.0-pre1
 3.95, Endurance, 2022-07-22, 3.94.0.1, v3.94.0-pre1
 3.94, Endurance, 2022-07-20, 3.94.0.1, v3.94.0-pre1
 
