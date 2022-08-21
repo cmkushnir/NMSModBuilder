@@ -35,6 +35,21 @@
 </br>
 </br>
 
+## Quick Start
+- Unzip download, will create a NMSModBuilder folder with all required files, including sample scripts.
+- Make sure .NET 6 x64 Desktop runtime is installed.
+- Run NMSModBuilder/cmkNMSModBuilder.exe, will take 3 sec or so to start.
+- Click GoG or Steam icon in toolbar to have it load your game data.
+- Use research tabs on the left, script tabs on the right.
+- To build the included mod scripts:
+  - goto the Mod Scripts tab and click Compile All button.  Check for errors in log.
+  - goto the Build and Save tab and click Execute.  Check for errors in log.
+  - on the same Build and Save tab click Build & Save.  Will prompt to save cmk.pak in game MODS folder.
+  - can now look at cmk.pak diffs using one of the PAK Items tabs.
+
+</br>
+</br>
+
 ## Features
 A one-stop solution for creating NMS mods using C#</br>
 - Automatically detects normally installed GoG and Steam game instances.
