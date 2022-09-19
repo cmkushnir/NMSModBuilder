@@ -29,7 +29,7 @@ using System.Windows;
 
 namespace cmk.NMS
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		// AddUnique is already an extension for IList
 		// see: cmkNMSCommon/Extensions/System.Collections.IList.x.cs
@@ -69,8 +69,8 @@ namespace cmk.NMS
 
 namespace cmk.NMS
 {
-	// partial: index all classes, enums, fields in an instance
-	public partial class MBINC
+    // partial: index all classes, enums, fields in an instance
+    public partial class MBINC
 	{
 		public class TypeInfo
 		: System.IComparable<TypeInfo>
@@ -159,7 +159,9 @@ namespace cmk.NMS
 			public readonly List<FieldInfo> Fields   = new();
 			public readonly List<ClassInfo> Classes  = new();  // parent classes
 			public readonly List<string>    PakItems = new();  // mbin paths that have this as a top-level object, only set if this a game MbincVersion
-			public FontWeight FontWeight { get { return PakItems.IsNullOrEmpty() ? FontWeights.Normal : FontWeights.Bold; } }
+
+			public FontWeight FontWeight
+			=> PakItems.IsNullOrEmpty() ? FontWeights.Normal : FontWeights.Bold;
 
 			public ClassInfo( MBINC MBINC, Type TYPE )
 			{
@@ -167,8 +169,8 @@ namespace cmk.NMS
 				Type  = TYPE;
 
 				if( Mbinc.HasNMSAttributeGUID ) {
-					dynamic attr = Type.GetCustomAttribute(Mbinc.NMSAttributeType);
-					NMSAttributeGUID = (ulong)(attr?.GUID ?? 0);
+					var attr = Type.GetCustomAttribute(Mbinc.NMSAttributeType);
+					NMSAttributeGUID = Mbinc.NMSAttributeGUID(attr);
 				}
 
 				Name     = Type.GenericName(false);
@@ -220,7 +222,7 @@ namespace cmk.NMS
 						var tn = to[ti].Name;
 						if( string.Equals(fn, tn) || (       // names the same
 							fn.Soundex() == tn.Soundex() &&  // basically the same
-							fn.Levenshtein(tn) < 2           // only a minor change
+							fn.Levenshtein(tn) <= 2          // only a minor change
 						) ) {
 							mi = ++ti;
 							break;
@@ -245,17 +247,27 @@ namespace cmk.NMS
 			public string TypeAndFullName { get; protected set; }
 			public readonly ClassInfo                   Parent;
 			public readonly System.Reflection.FieldInfo Info;
+			public readonly int                         AttrSize = 0;
 
 			public FieldInfo( ClassInfo PARENT, System.Reflection.FieldInfo INFO )
 			{
 				Parent = PARENT;
 				Info   = INFO;
 
-				Name     = Info.Name.Trim('[', ']');  // remove any trailing array "field[]"
-				WrapName = Parent.Type.GenericName(false) + "." + Name;  // class.field
-				FullName = Parent.Type.GenericName(true)  + "." + Name;  // namespace.class.field
+				if( Parent.Mbinc.HasNMSAttributeSize ) {
+					var attr = Info.GetCustomAttribute(Parent.Mbinc.NMSAttributeType);
+					AttrSize = Parent.Mbinc.NMSAttributeSize(attr);
+				}
+
+				Name     = Info.Name.TrimEnd('[', ']');   // remove any trailing array "field[]"
+				WrapName = Parent.Name     + "." + Name;  // class.field
+				FullName = Parent.FullName + "." + Name;  // namespace.class.field
 
 				TypeGenericName = Info.FieldType.GenericName(false);
+				if( AttrSize > 0 && TypeGenericName.Contains("[]") ) {
+					TypeGenericName = TypeGenericName.Replace("[]", $"[{AttrSize}]");
+				}
+
 				TypeAndName     = TypeGenericName + "  " + Name;
 				TypeAndWrapName = TypeGenericName + "  " + WrapName;
 				TypeAndFullName = TypeGenericName + "  " + FullName;
@@ -322,7 +334,7 @@ namespace cmk.NMS
 			);
 
 			Log.Default.AddInformation(
-				$"Loaded Types from {path} {version}"
+				$"Loaded Types from {path} {version}: {Enums.Count} enum's, {Classes.Count} classes, {Fields.Count} fields"
 			);
 		}
 

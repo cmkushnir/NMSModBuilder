@@ -28,14 +28,15 @@ using System.Reflection;
 
 namespace cmk.NMS
 {
-	/// <summary>
-	/// Wrapper around a libMBIN.dll or MBINCompiler.exe instance.
-	/// </summary>
-	public partial class MBINC
+    /// <summary>
+    /// Wrapper around a libMBIN.dll or MBINCompiler.exe instance.
+    /// </summary>
+    public partial class MBINC
 	{
 		public readonly bool     Valid                    = false;  // all expected types & methods available
 		public readonly bool     HasNMSAttributeEnumType  = false;
 		public readonly bool     HasNMSAttributeEnumValue = false;
+		public readonly bool     HasNMSAttributeSize      = false;
 		public readonly bool     HasNMSAttributeGUID      = false;
 		public readonly bool     HasNMSAttributeIgnore    = false;
 		public readonly Assembly Assembly;
@@ -98,6 +99,9 @@ namespace cmk.NMS
 					else if( field.Name.Contains("EnumValue") ) {
 						HasNMSAttributeEnumValue = true;
 					}
+					else if( field.Name.Contains("Length") ) {
+						HasNMSAttributeSize = true;
+					}
 					else if( field.Name.Contains("GUID") ) {
 						HasNMSAttributeGUID = true;
 					}
@@ -121,15 +125,6 @@ namespace cmk.NMS
 				"ReadTemplateFromString", typeof(string)
 			);
 
-			// NMSTemplateType names are unique across namespaces, enums are not.
-			if( NMSTemplateType != null ) {
-				NMSTemplateTypes = Assembly.GetExportedTypes()
-					.Where(TYPE => TYPE == NMSTemplateType || TYPE.IsSubclassOf(NMSTemplateType))
-					.ToDictionary(TYPE => TYPE.Name)
-				;
-			}
-			LoadTypes();  // takes 1-2 seconds
-
 			Valid =
 				MBINFileType     != null &&
 				EXmlFileType     != null &&
@@ -141,6 +136,15 @@ namespace cmk.NMS
 				m_EXmlFile_WriteTemplate                != null &&
 				m_EXmlFile_ReadTemplateFromString       != null
 			;
+
+			// NMSTemplateType names are unique across namespaces, enums are not.
+			if( NMSTemplateType != null ) {
+				NMSTemplateTypes = Assembly.GetExportedTypes()
+					.Where(TYPE => TYPE == NMSTemplateType || TYPE.IsSubclassOf(NMSTemplateType))
+					.ToDictionary(TYPE => TYPE.Name)
+				;
+			}
+			LoadTypes();  // takes 1-2 seconds
 		}
 
 		//...........................................................
@@ -175,8 +179,8 @@ namespace cmk.NMS
 				type_name.StartsWith("NMSString")
 			) {
 				dynamic nms_string = VALUE;  // not good for perf
-				string  nms_value  = nms_string.Value;
-				return nms_value ?? "";
+				string  nms_value  = (string)nms_string;
+				return  nms_value ?? "";
 			}
 
 			return null;
@@ -214,7 +218,7 @@ namespace cmk.NMS
 		{
 			if( !Valid || NMS_ATTRIBUTE == null ||
 				!NMSAttributeType.IsAssignableFrom(NMS_ATTRIBUTE.GetType())
-			) return null;
+			)	return null;
 
 			dynamic  nms_atribute = NMS_ATTRIBUTE;
 			FakeEnum fake         = null;
@@ -228,6 +232,32 @@ namespace cmk.NMS
 			else return null;
 
 			return fake.Values.IsNullOrEmpty() ? null : fake;
+		}
+
+		//...........................................................
+
+		public ulong NMSAttributeGUID( object NMS_ATTRIBUTE )
+		{
+			if( !Valid || NMS_ATTRIBUTE == null ||
+				!HasNMSAttributeGUID ||
+				!NMSAttributeType.IsAssignableFrom(NMS_ATTRIBUTE.GetType())
+			)	return 0;
+
+			dynamic nms_atribute = NMS_ATTRIBUTE;
+			return  nms_atribute.GUID;
+		}
+
+		//...........................................................
+
+		public int NMSAttributeSize( object NMS_ATTRIBUTE )
+		{
+			if( !Valid || NMS_ATTRIBUTE == null ||
+				!HasNMSAttributeSize ||
+				!NMSAttributeType.IsAssignableFrom(NMS_ATTRIBUTE.GetType())
+			)	return 0;
+
+			dynamic nms_atribute = NMS_ATTRIBUTE;
+			return  nms_atribute.Size;
 		}
 
 		//...........................................................

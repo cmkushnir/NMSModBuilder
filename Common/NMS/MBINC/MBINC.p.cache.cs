@@ -27,8 +27,8 @@ using System.Reflection;
 
 namespace cmk.NMS
 {
-	// partial: static cached load methods
-	public partial class MBINC
+    // partial: static cached load methods
+    public partial class MBINC
 	{
 		// cache of loaded libMBIN | MBINCompiler Assemblies
 		protected static List<MBINC> s_cache = new();
@@ -156,26 +156,32 @@ namespace cmk.NMS
 		{
 			MBINC lib = null;
 
+			// early releases had no libMBIN.dll, only MBINCompiler.exe
+
+			// 1. try to find an existing "libMBIN_...dll" or "MBINCompiler_...exe" in app folder
+			var target = Path.Join(Resource.AppDirectory, $"libMBIN_{RELEASE.MbincTag}.dll");
+			if( System.IO.File.Exists(target) ) goto found;
+
+			target = Path.Join(Resource.AppDirectory, $"MBINCompiler_{RELEASE.MbincTag}.dll");  // saved as dll
+			if( System.IO.File.Exists(target) ) goto found;
+
+			// 2. get mbinc releases from github, get asset for RELEASE
+			//    todo: save|load release info so don't have to query each time, but loose octokit parsing
 			var release  = GitHubReleases.Releases.TaggedRelease(RELEASE.MbincTag);
 			if( release == null ) {
 				Log.Default.AddFailure($"Can't find GitHub MBINCompiler release {RELEASE.MbincVersion}");
 				return null;
 			}
-
 			var source = release.Asset("libMBIN.dll")?.BrowserDownloadUrl;
-			var target = $"libMBIN_{RELEASE.MbincTag}.dll";
+			    target = Path.Join(Resource.AppDirectory, $"libMBIN_{RELEASE.MbincTag}.dll");
 			if( source.IsNullOrEmpty() ) {
-				// early releases had no libMBIN.dll, only MBINCompiler.exe
 				source = release.Asset("MBINCompiler.exe")?.BrowserDownloadUrl;
-				target = $"MBINCompiler_{RELEASE.MbincTag}.dll";
+				target = Path.Join(Resource.AppDirectory, $"MBINCompiler_{RELEASE.MbincTag}.dll");  // save as dll
 			}
 			if( source.IsNullOrEmpty() ) {
 				Log.Default.AddFailure($"Can't find GitHub libMBIN.dll|MBINCompiler.exe asset for release {RELEASE.MbincVersion}");
 				return null;
 			}
-
-			// where should we find it on disk (in our app folder)
-			target = Path.Join(Resource.AppDirectory, target);
 
 			// if not on disk then download from GitHub
 			if( !File.Exists(target) ) {
@@ -194,6 +200,7 @@ namespace cmk.NMS
 				if( !File.Exists(target) ) return null;
 			}
 
+			found:
 			try {
 				// loads into current AppDomain|AssemblyLoadContext
 				var asm = Assembly.LoadFile(target);

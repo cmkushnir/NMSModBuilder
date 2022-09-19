@@ -27,8 +27,8 @@ using System.Text;
 
 namespace cmk.NMS
 {
-	// partial: convert from dom to ebin
-	public partial class MBINC
+    // partial: convert from dom to ebin
+    public partial class MBINC
 	{
 		/// <summary>
 		/// Convert a .pak .mbin item to a .ebin string for viewing or saving to disk.
