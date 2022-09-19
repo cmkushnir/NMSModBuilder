@@ -28,73 +28,68 @@ using System.Windows.Media;
 
 namespace cmk.NMS.Game.Recipes
 {
-	public class ListBox
+    public class ListBox
 	: cmk.ListBox
 	{
-		public event MouseButtonEventHandler ResultIconMouseDoubleClick;
-		public event MouseButtonEventHandler IngredientIconMouseDoubleClick;
+		public delegate void InfoDoubleClickEventHandler( NMS.PAK.Item.Info INFO, TextSearchData SEARCH );
+		public event         InfoDoubleClickEventHandler InfoDoubleClick;
 
 		//...........................................................
 
-		// base(false) - false == don't use virtualizing panel, ~1200 recipes
-		// pro: slow to load and close app (alloc|free 1200 item template objects
-		// con: fast to scroll, dosn't resize on scroll since calc's shared column sizes up front
-		public ListBox() : base()
+		public ListBox( bool IS_VIRTUALIZING = true ) : base(IS_VIRTUALIZING)
 		{
 			Background = Brushes.DarkGray;
 
-			var recipe_border_factory = new System.Windows.FrameworkElementFactory(typeof(Border));
-			recipe_border_factory.SetValue(Border.BackgroundProperty,      Brushes.LightGray);
-			recipe_border_factory.SetValue(Border.BorderBrushProperty,     Brushes.Black);
-			recipe_border_factory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
-			recipe_border_factory.SetValue(Border.PaddingProperty,         new Thickness(4, 4, 12, 4));
-			recipe_border_factory.SetValue(Border.MarginProperty,          new Thickness(1));
-			recipe_border_factory.SetValue(Border.CornerRadiusProperty,    new CornerRadius(24));
+			var border_factory = new System.Windows.FrameworkElementFactory(typeof(Border));
+			border_factory.SetValue(Border.BackgroundProperty,      Brushes.LightGray);
+			border_factory.SetValue(Border.BorderBrushProperty,     Brushes.Black);
+			border_factory.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+			border_factory.SetValue(Border.PaddingProperty,         new Thickness(4));
+			border_factory.SetValue(Border.MarginProperty,          new Thickness(1));
+			border_factory.SetValue(Border.CornerRadiusProperty,    new CornerRadius(24));
 
-			var recipe_grid_factory = new System.Windows.FrameworkElementFactory(typeof(Grid));
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // result
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // recipe
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // ingredients
+			var grid_factory = new System.Windows.FrameworkElementFactory(typeof(Grid));
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto());          // result icon
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Amount"));  // result amount
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Name"));    // result name, recipe name
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Id"));      // result nameid, recipe nameid
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto());          // time, recipe id
+			grid_factory.AppendChild(FrameworkElementFactory.CreateColumnStar());          //
 
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto());          // result icon
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Amount"));  // result amount
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Name"));    // result name, recipe name
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto("Id"));      // result nameid, recipe nameid
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnAuto());          // time, recipe id
-			recipe_grid_factory.AppendChild(FrameworkElementFactory.CreateColumnStar());          //
+			grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // result
+			grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // recipe
+			grid_factory.AppendChild(FrameworkElementFactory.CreateRowAuto());  // ingredients
 
 			var result_icon_factory   = FrameworkElementFactory.CreateImage  (0, 0, "ResultData.Icon48");
 			var result_amount_factory = FrameworkElementFactory.CreateTextBox(0, 1, null,         FontWeights.Bold,   "ResultAmount");
 			var result_name_factory   = FrameworkElementFactory.CreateTextBox(0, 2, null,         FontWeights.Bold,   "ResultData.Name",  "ResultData.Description");
 			var result_id_factory     = FrameworkElementFactory.CreateTextBox(0, 3, Brushes.Gray, FontWeights.Normal, "ResultId");
 			var result_time_factory   = FrameworkElementFactory.CreateTextBox(0, 4, null,         FontWeights.Bold,   "TimeToMake");
-
-			result_icon_factory.AddHandler(Image.MouseDownEvent, new MouseButtonEventHandler(OnResultIconMouseDoubleClick));
-			result_amount_factory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Right);
-			result_amount_factory.SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
-			result_name_factory  .SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
-			result_id_factory    .SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
-
-			recipe_grid_factory.AppendChild(result_icon_factory);
-			recipe_grid_factory.AppendChild(result_amount_factory);
-			recipe_grid_factory.AppendChild(result_name_factory);
-			recipe_grid_factory.AppendChild(result_id_factory);
-			recipe_grid_factory.AppendChild(result_time_factory);
-
 			var recipe_type_factory   = FrameworkElementFactory.CreateTextBox(1, 2, Brushes.DarkBlue, FontWeights.Normal, "RecipeType");
 			var recipe_typeid_factory = FrameworkElementFactory.CreateTextBox(1, 3, Brushes.Gray,     FontWeights.Normal, "RecipeTypeId");
 			var recipe_id_factory     = FrameworkElementFactory.CreateTextBox(1, 4, Brushes.Gray,     FontWeights.Normal, "Id");
 			var recipe_name_factory   = FrameworkElementFactory.CreateTextBox(1, 5, Brushes.Gray,     FontWeights.Normal, "RecipeName");
 
-			recipe_grid_factory.AppendChild(recipe_type_factory);
-			recipe_grid_factory.AppendChild(recipe_typeid_factory);
-			recipe_grid_factory.AppendChild(recipe_id_factory);
-			recipe_grid_factory.AppendChild(recipe_name_factory);
-			recipe_grid_factory.AppendChild(CreateIngredientListBox());
+			//result_icon_factory.AddHandler(Image.MouseDownEvent, new MouseButtonEventHandler(OnResultIconMouseDoubleClick));
+			result_amount_factory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Right);
+			result_amount_factory.SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
+			result_name_factory  .SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
+			result_id_factory    .SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
 
-			recipe_border_factory.AppendChild(recipe_grid_factory);
+			grid_factory.AppendChild(result_icon_factory);
+			grid_factory.AppendChild(result_amount_factory);
+			grid_factory.AppendChild(result_name_factory);
+			grid_factory.AppendChild(result_id_factory);
+			grid_factory.AppendChild(result_time_factory);
+			grid_factory.AppendChild(recipe_type_factory);
+			grid_factory.AppendChild(recipe_typeid_factory);
+			grid_factory.AppendChild(recipe_id_factory);
+			grid_factory.AppendChild(recipe_name_factory);
+			grid_factory.AppendChild(CreateIngredientListBox());
 
-			ItemTemplate = new() { VisualTree = recipe_border_factory };
+			border_factory.AppendChild(grid_factory);
+
+			ItemTemplate = new() { VisualTree = border_factory };
 		}
 
 		//...........................................................
@@ -119,7 +114,7 @@ namespace cmk.NMS.Game.Recipes
 			var ingredient_name_factory   = FrameworkElementFactory.CreateTextBox(-1, 2, null,         FontWeights.Bold,   "Data.Name", "Data.Description");
 			var ingredient_id_factory     = FrameworkElementFactory.CreateTextBox(-1, 3, Brushes.Gray, FontWeights.Normal, "Id");
 
-			ingredient_icon_factory.AddHandler(Image.MouseDownEvent, new MouseButtonEventHandler(OnIngredientIconMouseDoubleClick));
+			//ingredient_icon_factory.AddHandler(Image.MouseDownEvent, new MouseButtonEventHandler(OnIngredientIconMouseDoubleClick));
 			ingredient_amount_factory.SetValue(TextBlock.HorizontalAlignmentProperty, HorizontalAlignment.Right);
 			ingredient_amount_factory.SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
 			ingredient_name_factory  .SetValue(TextBlock.MarginProperty, new Thickness(8, 0, 0, 0));
@@ -140,16 +135,23 @@ namespace cmk.NMS.Game.Recipes
 
 		//...........................................................
 
-		protected void OnResultIconMouseDoubleClick( object SENDER, MouseButtonEventArgs ARGS )
+		protected override void OnMouseDoubleClick( MouseButtonEventArgs ARGS )
 		{
-			if( ARGS.ClickCount == 2 ) ResultIconMouseDoubleClick?.Invoke(SENDER, ARGS);
-		}
+			base.OnMouseDoubleClick(ARGS);
 
-		//...........................................................
+			var source = ARGS.OriginalSource as FrameworkElement;
+			var data   = source?.DataContext as NMS.Game.Recipes.Data;
 
-		protected void OnIngredientIconMouseDoubleClick( object SENDER, MouseButtonEventArgs ARGS )
-		{
-			if( ARGS.ClickCount == 2 ) IngredientIconMouseDoubleClick?.Invoke(SENDER, ARGS);
+			var id  = data?.Id;
+			if( id == null ) return;
+
+			var info   = data?.Collection?.RecipeInfo;
+			var search = new TextSearchData(){
+				Pattern = id,
+				Scroll  = TextSearchData.ScrollEnum.First,
+			};
+
+			if( info != null ) InfoDoubleClick?.Invoke(info, search);
 		}
 	}
 }

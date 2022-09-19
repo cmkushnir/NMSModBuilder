@@ -20,15 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 //=============================================================================
 
 namespace cmk.NMS.Game.Location
 {
-	public class Data
+    public class Data
 	{
 		public const string SubFolderPCBANKS = "GAMEDATA\\PCBANKS\\";
 		public const string SubFolderMODS    = SubFolderPCBANKS + "MODS\\";
@@ -37,17 +37,35 @@ namespace cmk.NMS.Game.Location
 
 		static Data()
 		{
-			GoG     = DiscoverGOG();
-			Steam   = DiscoverSteamFromUninstall();
-			Steam ??= DiscoverSteamFromInstall();
+			try {
+				GoG = DiscoverGOG();
+			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 
-			HasGOG   = GoG   != null;
-			HasSteam = Steam != null;
+			try {
+				Steam   = DiscoverSteamFromUninstall();
+				Steam ??= DiscoverSteamFromInstall();
+			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
+
+			try {
+				GamePass   = DiscoverGamePassViaPackageManager();
+				GamePass ??= DiscoverGamePassViaGamingRoot();
+			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
+
+			HasGOG      = GoG      != null;
+			HasSteam    = Steam    != null;
+			HasGamePass = GamePass != null;
 		}
 
 		//...........................................................
 
-		public Data( string PATH, NMS.Game.Release RELEASE )
+		/// <summary>
+		/// We pass BUILD_DATE instead of getting from PATH to handle
+		/// cases where may not be able to read NMS.exe e.g. gamepass.
+		/// </summary>
+		public Data( string PATH, DateTime BUILD_DATE, NMS.Game.Release RELEASE )
 		{
 			PATH = PATH?.Replace('/', '\\');  // steam: "g:/steam\dir1\dir2\name.ext"
 			if( !IsValidGamePath(PATH) ) return;
@@ -55,7 +73,7 @@ namespace cmk.NMS.Game.Location
 			if( !PATH.EndsWith('\\') ) PATH = PATH + '\\';
 
 			Path    = PATH;
-			Built   = PEBuildDate(PATH);
+			Built   = BUILD_DATE;
 			Release = RELEASE;
 		}
 
@@ -68,8 +86,8 @@ namespace cmk.NMS.Game.Location
 		public static bool IsValidGamePath( string PATH )
 		{
 			return
-				Directory.Exists(BuildPCBANKSPath(PATH)) &&
-				System.IO.File.Exists(BuildExePath(PATH))
+				System.IO.Directory.Exists(BuildPCBANKSPath(PATH)) &&
+				System.IO.File     .Exists(BuildExePath(PATH))
 			;
 		}
 
@@ -126,18 +144,20 @@ namespace cmk.NMS.Game.Location
 
 		//...........................................................
 
-		public static DateTime PEBuildDate( string PATH )
+		public static DateTime PEBuildDate( string PATH, Log LOG = null )
 		{
-			return cmk.IO.File.PEBuildDate(BuildExePath(PATH));
+			return cmk.IO.File.PEBuildDate(BuildExePath(PATH), null, LOG);
 		}
 
 		//...........................................................
 
-		public static readonly bool HasGOG   = false;
-		public static readonly bool HasSteam = false;
+		public static readonly bool HasGOG      = false;
+		public static readonly bool HasSteam    = false;
+		public static readonly bool HasGamePass = false;
 
 		public static readonly Location.Data GoG;
 		public static readonly Location.Data Steam;
+		public static readonly Location.Data GamePass;  // xbox
 
 		public static List<Location.Data> Custom { get; } = new();
 
@@ -161,36 +181,25 @@ namespace cmk.NMS.Game.Location
 
 		//...........................................................
 
-		public bool Launch()
-		{
-			if( IsValid ) try {
-				using( Process process = new() ) {
-					process.StartInfo.FileName = ExePath;
-					//	process.StartInfo.Arguments = "";
-					process.StartInfo.UseShellExecute = false;
-					process.StartInfo.CreateNoWindow  = true;
-					process.Start();
-				}
-				return true;
-			}
-			catch( Exception EX ) { Log.Default.AddFailure(EX); }
-			return false;
-		}
-
-		//...........................................................
-
 		/// <summary>
-		/// Try to find single GOG or Steam game instance on system.
-		/// If neither or both exist then prompt the user to select the game location.
-		/// If user cancels selection then use GOG if present, else Steam if present.
+		/// Try to find single GOG, Steam, or GamePass game instance on system.
+		/// If more than 1 exist then prompt the user to select the game location.
+		/// If user cancels selection then use GOG if present, else Steam if present, else GamePass if present.
 		/// </summary>
-		public static Data Discover()
+		public static Location.Data Discover()
 		{
-			Data data = null;
+			Location.Data data = null;
 
-			if( HasGOG == HasSteam ) data = Select();
+			var found_count = 0;
+			if( HasGOG )      ++found_count;
+			if( HasSteam )    ++found_count;
+			if( HasGamePass ) ++found_count;
+
+			if( found_count != 1 ) data = Select();
+
 			if( data == null ) data = GoG;
 			if( data == null ) data = Steam;
+			if( data == null ) data = GamePass;
 
 			return data;
 		}
@@ -200,7 +209,7 @@ namespace cmk.NMS.Game.Location
 		/// <summary>
 		/// Display Select Folder dialog to allow user to select game folder.
 		/// </summary>
-		public static Data Select()
+		public static Location.Data Select()
 		{
 			var dialog = new Location.Dialog();
 			if( dialog.ShowDialog() != true ) return null;
@@ -214,25 +223,28 @@ namespace cmk.NMS.Game.Location
 		///   path == "G:\GoG\No Man's Sky"
 		///   ver  == "3.22_Companions_69111"
 		/// </summary>
-		protected static Data DiscoverGOG()
+		protected static Location.Data DiscoverGOG()
 		{
 			var reg  = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\GOG.com\Games\1446213994");
 			var path = reg?.GetValue("path") as string;
 			var ver  = reg?.GetValue("ver")  as string;
 
-			ver = ver?.Substring(0, 4);
-
 			if( path.IsNullOrEmpty() ||
 				ver .IsNullOrEmpty()
 			)	return null;
 
+			var index = ver.IndexOf('_');
+			if( index < 0 ) return null;
+
+			ver = ver.Substring(0, index);
 			var version = new Version().Normalize();
 			if( !Version.TryParse(ver, out version) ) return null;
 
+			var built   = PEBuildDate(path);
 			var release = NMS.Game.Releases.FindGameVersion(version);
 
-			return !IsValidGamePath(path) || release == null ?
-				null : new(path, release)
+			return !IsValidGamePath(path) || (release == null) ?
+				null : new(path, built, release)
 			;
 		}
 
@@ -261,7 +273,7 @@ namespace cmk.NMS.Game.Location
 		/// }
 		/// SteamGamePath == <SteamPath>/steamapps/common/<installdir>
 		/// </summary>
-		protected static Data DiscoverSteamFromInstall()
+		protected static Location.Data DiscoverSteamFromInstall()
 		{
 			// is it: i) an owned Steam game, ii) installed	
 			var reg  = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Valve\Steam\Apps\275850");
@@ -318,7 +330,7 @@ namespace cmk.NMS.Game.Location
 			var built   = PEBuildDate(found);
 			var release = NMS.Game.Releases.FindBuilt(built);
 
-			return release == null ? null : new(found, release);
+			return (release == null) ? null : new(found, built, release);
 		}
 
 		//...........................................................
@@ -326,7 +338,7 @@ namespace cmk.NMS.Game.Location
 		/// <summary>
 		/// Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 275850\InstallLocation
 		/// </summary>
-		protected static Data DiscoverSteamFromUninstall()
+		protected static Location.Data DiscoverSteamFromUninstall()
 		{
 			var reg  = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 275850");
 			if( reg == null ) return null;
@@ -337,7 +349,77 @@ namespace cmk.NMS.Game.Location
 			var built   = PEBuildDate(path);
 			var release = NMS.Game.Releases.FindBuilt(built);
 
-			return release == null ? null : new(path, release);
+			return (release == null) ? null : new(path, built, release);
+		}
+
+		//...........................................................
+
+		/// <summary>
+		/// Use UWP PackageManager to find if NMS is installed.
+		/// </summary>
+		protected static Location.Data DiscoverGamePassViaPackageManager()
+		{
+			var manager = new Windows.Management.Deployment.PackageManager();
+			var user    = WindowsIdentity.GetCurrent().User;
+
+			// requires admin privileges if we don't supply the current user
+			var packages = manager.FindPackagesForUser(user.Value);
+
+			foreach( var package in packages ) {
+				if( package.Id.Name != "HelloGames.NoMansSky" ) continue;
+
+				var path = package.InstalledPath;  // C:\Program Files\WindowsApps\HelloGames.NoMansSky_3.991.26223.0_x64__bs190hzg1sesy
+				if( !IsValidGamePath(path) ) return null;
+
+				var minor  = package.Id.Version.Minor;  // 991 => 99.1
+				var build  = 0;
+				if( minor >  99 ) {
+					minor /= 10;
+					build  = package.Id.Version.Minor - (minor * 10);
+				}
+
+				var version = new Version(package.Id.Version.Major, minor, build).Normalize();
+
+				// var built = PEBuildDate(path);  // no read access
+				var release = NMS.Game.Releases.FindGameVersion(version);
+
+				return (release == null) ? null : new(path, release.Date, release);
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Check the root of each drive for a ".GamingRoot" file.
+		/// If it exists it should start with 52 47 42 58 01 00 00 00
+		/// followed by charw path of where xbox games are installed on the drive.
+		/// Append "No Man's Sky" to the path to check if it's installed on that drive.
+		/// The actual game would be in "No Man's Sky/Content/"
+		/// </summary>
+		protected static Location.Data DiscoverGamePassViaGamingRoot()
+		{
+			foreach( var drive_info in System.IO.DriveInfo.GetDrives() ) {
+				var gaming_root_path = System.IO.Path.Combine(drive_info.Name, ".GamingRoot");
+
+				if( drive_info.DriveType != DriveType.Fixed ||
+					!System.IO.File.Exists(gaming_root_path)
+				)	continue;
+
+				var gaming_root_bytes = System.IO.File.ReadAllBytes(gaming_root_path);
+				var xbox_path_bytes   = gaming_root_bytes.AsSpan(8);
+				var xbox_path         = System.Text.Encoding.Unicode.GetString(xbox_path_bytes);
+				var nms_path          = System.IO.Path.Combine(xbox_path, "No Man's Sky/Content");
+				if( !IsValidGamePath(nms_path) ) continue;
+
+				var version = new Version().Normalize();
+				// get game version 
+
+				// var built = PEBuildDate(nms_path);  // no read access
+				var release = NMS.Game.Releases.FindGameVersion(version);
+
+				return (release == null) ? null : new(nms_path, release.Date, release);
+			}
+			return null;
 		}
 	}
 }

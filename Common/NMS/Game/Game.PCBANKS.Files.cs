@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,55 +26,44 @@ using System.Threading.Tasks;
 
 namespace cmk.NMS.Game.PCBANKS
 {
-	/// <summary>
-	/// Manage a collection of game .pak files.
-	/// </summary>
-	public class Files
-	: cmk.NMS.PAK.Files
+    /// <summary>
+    /// Manage a collection of game .pak files.
+    /// </summary>
+    public class Files
+	: cmk.NMS.Game.Files.Cache
+	, cmk.NMS.PAK.Item.INamedCollection
 	{
-		protected readonly NMS.PAK.Item.Info.Node       m_info_tree       = new();
-		protected readonly List<NMS.PAK.Item.Info.Node> m_image_list      = new(23000);
-		protected readonly ManualResetEventSlim         m_info_tree_built = new(false);
-
-		//...........................................................
-
 		/// <summary>
 		/// When constructor returns the merged InfoTree may still be building.
 		/// </summary>
-		public Files( Game.Data GAME )
-		: base(System.IO.Path.Join(GAME.Location.Path, "GAMEDATA", "PCBANKS"))
+		public Files( Game.Data GAME, Language.Identifier LANGUAGE_ID )
+		: base(GAME, System.IO.Path.Join(GAME.Location.Path, "GAMEDATA", "PCBANKS"))
 		{
-			Game = GAME;
+			LanguageId = LANGUAGE_ID ?? NMS.Game.Language.Identifier.Default;
+
 			_ = Task.Run(() => BuildTree());
+
+			ReloadCache(true);
 		}
 
 		//...........................................................
 
-		public Game.Data Game { get; protected set; }
+		// INamedCollection:
+
+		public string                  PakItemCollectionName => "";  // label in combobox
+		public NMS.PAK.Item.Info.Node  PakItemCollectionTree => InfoTree;
 
 		//...........................................................
 
+		protected readonly NMS.PAK.Item.Info.Node m_info_tree       = new();
+		protected readonly ManualResetEventSlim   m_info_tree_built = new(false);
+
 		/// <summary>
-		/// Object node in merged .pak item tree.
+		/// Info node in merged .pak item tree.
 		/// Will block until built.
 		/// </summary>
 		public NMS.PAK.Item.Info.Node InfoTree {
-			get {
-				return m_info_tree_built.Wait(Int32.MaxValue) ?
-					m_info_tree : null
-				;
-			}
-		}
-
-		/// <summary>
-		/// List of all dds items in all .pak files sorted by path.
-		/// </summary>
-		public List<NMS.PAK.Item.Info.Node> ImageList {
-			get {
-				return m_info_tree_built.Wait(Int32.MaxValue) ?
-					m_image_list : null
-				;
-			}
+			get => m_info_tree_built.Wait(Int32.MaxValue) ? m_info_tree : null;
 		}
 
 		//...........................................................
@@ -99,16 +87,13 @@ namespace cmk.NMS.Game.PCBANKS
 						var path = node.Path;
 
 						items[index].TreeNode = node;
-						if( path.EndsWith(".DDS") ) m_image_list.Add(node);
 					}
 				}
 			}
 			finally { Lock.ReleaseRead(); }
 
-			m_image_list.Sort();
-			m_info_tree_built.Set();
-
 			Log.Default.AddInformation($"Built merged item info tree from {SubPath}*.pak");
+			m_info_tree_built.Set();
 		}
 	}
 }

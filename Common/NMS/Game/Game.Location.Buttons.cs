@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -29,7 +30,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk.NMS.Game.Location
 {
-	public class Buttons
+    public class Buttons
 	: System.Windows.Controls.WrapPanel
 	{
 		public Buttons() : base()
@@ -39,8 +40,9 @@ namespace cmk.NMS.Game.Location
 			foreach( var custom in NMS.Game.Location.Data.Custom ) {
 				var release = custom.Release;
 				var button  = new ImageButton{
-					ToolTip = CreateTooltip(custom.Path, release),
+					ToolTip = CreateTooltip(custom),
 					Uri     = Resource.Uri("Smiley_Green.png"),
+					Margin  = new(4, 0, 4, 0),
 					Tag     = custom
 				};
 				if( release.MbincVersion != MBINC.Linked.Version ) button.Uri = Resource.Uri("Smiley_Red.png");
@@ -49,16 +51,16 @@ namespace cmk.NMS.Game.Location
 			}
 
 			if( Game.Location.Data.HasGOG ) {
-				var location = Game.Location.Data.GoG;
-				var release  = location.Release;
 				GoGButton.Visibility = Visibility.Visible;
-				GoGButton.ToolTip    = CreateTooltip(location.Path, release);
+				GoGButton.ToolTip    = CreateTooltip(Game.Location.Data.GoG);
 			}
 			if( Game.Location.Data.HasSteam ) {
-				var location = Game.Location.Data.Steam;
-				var release  = location.Release;
 				SteamButton.Visibility = Visibility.Visible;
-				SteamButton.ToolTip    = CreateTooltip(location.Path, release);
+				SteamButton.ToolTip    = CreateTooltip(Game.Location.Data.Steam);
+			}
+			if( Game.Location.Data.HasGamePass ) {
+				GamePassButton.Visibility = Visibility.Visible;
+				GamePassButton.ToolTip    = CreateTooltip(Game.Location.Data.GamePass);
 			}
 
 			foreach( var button in CustomButton ) {
@@ -67,11 +69,13 @@ namespace cmk.NMS.Game.Location
 			}
 			Children.Add(GoGButton);
 			Children.Add(SteamButton);
+			Children.Add(GamePassButton);
 			Children.Add(SelectButton);
 
-			GoGButton   .Click += OnButtonClick;
-			SteamButton .Click += OnButtonClick;
-			SelectButton.Click += OnButtonClick;
+			GoGButton     .Click += OnButtonClick;
+			SteamButton   .Click += OnButtonClick;
+			GamePassButton.Click += OnButtonClick;
+			SelectButton  .Click += OnButtonClick;
 		}
 
 		//...........................................................
@@ -82,17 +86,24 @@ namespace cmk.NMS.Game.Location
 			ToolTip    = "GoG",
 			Uri        = Resource.Uri("GOG.png"),
 			Visibility = Visibility.Collapsed,
-			Margin     = new(8, 0, 0, 0),
+			Margin     = new(4, 0, 4, 0),
 		};
 		public readonly ImageButton SteamButton = new() {
 			ToolTip    = "Steam",
 			Uri        = Resource.Uri("Steam.png"),
 			Visibility = Visibility.Collapsed,
-			Margin     = new(8, 0, 8, 0),
+			Margin     = new(4, 0, 4, 0),
+		};
+		public readonly ImageButton GamePassButton = new() {
+			ToolTip    = "Game Pass",
+			Uri        = Resource.Uri("GamePass.png"),
+			Visibility = Visibility.Collapsed,
+			Margin     = new(4, 0, 4, 0),
 		};
 		public readonly ImageButton SelectButton = new() {
 			ToolTip = "Select",
 			Uri     = Resource.Uri("Folder.png"),
+			Margin     = new(4, 0, 0, 0),
 		};
 
 		protected readonly BitmapImage m_warning_icon;
@@ -100,8 +111,7 @@ namespace cmk.NMS.Game.Location
 		//...........................................................
 
 		protected System.Windows.FrameworkElement CreateTooltip(
-			string  PATH,
-			Release RELEASE
+			NMS.Game.Location.Data DATA
 		){
 			var mbinc_path_string = System.IO.Path.Join(Resource.AppDirectory, "libMBIN.dll");
 
@@ -116,42 +126,47 @@ namespace cmk.NMS.Game.Location
 
 			grid.AppendChild(FrameworkElementFactory.CreateColumnAuto("Icon"));
 			grid.AppendChild(FrameworkElementFactory.CreateColumnAuto("Version"));
+			grid.AppendChild(FrameworkElementFactory.CreateColumnAuto("Meta"));
 			grid.AppendChild(FrameworkElementFactory.CreateColumnStar());  // path
 
 			grid.AppendChild(FrameworkElementFactory.CreateRowAuto());  // game
 			grid.AppendChild(FrameworkElementFactory.CreateRowAuto());  // libmbin
 
 			var game_version = FrameworkElementFactory.CreateTextBlock(0, 1, Brushes.Black, FontWeights.Bold);
-			var game_path    = FrameworkElementFactory.CreateTextBlock(0, 2, Brushes.Black, FontWeights.Normal);
+			var game_meta    = FrameworkElementFactory.CreateTextBlock(0, 2, Brushes.Black, FontWeights.Bold);
+			var game_path    = FrameworkElementFactory.CreateTextBlock(0, 3, Brushes.Black, FontWeights.Normal);
 
 			var mbinc_icon    = FrameworkElementFactory.CreateImage    (1, 0);
 			var mbinc_version = FrameworkElementFactory.CreateTextBlock(1, 1, Brushes.Black, FontWeights.Bold);
-			var mbinc_path    = FrameworkElementFactory.CreateTextBlock(1, 2, Brushes.Black, FontWeights.Normal);
+			var mbinc_meta    = FrameworkElementFactory.CreateTextBlock(1, 2, Brushes.Black, FontWeights.Bold);
+			var mbinc_path    = FrameworkElementFactory.CreateTextBlock(1, 3, Brushes.Black, FontWeights.Normal);
 
-			var date = NMS.Game.Location.Data.PEBuildDate(PATH);
+			game_version.SetValue(TextBlock.TextProperty, DATA.Release.GameVersion.ToString(3));
+			game_meta   .SetValue(TextBlock.TextProperty, DATA.Built.ToString("yyyy/MM/dd"));
+			game_path   .SetValue(TextBlock.TextProperty, DATA.Path);
 
-			game_version.SetValue(TextBlock.TextProperty, RELEASE.GameVersion.ToString(3));
-			game_path   .SetValue(TextBlock.TextProperty, $"{date.ToString("yyyy/MM/dd")}  {PATH}");
-
-			mbinc_version.SetValue(TextBlock.TextProperty, RELEASE.MbincVersion.ToString());
+			mbinc_version.SetValue(TextBlock.TextProperty, DATA.Release.MbincVersion.ToString());
+			mbinc_meta   .SetValue(TextBlock.TextProperty, NMS.MBINC.Linked?.Version.ToString());
 			mbinc_path   .SetValue(TextBlock.TextProperty, mbinc_path_string);
 			if( !System.IO.File.Exists(mbinc_path_string) ||
-				NMS.MBINC.Linked.Version != RELEASE.MbincVersion
+				NMS.MBINC.Linked.Version != DATA.Release.MbincVersion
 			) {
-				mbinc_icon   .SetValue(Image.SourceProperty, m_warning_icon);
-				mbinc_version.SetValue(TextBlock.ForegroundProperty, Brushes.DarkRed);
-				mbinc_path   .SetValue(TextBlock.ForegroundProperty, Brushes.DarkRed);
+				mbinc_icon.SetValue(Image.SourceProperty, m_warning_icon);
+				mbinc_meta.SetValue(TextBlock.ForegroundProperty, Brushes.DarkRed);
+				mbinc_path.SetValue(TextBlock.ForegroundProperty, Brushes.DarkRed);
 			}
 			else {
-				mbinc_version.SetValue(TextBlock.ForegroundProperty, Brushes.DarkGreen);
-				mbinc_path   .SetValue(TextBlock.ForegroundProperty, Brushes.DarkGreen);
+				mbinc_meta.SetValue(TextBlock.ForegroundProperty, Brushes.DarkGreen);
+				mbinc_path.SetValue(TextBlock.ForegroundProperty, Brushes.DarkGreen);
 			}
 
 			grid.AppendChild(game_version);
+			grid.AppendChild(game_meta);
 			grid.AppendChild(game_path);
 
 			grid.AppendChild(mbinc_icon);
 			grid.AppendChild(mbinc_version);
+			grid.AppendChild(mbinc_meta);
 			grid.AppendChild(mbinc_path);
 
 			border.AppendChild(grid);
@@ -162,35 +177,43 @@ namespace cmk.NMS.Game.Location
 
 		//...........................................................
 
-		protected async void OnButtonClick( object SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		public async Task ButtonClick( ImageButton SENDER )
 		{
 			try {
 				foreach( var button in CustomButton ) button.IsEnabled = false;
-				GoGButton   .IsEnabled = false;
-				SteamButton .IsEnabled = false;
-				SelectButton.IsEnabled = false;
+				GoGButton     .IsEnabled = false;
+				SteamButton   .IsEnabled = false;
+				GamePassButton.IsEnabled = false;
+				SelectButton  .IsEnabled = false;
 
 				NMS.Game.Data selected = null;
 
-				     if( SENDER == GoGButton    ) selected = await Game.Data.CreateGoGAsync();
-				else if( SENDER == SteamButton  ) selected = await Game.Data.CreateSteamAsync();
-				else if( SENDER == SelectButton ) selected = await Game.Data.SelectAsync();
+				     if( SENDER == GoGButton      ) selected = await Game.Data.CreateGoGAsync();
+				else if( SENDER == SteamButton    ) selected = await Game.Data.CreateSteamAsync();
+				else if( SENDER == GamePassButton ) selected = await Game.Data.CreateGamePassAsync();
+				else if( SENDER == SelectButton   ) selected = await Game.Data.SelectAsync();
 				else foreach( var button in CustomButton ) {
-						if( SENDER == button ) {
-							selected = await NMS.Game.Data.CreateAsync(button.Tag as NMS.Game.Location.Data);
-							break;
-						}
+					if( SENDER == button ) {
+						selected = await NMS.Game.Data.CreateAsync(button.Tag as NMS.Game.Location.Data);
+						break;
 					}
+				}
 
 				if( selected != null ) Game.Data.Selected = selected;
 			}
 			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 			finally {
-				SelectButton.IsEnabled = true;
-				SteamButton .IsEnabled = true;
-				GoGButton   .IsEnabled = true;
+				SelectButton  .IsEnabled = true;
+				SteamButton   .IsEnabled = true;
+				GamePassButton.IsEnabled = true;
+				GoGButton     .IsEnabled = true;
 				foreach( var button in CustomButton ) button.IsEnabled = true;
 			}
+		}
+
+		protected async void OnButtonClick( object SENDER )
+		{
+			await ButtonClick(SENDER as ImageButton);
 		}
 	}
 }

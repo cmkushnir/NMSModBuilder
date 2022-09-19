@@ -24,7 +24,7 @@ using System.Threading.Tasks;
 
 namespace cmk.NMS.Game
 {
-	public partial class Data
+    public partial class Data
 	{
 		public delegate void SelectedChangedEventHandler( NMS.Game.Data OLD, NMS.Game.Data NEW );
 		public static event  SelectedChangedEventHandler SelectedChanged;
@@ -38,39 +38,33 @@ namespace cmk.NMS.Game
 		{
 			if( (LOCATION == null) || !LOCATION.IsValid ) return null;
 			var data = await Task.Run(() => new Data(LOCATION));
-			return (data?.PakCollections == null) ? null : data;
+			return (data?.LanguageId == null) ? null : data;
 			// ok if couldn't load language, items, recipes
 		}
 
 		//...........................................................
 
-		protected static Data s_gog;
-
 		/// <summary>
 		/// Discovered GoG Game instance.  May be null.
 		/// </summary>
 		public static async Task<NMS.Game.Data> CreateGoGAsync()
-		{
-			if( s_gog == null ) {
-				s_gog  = await CreateAsync(NMS.Game.Location.Data.GoG);
-			}
-			return s_gog;
-		}
+		=> await CreateAsync(NMS.Game.Location.Data.GoG);
 
 		//...........................................................
-
-		protected static Data s_steam;
 
 		/// <summary>
 		/// Discovered Steam Game instance.  May be null.
 		/// </summary>
 		public static async Task<NMS.Game.Data> CreateSteamAsync()
-		{
-			if( s_steam == null ) {
-				s_steam  = await CreateAsync(NMS.Game.Location.Data.Steam);
-			}
-			return s_steam;
-		}
+		=> await CreateAsync(NMS.Game.Location.Data.Steam);
+
+		//...........................................................
+
+		/// <summary>
+		/// Discovered Game Pass Game instance.  May be null.
+		/// </summary>
+		public static async Task<NMS.Game.Data> CreateGamePassAsync()
+		=> await CreateAsync(NMS.Game.Location.Data.GamePass);
 
 		//...........................................................
 
@@ -84,8 +78,9 @@ namespace cmk.NMS.Game
 			var location  = NMS.Game.Location.Data.Select();
 			if( location == null ) return null;
 
-			if( string.Equals(location.Path, NMS.Game.Location.Data.GoG  ?.Path, System.StringComparison.OrdinalIgnoreCase) ) return await CreateGoGAsync();
-			if( string.Equals(location.Path, NMS.Game.Location.Data.Steam?.Path, System.StringComparison.OrdinalIgnoreCase) ) return await CreateSteamAsync();
+			if( string.Equals(location.Path, NMS.Game.Location.Data.GoG     ?.Path, System.StringComparison.OrdinalIgnoreCase) ) return await CreateGoGAsync();
+			if( string.Equals(location.Path, NMS.Game.Location.Data.Steam   ?.Path, System.StringComparison.OrdinalIgnoreCase) ) return await CreateSteamAsync();
+			if( string.Equals(location.Path, NMS.Game.Location.Data.GamePass?.Path, System.StringComparison.OrdinalIgnoreCase) ) return await CreateGamePassAsync();
 
 			return await CreateAsync(location);
 		}

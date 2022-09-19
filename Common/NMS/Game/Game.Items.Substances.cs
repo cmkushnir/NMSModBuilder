@@ -18,65 +18,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using libMBIN.NMS.GameComponents;
+using static cmk.NMS.Game.Items.Data;
 
 //=============================================================================
 
 namespace cmk.NMS.Game.Items.Substance
 {
-	public class Data
-	: cmk.NMS.Game.Items.Data
+    public class Collection
+	: cmk.NMS.Game.Items.Collection
 	{
-		public GcRealitySubstanceCategory.SubstanceCategoryEnum Category { get; set; }
-	}
-
-	//=========================================================================
-
-	public class Collection
-	: cmk.NMS.Game.Items.Collection<NMS.Game.Items.Substance.Data>
-	{
-		public Collection( Game.Data GAME, NMS.PAK.Item.ICollection PAK_ITEM_COLLECTION = null )
-		: base(GAME, 100, PAK_ITEM_COLLECTION)  // 3.90 - 91
+		public Collection( NMS.Game.Files.Cache PAK_FILES )
+		: base(PAK_FILES, 200)  // 3.98 - 91
 		{
+		}
+
+		//...........................................................
+
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCSUBSTANCETABLE.MXML" in default reality
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCSUBSTANCETABLE.MBIN" actual mbin
+		public override NMS.PAK.Item.Info FindItemInfo()
+		{
+			string path = Cache?.DefaultRealityMbin()?.SubstanceTable ??
+				"METADATA/REALITY/TABLES/NMS_REALITY_GCSUBSTANCETABLE.MBIN"
+			;
+			path = NMS.PAK.Item.Path.NormalizeExtension(path);
+			return Cache?.IPakItemCollection.FindInfo(path);
 		}
 
 		//...........................................................
 
 		protected override void LoadMBIN()
 		{
-			if( IPakItemCollection == null ) {
-				Log.Default.AddFailure($"{GetType().FullName} - Load failed, no IPakItemCollection set");
-				return;
-			}
-
-			var mbin = IPakItemCollection.ExtractMbin<GcSubstanceTable>(
-				"METADATA/REALITY/TABLES/NMS_REALITY_GCSUBSTANCETABLE.MBIN",
-				false, Log.Default
-			);
+			var mbin_data = ItemInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
+			var mbin      = mbin_data?.ModObject() as dynamic;
 			if( mbin == null ) return;
 
-			_ = Parallel.ForEach(mbin.Table, ITEM => {
-				var data = new Data {
-					ItemType = GcInventoryType.InventoryTypeEnum.Substance,
-					Id            = ITEM.ID?.Value,
-					NameId        = ITEM.NameLower?.Value,
-					DescriptionId = ITEM.Description?.Value,
-					Category      = ITEM.Category.SubstanceCategory,
-					CategoryName  = ITEM.Category.SubstanceCategory.ToString().Expand(),
-					IconPath      = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename?.Value, true)
+			var collection = Cache.IPakItemCollection;
+
+			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, ITEM => {
+				var icon     = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename) as string;
+				var cat_name = ITEM.Category.SubstanceCategory.ToString() as string;
+
+				var data = new Data(this, GcInventoryType.InventoryTypeEnum.Substance) {
+					Id            = (string)ITEM.ID,
+					NameId        = (string)ITEM.NameLower,
+					DescriptionId = (string)ITEM.Description,
+					CategoryName  = cat_name.Expand(),
+					IconInfo      = collection.FindInfo(icon),
+					Requirements  = new Requirement[0]
 				};
-				var dds  = Game.PCBANKS.ExtractData<NMS.PAK.DDS.Data>(data.IconPath, false)?.Dds;
+
+				var dds  = data.IconInfo?.ExtractData<NMS.PAK.DDS.Data>();
 				if( dds == null ) {
-					Log.Default.AddWarning($"Unable to load {data.IconPath} for {data.Id}");
+					Log.Default.AddWarning($"Unable to load {data.IconInfo?.Path} for {data.Id}");
 				}
 				else {
-					data.Icon32 = dds.GetBitmap(32);
-					data.Icon48 = dds.GetBitmap(48);
-					data.Icon64 = dds.GetBitmap(64);
+					data.Icon32 = dds.GetBitmap(32);  // recipe ingredient
+					data.Icon48 = dds.GetBitmap(48);  // recipe result
+					data.Icon64 = dds.GetBitmap(64);  // item list
 				}
-				lock( m_list ) m_list.Add(data);
+
+				lock( this ) this.Add(data);
 			});
 		}
 	}

@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,8 +37,8 @@ namespace cmk.NMS.Game
 	: cmk.NMS.PAK.Item.ICollection
 	{
 		public delegate void LanguageChangedEventHandler(
-			NMS.Game.Language.Collection OLD,
-			NMS.Game.Language.Collection NEW
+			NMS.Game.Language.Identifier OLD,
+			NMS.Game.Language.Identifier NEW
 		);
 		public event LanguageChangedEventHandler LanguageChanged;
 
@@ -47,13 +48,15 @@ namespace cmk.NMS.Game
 		/// protected - force construction through static Create method in order
 		/// to ensure that any Game instances are valid at time of creation.
 		/// </summary>
-		protected Data( Location.Data LOCATION, Language.Identifier LANGUAGE = null )
+		protected Data( Location.Data LOCATION, Language.Identifier LANGUAGE_ID = null )
 		{
+			if( LANGUAGE_ID == null ) LANGUAGE_ID = NMS.Game.Language.Identifier.Default;
+
 			Log.Default.AddHeading($"Creating {GetType().FullName} from {LOCATION.Path}");
 
 			Location = LOCATION;
 
-			var release = LOCATION.Release;
+			var release = Location.Release;
 			if( release.MbincVersion != MBINC.Linked.Version ) {
 				Log.Default.AddWarning(
 					$"Incorrect libMBIN.dll for selected game, have {MBINC.Linked.Version} need {release.MbincVersion}.\n" +
@@ -72,40 +75,21 @@ namespace cmk.NMS.Game
 			//      but may have different mbins.
 			Mbinc = new(mbinc.Assembly);
 
-			// testing shows slightly faster to load with minimal contention.
-			Parallel.Invoke(
-				() => PCBANKS = new(this),  // starts Task to build merged info tree
-				() => MODS    = new(this)
-			);
-			PakCollections = new() { MODS, PCBANKS };  // in search order
+			PCBANKS = new(this, LANGUAGE_ID);  // starts Task to build merged info tree
+			MODS    = new(this, LANGUAGE_ID);
 
-			Languages = new(this, PCBANKS);
-			Parallel.Invoke(
-				() => Language = Languages.Get(NMS.Game.Language.Identifier.Default),			
-				() => LinkMbinClasses()  // link game pak mbin items to Mbinc classes
-			);
+			LinkMbinClasses();  // link PCBANKS pak mbin items to Mbinc classes
 
-			Products     = new(this);
-			Substances   = new(this);
-			Technologies = new(this);
-			Parallel.Invoke(  // require Language
-				() => Products    .Load(),
-				() => Technologies.Load(),
-				() => Substances  .Load()
-			);
-
-			RefinerRecipes = new(this);
-			CookingRecipes = new(this);
-			Parallel.Invoke(  // require Substances, Products
-				() => CookingRecipes.Load(),
-				() => RefinerRecipes.Load()
-			);
+			// wait for merged PCBANKS.InfoTree to be built
+			var tree = PCBANKS.InfoTree;
 		}
 
 		//...........................................................
 
 		public readonly Location.Data Location;
 		public readonly MBINC         Mbinc;
+
+		//...........................................................
 
 		/// <summary>
 		/// Path\GAMEDATA\PCBANKS\*.pak
@@ -117,40 +101,41 @@ namespace cmk.NMS.Game
 		/// </summary>
 		public Game.MODS.Files MODS { get; protected set; }
 
-		/// <summary>
-		/// { MODS, PCBANKS }
-		/// Note that MODS is first so that searches find items in
-		/// MODS before looking in PCBANKS, like game would.
-		/// </summary>
-		public List<NMS.PAK.Files> PakCollections { get; }
-
 		//...........................................................
-
-		/// <summary>
-		/// Cached language collections.
-		/// </summary>
-		public readonly Language.Cache Languages;
 
 		/// <summary>
 		/// Currently selected language for game instance.
 		/// </summary>
-		protected Language.Collection m_language;
-		public    Language.Collection   Language {
-			get { return m_language; }
+		public Language.Identifier LanguageId {
+			get { return PCBANKS.LanguageId; }
 			set {
-				if( value == m_language ) return;
-				var old = m_language;
-				m_language = value;
-				LanguageChanged?.Invoke(old, m_language);
+				if( value == null ) {
+					value  = NMS.Game.Language.Identifier.Default;
+				}
+
+				var old  = LanguageId;
+				if( old == value ) return;
+
+				PCBANKS.LanguageId = value;
+				MODS   .LanguageId = value;
+
+				LanguageChanged?.Invoke(old, value);
 			}
 		}
 
-		public readonly Items.Product   .Collection Products;
-		public readonly Items.Substance .Collection Substances;
-		public readonly Items.Technology.Collection Technologies;
+		//...........................................................
 
-		public readonly Recipes.Refine.Collection RefinerRecipes;
-		public readonly Recipes.Cook  .Collection CookingRecipes;
+		public void ClearEbinCache()
+		{
+			Log.Default.AddInformation("Clearing ebin cache ...");
+			Parallel.Invoke(
+				() => PCBANKS.ClearEbinCache(),
+				() => MODS   .ClearEbinCache()
+			);
+			GC.Collect();  // for user perception
+			GC.WaitForPendingFinalizers();
+			Log.Default.AddInformation("Cleared ebin cache.");
+		}
 
 		//...........................................................
 
@@ -188,39 +173,58 @@ namespace cmk.NMS.Game
 		}
 
 		//...........................................................
-		// cmk.NMS.PAK.Item.Interface
+
+		public bool Launch()
+		{
+			if( Location.IsValid ) try {
+				ClearEbinCache();
+				using( Process process = new() ) {
+					process.StartInfo.FileName = Location.ExePath;
+					//	process.StartInfo.Arguments = "";
+					process.StartInfo.UseShellExecute = false;
+					process.StartInfo.CreateNoWindow  = true;
+					process.Start();
+				}
+				return true;
+			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
+			return false;
+		}
+
+		//...........................................................
+		// cmk.NMS.PAK.Item.ICollection
 		//...........................................................
 
 		/// <summary>
-		/// Loop through all PakCollections for first with PATH (case-sensitive).
-		/// Note: PakCollections[0] == MODS, PakCollections[1] == PCBANKS
-		/// i.e. get pak item the way the game does.
+		/// MODS.FindInfo then PCBANKS.FindInfo i.e. like game
 		/// </summary>
 		public NMS.PAK.Item.Info FindInfo( string PATH, bool NORMALIZE = false )
 		{
 			if( NORMALIZE ) PATH = NMS.PAK.Item.Path.Normalize(PATH);
-			foreach( var files in PakCollections ) {
-				var found  = files.FindInfo(PATH, false);
-				if( found != null ) return found;
-			}
-			return null;
+
+			var found  = MODS.FindInfo(PATH, false);
+			if( found != null ) return found;
+
+			return PCBANKS.FindInfo(PATH, false);
 		}
 
 		//...........................................................
 
 		/// <summary>
-		/// Loop through all PakCollections for first MATCH.
-		/// Note: PakCollections[0] == MODS, PakCollections[1] == PCBANKS
-		/// i.e. get pak item the way the game does.
+		/// MODS.FindInfo then PCBANKS.FindInfo i.e. like game
 		/// </summary>
 		public List<NMS.PAK.Item.Info> FindInfo( Predicate<NMS.PAK.Item.Info> MATCH, bool SORT = true )
 		{
 			var list = new List<NMS.PAK.Item.Info>();
-			foreach( var files in PakCollections ) {
-				var files_list = files.FindInfo(MATCH, false);
-				list.Capacity += files_list.Count;
-				list.AddRange(files_list);
-			}
+
+			var files_list = MODS.FindInfo(MATCH, false);
+			list.Capacity += files_list.Count;
+			list.AddRange(files_list);
+
+			files_list = PCBANKS.FindInfo(MATCH, false);
+			list.Capacity += files_list.Count;
+			list.AddRange(files_list);
+
 			if( SORT ) list.Sort();
 			return list;
 		}
@@ -236,11 +240,11 @@ namespace cmk.NMS.Game
 		public List<NMS.PAK.Item.Info> FindInfoEndsWith( string PATTERN, bool SORT = true )
 		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoEndsWith(PATTERN, SORT);
 
-		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT);
+		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true, bool WHOLE_WORDS = false, bool CASE_SENS = true, bool PATTERN_IS_REGEX = true )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT, WHOLE_WORDS, CASE_SENS, PATTERN_IS_REGEX);
 
-		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT);
+		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true, bool WHOLE_WORDS = false )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT, WHOLE_WORDS);
 
 		//...........................................................
 
@@ -303,47 +307,44 @@ namespace cmk.NMS.Game
 		//...........................................................
 
 		/// <summary>
-		/// foreach PAK.Item.Info in all PakCollections.
+		/// PCBANKS.ForEachInfo then MODS.ForEachInfo
 		/// </summary>
 		public void ForEachInfo(
 			Action<NMS.PAK.Item.Info, Log, CancellationToken> HANDLER,
 			Log LOG = null, CancellationToken CANCEL = default
 		){
-			PakCollections.ForEach(FILES =>
-				FILES.ForEachInfo(HANDLER, LOG, CANCEL)
-			);
+			PCBANKS.ForEachInfo(HANDLER, LOG, CANCEL);
+			MODS   .ForEachInfo(HANDLER, LOG, CANCEL);
 		}
 
 		//...........................................................
 
 		/// <summary>
-		/// foreach PAK.Item.Data in all PakCollections.
+		/// PCBANKS.ForEachData then MODS.ForEachData
 		/// </summary>
 		public void ForEachData(
 			Action<NMS.PAK.Item.Data, Log, CancellationToken> HANDLER,
 			Log LOG = null, CancellationToken CANCEL = default
 		){
-			PakCollections.ForEach(FILES =>
-				FILES.ForEachData(HANDLER, LOG, CANCEL)
-			);
+			PCBANKS.ForEachData(HANDLER, LOG, CANCEL);
+			MODS   .ForEachData(HANDLER, LOG, CANCEL);
 		}
 
 		//...........................................................
 
 		/// <summary>
-		/// foreach PAK.MBIN.Data in all PakCollections.
+		/// PCBANKS.ForEachMbin then MODS.ForEachMbin
 		/// </summary>
 		public void ForEachMbin(
 			Action<NMS.PAK.MBIN.Data, Log, CancellationToken> HANDLER,
 			Log LOG = null, CancellationToken CANCEL = default
 		){
-			PakCollections.ForEach(FILES =>
-				FILES.ForEachMbin(HANDLER, LOG, CANCEL)
-			);
+			PCBANKS.ForEachMbin(HANDLER, LOG, CANCEL);
+			MODS   .ForEachMbin(HANDLER, LOG, CANCEL);
 		}
 
 		//...........................................................
-		// cached game data
+		// lookup cached data, first in MODS then PCBANKS
 		//...........................................................
 
 		/// <summary>
@@ -351,15 +352,10 @@ namespace cmk.NMS.Game
 		/// If ID is a substance|product|technology ID return <NameId, Name>.
 		/// If ID is a language ID return <ID, text>.
 		/// </summary>
-		public Language.Data FindLanguageId( string ID )
+		public Language.Data FindLanguageData( string ID )
 		{
-			if( ID.IsNullOrEmpty() ) return null;
-
-			// if ID is for substance|product|technology then use it's NameId
-			var data  = FindItem(ID);
-			if( data != null ) ID = data.NameId;
-
-			return Language.GetData(ID);
+			var    data = MODS.FindLanguageData(ID);
+			return data == null ? PCBANKS.FindLanguageData(ID) : data;
 		}
 
 		//...........................................................
@@ -367,15 +363,10 @@ namespace cmk.NMS.Game
 		/// <summary>
 		/// Find Substance, Product, Technology by it's ID.
 		/// </summary>
-		public Items.Data FindItem( string ID )
+		public Items.Data FindItemData( string ID )
 		{
-			ID = ID?.ToUpper();
-			if( !ID.IsNullOrEmpty() ) {
-				var data = Substances  .Find(ID); if( data != null ) return data;
-				    data = Products    .Find(ID); if( data != null ) return data;
-				    data = Technologies.Find(ID); if( data != null ) return data;
-			}
-			return null;
+			var    data = MODS.FindItemData(ID);
+			return data == null ? PCBANKS.FindItemData(ID) : data;
 		}
 
 		//...........................................................
@@ -383,90 +374,10 @@ namespace cmk.NMS.Game
 		/// <summary>
 		/// Find Refiner or Cooking recipe by it's ID.
 		/// </summary>
-		public Recipes.Data FindRecipe( string ID )
+		public Recipes.Data FindRecipeData( string ID )
 		{
-			ID = ID?.ToUpper();
-			if( !ID.IsNullOrEmpty() ) {
-				var data = RefinerRecipes.Find(ID); if( data != null ) return data;
-				    data = CookingRecipes.Find(ID); if( data != null ) return data;
-			}
-			return null;
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Find all Refiner|Cooking recipes that result in a specified Substance|Product ID.
-		/// </summary>
-		public IEnumerable<Recipes.Data> FindRecipeWithResult( string ID )
-		{
-			ID = ID?.ToUpper();
-			if( !ID.IsNullOrEmpty() ) {
-				foreach( var recipe in RefinerRecipes.List ) {
-					if( recipe.ResultId == ID ) yield return recipe;
-				}
-				foreach( var recipe in CookingRecipes.List ) {
-					if( recipe.ResultId == ID ) yield return recipe;
-				}
-			}
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Find all Refiner|Cooking recipes that use a specified Substance|Product ID as an ingredient.
-		/// </summary>
-		public IEnumerable<Recipes.Data> FindRecipeWithIngredient( string ID )
-		{
-			ID = ID?.ToUpper();
-			if( !ID.IsNullOrEmpty() ) {
-				foreach( var recipe in RefinerRecipes.List ) {
-					foreach( var ingredient in recipe.Ingredients ) {
-						if( ingredient.Id == ID ) {
-							yield return recipe;
-							break;
-						}
-					}
-				}
-				foreach( var recipe in CookingRecipes.List ) {
-					foreach( var ingredient in recipe.Ingredients ) {
-						if( ingredient.Id == ID ) {
-							yield return recipe;
-							break;
-						}
-					}
-				}
-			}
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Find all Refiner|Cooking recipes that result in or use a specified Substance|Product ID as an ingredient.
-		/// </summary>
-		public IEnumerable<Recipes.Data> FindRecipeWith( string ID )
-		{
-			ID = ID?.ToUpper();
-			if( !ID.IsNullOrEmpty() ) {
-				foreach( var recipe in RefinerRecipes.List ) {
-					if( recipe.ResultId == ID ) yield return recipe;
-					else foreach( var ingredient in recipe.Ingredients ) {
-						if( ingredient.Id == ID ) {
-							yield return recipe;
-							break;
-						}
-					}
-				}
-				foreach( var recipe in CookingRecipes.List ) {
-					if( recipe.ResultId == ID ) yield return recipe;
-					else foreach( var ingredient in recipe.Ingredients ) {
-						if( ingredient.Id == ID ) {
-							yield return recipe;
-							break;
-						}
-					}
-				}
-			}
+			var    data = MODS.FindRecipeData(ID);
+			return data == null ? PCBANKS.FindRecipeData(ID) : data;
 		}
 	}
 }

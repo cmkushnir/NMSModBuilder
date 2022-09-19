@@ -25,11 +25,11 @@ using System.IO;
 
 namespace cmk.NMS.Game.MODS
 {
-	/// <summary>
-	/// Manage a collection of mod .pak files.
-	/// </summary>
-	public class Files
-	: cmk.NMS.PAK.Files
+    /// <summary>
+    /// Manage a collection of mod .pak files.
+    /// </summary>
+    public class Files
+	: cmk.NMS.Game.Files.Cache
 	, System.Collections.Specialized.INotifyCollectionChanged
 	{
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
@@ -40,10 +40,10 @@ namespace cmk.NMS.Game.MODS
 		/// GAME must be specified and valid,
 		/// it cannot be changed after construction.
 		/// </summary>
-		public Files( Game.Data GAME )
-		: base(System.IO.Path.Join(GAME.Location.Path, "GAMEDATA", "PCBANKS", "MODS"))
+		public Files( Game.Data GAME, Language.Identifier LANGUAGE_ID )
+		: base(GAME, System.IO.Path.Join(GAME.Location.Path, "GAMEDATA", "PCBANKS", "MODS"))
 		{
-			Game = GAME;
+			LanguageId = LANGUAGE_ID ?? NMS.Game.Language.Identifier.Default;
 
 			FileSystemWatcher = new(Path, "*.pak") {
 				IncludeSubdirectories = false,
@@ -66,8 +66,6 @@ namespace cmk.NMS.Game.MODS
 
 		//...........................................................
 
-		public Game.Data Game { get; protected set; }
-
 		// https://stackoverflow.com/questions/1764809/filesystemwatcher-changed-event-is-raised-twice
 		// OnWatcherChanged gets called twice on each mod replace.
 		// todo: Collect all events here in a queue.
@@ -77,20 +75,59 @@ namespace cmk.NMS.Game.MODS
 		//       May need to increase FileSystemWatcher buffer to hold more events.
 		public readonly FileSystemWatcher FileSystemWatcher;
 
+		protected bool m_ReloadCacheOnCollectionChanged = false;
+
+		public bool ReloadCacheOnCollectionChanged {
+			get => m_ReloadCacheOnCollectionChanged;
+			set {
+				if( m_ReloadCacheOnCollectionChanged == value ) return;
+				m_ReloadCacheOnCollectionChanged = value;
+				ReloadCache(m_ReloadCacheOnCollectionChanged);
+			}
+		}
+
+		//...........................................................
+
+		public void Delete( NMS.PAK.File.Loader FILE )
+		{
+			if( FILE == null ) return;
+
+			var path = FILE.Path.Full;
+
+			try   { System.IO.File.Delete(path); }
+			catch { return; }
+
+			// wait for OnDeleted to handle the delete
+			for(;;) {
+				System.Threading.Thread.Sleep(8);
+				if( FindFileIndexFromPath(path) < 0 ) break;
+			}
+		}
+
 		//...........................................................
 
 		protected void OnAdded( string PATH )
 		{
-			var file  = new NMS.PAK.File.Loader(PATH);
+			System.Threading.Thread.Sleep(100);
+
+			var file = new NMS.PAK.File.Loader(PATH);
+			if( file.Length < 1 ) return;
+
 			int index = -1;
+
 			Lock.AcquireWrite();
 			try {
+				index = FindFileIndexFromPath(PATH);
+				if( index >= 0 ) return;  // already exists
+
 				index = List.BsearchIndexOfInsert(file.Path,
 					(ITEM, KEY) => ITEM.CompareTo(KEY)
 				);
 				List.Insert(index, file);
 			}
 			finally { Lock.ReleaseWrite(); }
+
+			ReloadCache(ReloadCacheOnCollectionChanged);
 			CollectionChanged?.Invoke(this,
 				new NotifyCollectionChangedEventArgs(
 					NotifyCollectionChangedAction.Add, file, index
@@ -102,9 +139,12 @@ namespace cmk.NMS.Game.MODS
 
 		protected void OnChanged( string PATH )
 		{
+			System.Threading.Thread.Sleep(100);
+
 			NMS.PAK.File.Loader file_old,
 								file_new;
 			int index = -1;
+
 			Lock.AcquireWrite();
 			try {
 				index = FindFileIndexFromPath(PATH);
@@ -113,9 +153,15 @@ namespace cmk.NMS.Game.MODS
 				file_old = List[index];
 				file_new = new PAK.File.Loader(file_old.Path.Full);
 
+				if( NMS.PAK.File.Loader.Equals(file_old, file_new) ||
+					file_new.Length < 1
+				)	return;
+
 				List[index] = file_new;
 			}
 			finally { Lock.ReleaseWrite(); }
+
+			ReloadCache(ReloadCacheOnCollectionChanged);
 			CollectionChanged?.Invoke(this,
 				new NotifyCollectionChangedEventArgs(
 					NotifyCollectionChangedAction.Replace, file_new, file_old, index
@@ -127,6 +173,9 @@ namespace cmk.NMS.Game.MODS
 
 		protected void OnRenamed( string PATH_OLD, string PATH_NEW )
 		{
+			System.Threading.Thread.Sleep(100);
+			if( !File.Exists(PATH_NEW) ) return;
+
 			NMS.PAK.File.Loader file;
 
 			int old_index = -1;
@@ -151,6 +200,7 @@ namespace cmk.NMS.Game.MODS
 				}
 			}
 			finally { Lock.ReleaseWrite(); }
+
 			if( new_index != old_index ) {
 				CollectionChanged?.Invoke(this,
 					new NotifyCollectionChangedEventArgs(
@@ -164,8 +214,12 @@ namespace cmk.NMS.Game.MODS
 
 		protected void OnDeleted( string PATH )
 		{
+			System.Threading.Thread.Sleep(100);
+			if( File.Exists(PATH) ) return;
+
 			NMS.PAK.File.Loader file;
 			int index = -1;
+
 			Lock.AcquireWrite();
 			try {
 				index = FindFileIndexFromPath(PATH);
@@ -175,6 +229,8 @@ namespace cmk.NMS.Game.MODS
 				List.RemoveAt(index);
 			}
 			finally { Lock.ReleaseWrite(); }
+
+			ReloadCache(ReloadCacheOnCollectionChanged);
 			CollectionChanged?.Invoke(this,
 				new NotifyCollectionChangedEventArgs(
 					NotifyCollectionChangedAction.Remove, file, index

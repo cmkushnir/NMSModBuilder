@@ -18,70 +18,80 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using libMBIN.NMS.GameComponents;
+using static cmk.NMS.Game.Items.Data;
 
 //=============================================================================
 
 namespace cmk.NMS.Game.Items.Product
 {
-	public class Data
-	: cmk.NMS.Game.Items.Data
+    public class Collection
+	: cmk.NMS.Game.Items.Collection
 	{
-		public string SubstanceCategoryName { get; set; }
-		public GcProductCategory.ProductCategoryEnum Category { get; set; }  // e.g. Component
-		public GcRealitySubstanceCategory.SubstanceCategoryEnum SubstanceCategory { get; set; }  // e.g. Catalyst
-	}
-
-	//=========================================================================
-
-	public class Collection
-	: cmk.NMS.Game.Items.Collection<NMS.Game.Items.Product.Data>
-	{
-		public Collection( Game.Data GAME, NMS.PAK.Item.ICollection PAK_ITEM_COLLECTION = null )
-		: base(GAME, 2000, PAK_ITEM_COLLECTION)  // 3.90 - 1,906
+		public Collection( NMS.Game.Files.Cache PAK_FILES )
+		: base(PAK_FILES, 4000)  // 3.98 - 1,999
 		{
+		}
+
+		//...........................................................
+
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCPRODUCTTABLE.MXML" in default reality
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCPRODUCTTABLE.MBIN" actual mbin
+		public override NMS.PAK.Item.Info FindItemInfo()
+		{
+			string path = Cache?.DefaultRealityMbin()?.ProductTable ??
+				"METADATA/REALITY/TABLES/NMS_REALITY_GCPRODUCTTABLE.MBIN"
+			;
+			path = NMS.PAK.Item.Path.NormalizeExtension(path);
+			return Cache?.IPakItemCollection.FindInfo(path);
 		}
 
 		//...........................................................
 
 		protected override void LoadMBIN()
 		{
-			if( IPakItemCollection == null ) {
-				Log.Default.AddFailure($"{GetType().FullName} - Load failed, no IPakItemCollection set");
-				return;
-			}
-
-			var mbin = IPakItemCollection.ExtractMbin<GcProductTable>(
-				"METADATA/REALITY/TABLES/NMS_REALITY_GCPRODUCTTABLE.MBIN",
-				false, Log.Default
-			);
+			var mbin_data = ItemInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
+			var mbin      = mbin_data?.ModObject() as dynamic;
 			if( mbin == null ) return;
 
-			// build list of items, don't need to resolve language ID's here
-			_ = Parallel.ForEach(mbin.Table, ITEM => {
-				var data = new Data {
-					ItemType = GcInventoryType.InventoryTypeEnum.Product,
-					Id                    = ITEM.Id?.Value,
-					NameId                = ITEM.NameLower?.Value,
-					DescriptionId         = ITEM.Description?.Value,
-					Category              = ITEM.Type.ProductCategory,
-					CategoryName          = ITEM.Type.ProductCategory.ToString().Expand(),
-					SubstanceCategory     = ITEM.Category.SubstanceCategory,
-					SubstanceCategoryName = ITEM.Category.SubstanceCategory.ToString().Expand(),
-					IconPath              = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename?.Value, true)
+			var collection = Cache.IPakItemCollection;
+
+			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, ITEM => {
+				var icon      = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename) as string;
+				var cat_name  = ITEM.Type.ProductCategory.ToString() as string;
+				var req_count = ITEM.Requirements?.Count ?? 0;
+
+				var data = new Data(this, GcInventoryType.InventoryTypeEnum.Product) {
+					Id            = (string)ITEM.Id,
+					NameId        = (string)ITEM.NameLower,
+					DescriptionId = (string)ITEM.Description,
+					CategoryName  = cat_name.Expand(),
+					IconInfo      = collection.FindInfo(icon),
+					Requirements  = new Requirement[req_count]
 				};
-				var dds  = Game.PCBANKS.ExtractData<NMS.PAK.DDS.Data>(data.IconPath, false)?.Dds;
+
+				for( var i = 0; i < req_count; ++i ) {
+					// data.Requirements is struct
+					var item_req = ITEM.Requirements[i];
+					data.Requirements[i].Type   =         item_req.InventoryType.InventoryType;
+					data.Requirements[i].Id     = (string)item_req.ID;
+					data.Requirements[i].Amount =         item_req.Amount;
+				}
+
+				var dds  = data.IconInfo?.ExtractData<NMS.PAK.DDS.Data>();
 				if( dds == null ) {
-					Log.Default.AddWarning($"Unable to load {data.IconPath} for {data.Id}");
+					Log.Default.AddWarning($"Unable to load {data.IconInfo?.Path} for {data.Id}");
 				}
 				else {
-					data.Icon32 = dds.GetBitmap(32);
-					data.Icon48 = dds.GetBitmap(48);
-					data.Icon64 = dds.GetBitmap(64);
+					data.Icon32 = dds.GetBitmap(32);  // recipe ingredient
+					data.Icon48 = dds.GetBitmap(48);  // recipe result
+					data.Icon64 = dds.GetBitmap(64);  // item list
 				}
-				lock( m_list ) m_list.Add(data);
+
+				lock( this ) this.Add(data);
 			});
 		}
 	}

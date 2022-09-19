@@ -29,7 +29,7 @@ using System.Windows.Controls;
 
 namespace cmk.NMS.Game.Location
 {
-	public class Dialog
+    public class Dialog
 	: System.Windows.Window
 	{
 		public Dialog()
@@ -120,7 +120,7 @@ namespace cmk.NMS.Game.Location
 		}
 
 		public Game.Location.Data Data {
-			get { return Release == null ? null : new(Path, Release); }
+			get { return Release == null ? null : new(Path, Built, Release); }
 		}
 
 		//...........................................................

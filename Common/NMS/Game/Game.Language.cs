@@ -19,16 +19,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using libMBIN.NMS.Globals;
 using libMBIN.NMS.Toolkit;
 
 //=============================================================================
 
 namespace cmk.NMS
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static ref string Ref( this TkLocalisationEntry ENTRY, NMS.Game.Language.Identifier IDENTIFIER )
 		{
@@ -102,12 +102,12 @@ namespace cmk.NMS
 
 namespace cmk.NMS.Game.Language
 {
-	using Enum = libMBIN.NMS.Toolkit.TkLanguages.LanguageEnum;
+    using Enum = libMBIN.NMS.Toolkit.TkLanguages.LanguageEnum;
 
-	/// <summary>
-	/// Identify a specific game language.
-	/// </summary>
-	public class Identifier
+    /// <summary>
+    /// Identify a specific game language.
+    /// </summary>
+    public class Identifier
 	{
 		// use same order as in TkLocalisationEntry, which of course is different than TkLanguages.LanguageEnum
 		public static readonly Identifier English              = new( 0, Enum.English,              Resource.BitmapImage("FlagCanada.png"),      "English",                "ENGLISH");
@@ -190,23 +190,23 @@ namespace cmk.NMS.Game.Language
 	//=========================================================================
 
 	/// <summary>
-	/// Language ID - value pair.
+	/// LanguageId ID - value pair.
 	/// </summary>
 	public class Data
 	: System.IComparable<Data>
 	, System.IComparable<string>
 	{
-		public Identifier Identifier { get; }
-		public string     Path       { get; }
-		public string     Id         { get; }
-		public string     Text       { get; }
+		public Identifier        LanguageId { get; }
+		public NMS.PAK.Item.Info Info       { get; }
+		public string            Id         { get; }
+		public string            Text       { get; }
 
-		public Data( Identifier IDENTIFIER, string PATH, string ID, string TEXT )
+		public Data( Identifier LANGUAGE_ID, NMS.PAK.Item.Info INFO, string ID, string TEXT )
 		{
 			Id   = ID;
 			Text = TEXT;
-			Path = PATH;
-			Identifier = IDENTIFIER;
+			Info = INFO;
+			LanguageId = LANGUAGE_ID;
 		}
 
 		//...........................................................
@@ -246,32 +246,50 @@ namespace cmk.NMS.Game.Language
 	/// Localized string data for a given game language.
 	/// </summary>
 	public class Collection
+	: System.Collections.Generic.List<Data>
+	, System.Collections.Specialized.INotifyCollectionChanged
 	{
-		public Collection( NMS.Game.Data GAME, Identifier IDENTIFIER,
-			NMS.PAK.Item.ICollection PAK_ITEM_COLLECTION = null
-		){
-			Game               = GAME;
-			IPakItemCollection = PAK_ITEM_COLLECTION ?? Game?.PCBANKS;
-			Identifier         = IDENTIFIER;
-			List               = new(
-				IPakItemCollection == null || Identifier == null ?
-				0 : 60000  // 3.90 - 58,118
-			);
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public readonly cmk.ReadWriteLock Lock = new();
+
+		//...........................................................
+
+		public Collection( NMS.Game.Files.Cache PAK_FILES, Identifier IDENTIFIER )
+		{
+			this.EnsureCapacity(100000);  // 3.98 - 59,272
+			Cache      = PAK_FILES;
+			Identifier = IDENTIFIER;
 			Load();
 		}
 
 		//...........................................................
 
-		public readonly NMS.Game.Data            Game;
-		public readonly Identifier               Identifier;
-		public readonly NMS.PAK.Item.ICollection IPakItemCollection;
+		public readonly NMS.Game.Files.Cache Cache;
+
+		public List<NMS.PAK.Item.Info> LanguageInfo { get; protected set; } = null;
+
+		public readonly NMS.Game.Language.Identifier Identifier;
 
 		//...........................................................
 
-		/// <summary>
-		/// Sorted on Id.
-		/// </summary>
-		public readonly List<NMS.Game.Language.Data> List;
+		public List<NMS.PAK.Item.Info> FindLanguageInfo( NMS.Game.Language.Identifier LANGUAGE_ID = null )
+		=> Cache?.LanguageMbinInfo(LANGUAGE_ID);
+
+		public bool LanguageInfoAreEqual(
+			List<NMS.PAK.Item.Info> LHS,
+			List<NMS.PAK.Item.Info> RHS
+		){
+			if( LHS == null || RHS == null ||
+				LHS.Count != RHS.Count
+			)	return false;
+
+			for( var i = 0; i < LHS.Count; ++i ) {
+				if( !NMS.PAK.Item.Info.Equals(LHS[i], RHS[i]) ) return false;
+			}
+
+			return true;
+		}
 
 		//...........................................................
 
@@ -280,9 +298,13 @@ namespace cmk.NMS.Game.Language
 		/// </summary>
 		public Data GetData( string ID )
 		{
-			return List.Bsearch(ID,
-				(ITEM, KEY) => Data.Compare(ITEM, KEY)
-			);
+			Lock.AcquireRead();
+			try {
+				return this.Bsearch(ID,
+					(ITEM, KEY) => Data.Compare(ITEM, KEY)
+				);
+			}
+			finally { Lock.ReleaseRead(); }
 		}
 
 		//...........................................................
@@ -298,85 +320,81 @@ namespace cmk.NMS.Game.Language
 
 		//...........................................................
 
-		protected void Load()
+		public void Reset()
 		{
-			Log.Default.AddInformation($"Loading {GetType().FullName} {Identifier.Name}");
-
-			var pak_item_collection  = IPakItemCollection;
-			if( pak_item_collection == null ) {
-				Log.Default.AddFailure($"{Identifier.Name} - Load failed, no IPakItemCollection set");
-				return;
-			}
-
-			// build list of language paths.
-			var paths = new List<string>();
-			var mbin  = pak_item_collection.ExtractMbin<GcDebugOptions>(
-				"GCDEBUGOPTIONS.GLOBAL.MBIN"
-			);
-			if( mbin == null ) {  // likely new release broke GCDEBUGOPTIONS
-				try {             // fall-back to regex any|all prefix
-					var regex = $"LANGUAGE\\/.*_{Identifier.Name}.MBIN".CreateRegex(true, true);
-					foreach( var info in pak_item_collection.FindInfo(regex) ) {
-						paths.Add(info.Path);
-					}
-				}
-				catch( System.Exception EX ) {
-					Log.Default.AddFailure(EX);
-					return;  // we have no fall-back fall-back
-				}
-			}
-			else {  // mbin != null
-				foreach( string prefix in mbin.LocTableList ) {
-					var path = $"LANGUAGE/{prefix}_{Identifier.Name}.MBIN";
-					paths.Add(NMS.PAK.Item.Path.Normalize(path));
-				}
-			}
-
-			_ = Parallel.ForEach(paths, PATH => {
-				var mbin = pak_item_collection.ExtractMbin<TkLocalisationTable>(
-					PATH, true, Log.Default
-				);
-				if( mbin == null ) return;
-				lock( List ) {
-					Add(List, PATH, mbin, Identifier.Index);
-				}
-			});
-
-			List.Sort();
-
-			Log.Default.AddInformation($"Loaded {GetType().FullName} {Identifier.Name} - {List.Count} entries");
+			Lock.AcquireWrite();
+			this.Clear();
+			LanguageInfo = null;
+			Lock.ReleaseWrite();
 		}
 
-		//...........................................................
-
-		protected void Add( List<NMS.Game.Language.Data> LIST, string PATH, TkLocalisationTable MBIN, byte INDEX )
+		public void Load()
 		{
-			foreach( var item in MBIN.Table ) {
-				LIST.Add(
-					new(Identifier, PATH, item.Id, item.Ref(INDEX))
-				);
+			// only (re)load if language mbin are diff.
+			var language_info = FindLanguageInfo();
+
+			Lock.AcquireWrite();
+			try {
+				if( LanguageInfoAreEqual(language_info, LanguageInfo) ) return;
+				LanguageInfo = language_info;
+
+				Log.Default.AddInformation($"Loading {GetType().FullName} {Identifier.Name}");
+				var language_idx = Identifier.Index;
+
+				this.Clear();
+				if( !LanguageInfo.IsNullOrEmpty() ) {
+					_ = Parallel.ForEach(LanguageInfo, INFO => {
+						var mbin  = INFO.ExtractMbin<TkLocalisationTable>(Log.Default);
+						if( mbin == null ) return;
+						var path  = INFO.Path;
+						lock( this ) {
+							foreach( var item in mbin.Table ) {
+								this.Add(new(Identifier, INFO, item.Id, item.Ref(language_idx)));
+							}
+						}
+					});
+					this.Sort();
+				}
+
+				Log.Default.AddInformation($"Loaded {GetType().FullName} {Identifier.Name} - {this.Count} entries");
 			}
+			finally { Lock.ReleaseWrite(); }
+
+			CollectionChanged?.DispatcherInvoke(this,
+				new NotifyCollectionChangedEventArgs(
+					NotifyCollectionChangedAction.Reset
+				)
+			);
 		}
 	}
 
 	//=========================================================================
 
-	public class Cache
+	public class CollectionCache
 	{
 		protected Collection [] m_collection = new Collection[Identifier.List.Length];
 
 		//...........................................................
 
-		public Cache( NMS.Game.Data GAME = null, NMS.PAK.Item.ICollection PAK_ITEM_COLLECTION = null )
+		public CollectionCache( NMS.Game.Files.Cache PAK_FILES )
 		{
-			Game               = GAME ?? NMS.Game.Data.Selected;
-			IPakItemCollection = PAK_ITEM_COLLECTION ?? Game?.PCBANKS;
+			Cache = PAK_FILES;
 		}
 
 		//...........................................................
 
-		public readonly NMS.Game.Data            Game;
-		public readonly NMS.PAK.Item.ICollection IPakItemCollection;
+		public readonly NMS.Game.Files.Cache Cache;
+
+		//...........................................................
+
+		public void Reset()
+		{
+			lock( m_collection ) {
+				for( var i = 0; i < m_collection.Length; ++i ) {
+					m_collection[i] = null;
+				}
+			}
+		}
 
 		//...........................................................
 
@@ -390,10 +408,15 @@ namespace cmk.NMS.Game.Language
 		public Collection Get( int INDEX )
 		{
 			if( INDEX >= Identifier.List.Length ) return null;
-			if( m_collection[INDEX] == null ) {
-				m_collection[INDEX]  = new(Game, Identifier.List[INDEX], IPakItemCollection);
+			lock( m_collection ) {
+				if( m_collection[INDEX] == null ) {
+					m_collection[INDEX]  = new(Cache, Identifier.List[INDEX]);
+				}
+				else {
+					m_collection[INDEX].Load();  // no-op if no lang mbin's changed
+				}
+				return m_collection[INDEX];
 			}
-			return m_collection[INDEX];
 		}
 	}
 }

@@ -18,11 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
-using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 using libMBIN.NMS.GameComponents;
@@ -31,7 +30,7 @@ using libMBIN.NMS.GameComponents;
 
 namespace cmk.NMS.Game.Recipes
 {
-	public class Data
+    public class Data
 	: System.ComponentModel.INotifyPropertyChanged
 	{
 		protected void PropertyChangedInvoke( [CallerMemberName] string NAME = "" )
@@ -39,6 +38,13 @@ namespace cmk.NMS.Game.Recipes
 			PropertyChanged?.Invoke(this, new(NAME));
 		}
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		public Data( Collection COLLECTION )
+		{
+			Collection = COLLECTION;
+		}
+
+		public readonly Collection Collection;
 
 		public string Id { get; set; }
 
@@ -79,107 +85,207 @@ namespace cmk.NMS.Game.Recipes
 	//=============================================================================
 
 	public class Collection
+	: System.Collections.Generic.List<Data>
+	, System.Collections.Specialized.INotifyCollectionChanged
 	{
-		protected List<Data>           m_list;
-		protected ManualResetEventSlim m_built = new(false);
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		public readonly cmk.ReadWriteLock Lock = new();
 
 		//...........................................................
 
-		public Collection( Game.Data GAME, int CAPACITY, NMS.PAK.Item.ICollection PAK_ITEM_COLLECTION = null )
+		public Collection( NMS.Game.Files.Cache PAK_FILES, int CAPACITY = 0 )
 		{
-			Game   = GAME;
-			m_list = new(CAPACITY);
-			IPakItemCollection = PAK_ITEM_COLLECTION ?? Game.PCBANKS;
+			this.EnsureCapacity(CAPACITY);
+			Cache = PAK_FILES;
 		}
 
 		//...........................................................
 
-		public Game.Data Game { get; }
+		public readonly NMS.Game.Files.Cache Cache;
 
-		// PakItemCollection used to extract and load items from mbin's.
-		// In general one of: Game, Game.PCBANKS (default), Game.Mods, Game.Mods[i]
-		public readonly NMS.PAK.Item.ICollection IPakItemCollection;
+		public NMS.PAK.Item.Info RecipeInfo { get; protected set; } = null;
 
 		//...........................................................
 
-		public IReadOnlyList<Data> List {
-			get { return m_built.Wait(Int32.MaxValue) ? m_list : null; }
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE.MXML" in default reality
+		// "METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE.MBIN" actual mbin
+		public NMS.PAK.Item.Info FindRecipeInfo()
+		{
+			string path = Cache.DefaultRealityMbin()?.RecipeTable ??
+				"METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE.MBIN"
+			;
+			path = NMS.PAK.Item.Path.NormalizeExtension(path);
+			return Cache.IPakItemCollection.FindInfo(path);
 		}
 
 		//...........................................................
 
+		/// <summary>
+		/// Find Refiner or Cooking recipe by it's ID.
+		/// </summary>
 		public Data Find( string ID )  // case-sensitive
 		{
-			return List.FindFirst(ITEM =>  // scan, not sorted by Id
-				string.Equals(ITEM.Id, ID)
-			);
+			Lock.AcquireRead();
+			try {
+				return this.FindFirst(ITEM =>  // scan, not sorted by Id
+					string.Equals(ITEM.Id, ID)
+				);
+			}
+			finally { Lock.ReleaseRead(); }
+		}
+
+		/// <summary>
+		/// Find all Refiner|Cooking recipes that result in a specified Substance|Product ID.
+		/// </summary>
+		public IEnumerable<Data> FindWithResult( string ID )
+		{
+			Lock.AcquireRead();
+			foreach( var recipe in this ) {
+				if( recipe.ResultId == ID ) yield return recipe;
+			}
+			Lock.ReleaseRead();
+		}
+
+		/// <summary>
+		/// Find all Refiner|Cooking recipes that use a specified Substance|Product ID as an ingredient.
+		/// </summary>
+		public IEnumerable<Recipes.Data> FindWithIngredient( string ID )
+		{
+			Lock.AcquireRead();
+			foreach( var recipe in this ) {
+				foreach( var ingredient in recipe.Ingredients ) {
+					if( ingredient.Id == ID ) {
+						yield return recipe;
+						break;
+					}
+				}
+			}
+			Lock.ReleaseRead();
+		}
+
+		/// <summary>
+		/// Find all Refiner|Cooking recipes that result in or use a specified Substance|Product ID as an ingredient.
+		/// </summary>
+		public IEnumerable<Recipes.Data> FindWith( string ID )
+		{
+			Lock.AcquireRead();
+			foreach( var recipe in this ) {
+				if( recipe.ResultId == ID ) yield return recipe;
+				else foreach( var ingredient in recipe.Ingredients ) {
+					if( ingredient.Id == ID ) {
+						yield return recipe;
+						break;
+					}
+				}
+			}
+			Lock.ReleaseRead();
 		}
 
 		//...........................................................
 
-		protected virtual void LoadMBIN( GcRecipeTable MBIN, bool COOKING )
+		public void Reset()
 		{
-			_ = Parallel.ForEach(MBIN.Table, RECIPE => {
+			Lock.AcquireWrite();
+			this.Clear();
+			RecipeInfo = null;
+			Lock.ReleaseWrite();
+		}
+
+		public virtual void Load()
+		{
+		}
+
+		protected void Load( bool COOKING )
+		{
+			// only (re)load if recipe mbin in diff pak.
+			var recipe_info = FindRecipeInfo();
+
+			Lock.AcquireWrite();
+			try {			
+				if( NMS.PAK.Item.Info.Equals(recipe_info, RecipeInfo) ) return;
+				RecipeInfo = recipe_info;
+
+				Log.Default.AddInformation($"Loading {GetType().FullName}");
+				LoadMBIN(COOKING);
+				Log.Default.AddInformation($"Loaded {GetType().FullName} - {this.Count} recipes");
+			}
+			finally { Lock.ReleaseWrite(); }
+
+			UpdateLanguage(NMS.Game.Language.Identifier.Default);
+		}
+
+		//...........................................................
+
+		protected void LoadMBIN( bool COOKING )
+		{
+			this.Clear();
+
+			var mbin_data = RecipeInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
+			var mbin      = mbin_data?.ModObject() as dynamic;
+			if( mbin == null ) return;
+
+			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, RECIPE => {
 				if( RECIPE.Cooking != COOKING ) return;
-				var data = new Data {
-					Id           = RECIPE.Id?.Value,                  // "REFINERECIPE_41"
-					RecipeTypeId = RECIPE.RecipeType?.Value,          // "RECIPE_DUSTY1"
-					RecipeName   = RECIPE.RecipeName?.Value,          // "R_NAME_DUSTY1"
-					TimeToMake   = RECIPE.TimeToMake,                 // 90
-					ResultType   = RECIPE.Result.Type.InventoryType,  // InventoryTypeEnum.Substance
-					ResultId     = RECIPE.Result.Id?.Value,           // "LAND1"
-					ResultAmount = RECIPE.Result.Amount,              // 1
+				var data = new Data(this) {
+					Id           = (string)RECIPE.Id,                         // "REFINERECIPE_41"
+					RecipeTypeId = (string)RECIPE.RecipeType,                 // "RECIPE_DUSTY1"
+					RecipeName   = (string)RECIPE.RecipeName,                 // "R_NAME_DUSTY1"
+					TimeToMake   =         RECIPE.TimeToMake,                 // 90
+					ResultType   =         RECIPE.Result.Type.InventoryType,  // InventoryTypeEnum.Substance
+					ResultId     = (string)RECIPE.Result.Id,                  // "LAND1"
+					ResultAmount = RECIPE.Result.Amount,                      // 1
 					Ingredients  = new Data.Ingredient[RECIPE.Ingredients.Count],
 				};
 				for( var i = 0; i < RECIPE.Ingredients.Count; ++i ) {
-					var recipe_ingredient = RECIPE.Ingredients[i];
-					data.Ingredients[i].Type   = recipe_ingredient.Type.InventoryType;
-					data.Ingredients[i].Id     = recipe_ingredient.Id?.Value;
-					data.Ingredients[i].Amount = recipe_ingredient.Amount;
+					var recipe_ingredient      = RECIPE.Ingredients[i];
+					data.Ingredients[i].Type   =         recipe_ingredient.Type.InventoryType;
+					data.Ingredients[i].Id     = (string)recipe_ingredient.Id;
+					data.Ingredients[i].Amount =         recipe_ingredient.Amount;
 				}
-				lock( m_list ) m_list.Add(data);
+				lock( this ) this.Add(data);
 			});
 
 			// will block until products, substances, technologies tables built;
 
-			_ = Parallel.ForEach(m_list, RECIPE => {
+			_ = Parallel.ForEach(this, RECIPE => {
 				switch( RECIPE.ResultType ) {
 					case GcInventoryType.InventoryTypeEnum.Product:
-						RECIPE.ResultData = Game.Products.Find(RECIPE.ResultId);
+						RECIPE.ResultData = Cache.Products.Find(RECIPE.ResultId);
 						break;
 					case GcInventoryType.InventoryTypeEnum.Substance:
-						RECIPE.ResultData = Game.Substances.Find(RECIPE.ResultId);
+						RECIPE.ResultData = Cache.Substances.Find(RECIPE.ResultId);
 						break;
 					case GcInventoryType.InventoryTypeEnum.Technology:
-						RECIPE.ResultData = Game.Technologies.Find(RECIPE.ResultId);
+						RECIPE.ResultData = Cache.Technologies.Find(RECIPE.ResultId);
 						break;
 				}
 				if( RECIPE.ResultData == null ) {
 					// there are cases where they have mislabeled the InventoryTypeEnum
 					// e.g. saying PLANT_CASE is a product not a substance,
 					// so we check all types if not found for specified type.
-					RECIPE.ResultData = Game.FindItem(RECIPE.ResultId);
+					RECIPE.ResultData = Cache.FindItemData(RECIPE.ResultId);
 				}
 				for( var i = 0; i < RECIPE.Ingredients.Length; ++i ) {
 					switch( RECIPE.Ingredients[i].Type ) {
 						case GcInventoryType.InventoryTypeEnum.Product:
-							RECIPE.Ingredients[i].Data = Game.Products.Find(RECIPE.Ingredients[i].Id);
+							RECIPE.Ingredients[i].Data = Cache.Products.Find(RECIPE.Ingredients[i].Id);
 							break;
 						case GcInventoryType.InventoryTypeEnum.Substance:
-							RECIPE.Ingredients[i].Data = Game.Substances.Find(RECIPE.Ingredients[i].Id);
+							RECIPE.Ingredients[i].Data = Cache.Substances.Find(RECIPE.Ingredients[i].Id);
 							break;
 						case GcInventoryType.InventoryTypeEnum.Technology:
-							RECIPE.Ingredients[i].Data = Game.Technologies.Find(RECIPE.Ingredients[i].Id);
+							RECIPE.Ingredients[i].Data = Cache.Technologies.Find(RECIPE.Ingredients[i].Id);
 							break;
 					}
 					if( RECIPE.Ingredients[i].Data == null ) {
-						RECIPE.Ingredients[i].Data  = Game.FindItem(RECIPE.Ingredients[i].Id);
+						RECIPE.Ingredients[i].Data  = Cache.FindItemData(RECIPE.Ingredients[i].Id);
 					}
 				}
 			});
 
 			// sort: name, result amount, time to make, id
-			m_list.Sort(( LHS, RHS ) => {
+			this.Sort(( LHS, RHS ) => {
 				var cmp  = string.Compare(LHS.ResultData?.Name, RHS.ResultData?.Name);
 				if( cmp != 0 ) return cmp;
 
@@ -195,47 +301,71 @@ namespace cmk.NMS.Game.Recipes
 
 		//...........................................................
 
-		/// <summary>
-		/// Only called by Game.Data constructor.
-		/// </summary>
-		protected void Load( bool COOKING )
+		public void UpdateLanguage( NMS.Game.Language.Identifier LANGUAGE_ID )
 		{
-			if( !m_built.IsSet ) try {  // only need to call Load once			
-					Log.Default.AddInformation($"Loading {GetType().FullName}");
+			if( Count < 1 ) return;
 
-					if( IPakItemCollection == null ) {
-						Log.Default.AddFailure($"{GetType().FullName} - Load failed, no IPakItemCollection set");
-						return;
-					}
+			var language  = Cache.Languages.Get(LANGUAGE_ID);
+			if( language == null ) return;
 
-					var mbin = IPakItemCollection?.ExtractMbin<GcRecipeTable>(
-						"METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE.MBIN",
-						false, Log.Default
-					);
-					if( mbin != null ) LoadMBIN(mbin, COOKING);
+			Lock.AcquireWrite();
 
-					Log.Default.AddInformation($"Loaded {GetType().FullName} - {m_list.Count} recipes");
-
-					if( Game != null ) {
-						UpdateLanguage(Game.Language);
-						Game.LanguageChanged += ( OLD, NEW ) => UpdateLanguage(NEW);
-					}
-				}
-				finally { m_built.Set(); }
-		}
-
-		//...........................................................
-
-		protected void UpdateLanguage( NMS.Game.Language.Collection LANGUAGE )
-		{
-			_ = Parallel.ForEach(m_list, RECIPE => {
-				var type   = LANGUAGE.GetText(RECIPE.RecipeTypeId, RECIPE.RecipeTypeId);
+			_ = Parallel.ForEach(this, RECIPE => {
+				var type   = language.GetText(RECIPE.RecipeTypeId, RECIPE.RecipeTypeId);
 				var colon  = type.IndexOf(':');
 				if( colon >= 0 ) type = type.Substring(colon + 2);
 				RECIPE.RecipeType = type;
 			});
-			Log.Default.AddInformation($"Updated {GetType().FullName} {LANGUAGE.Identifier.Name}");
+
+			Lock.ReleaseWrite();
+			Log.Default.AddInformation($"Updated {GetType().FullName} {LANGUAGE_ID.Name}");
+
+			CollectionChanged?.DispatcherInvoke(this,
+				new NotifyCollectionChangedEventArgs(
+					NotifyCollectionChangedAction.Reset
+				)
+			);
 		}
+
+		//...........................................................
+
+		protected void OnCacheCollectionChanged( object SENDER, NotifyCollectionChangedEventArgs ARGS )
+		{
+			switch( ARGS.Action ) {
+				case NotifyCollectionChangedAction.Add:
+				case NotifyCollectionChangedAction.Replace:
+				case NotifyCollectionChangedAction.Remove:
+					Load();
+					break;
+			//	case NotifyCollectionChangedAction.Move:
+			}
+		}
+	}
+
+	//=========================================================================
+
+	public class Cooking
+	: cmk.NMS.Game.Recipes.Collection
+	{
+		public Cooking( NMS.Game.Files.Cache PAK_FILES )
+		: base(PAK_FILES, 2000)  // 3.98 - 857
+		{
+		}
+
+		public override void Load() => Load(true);
+	}
+
+	//=========================================================================
+
+	public class Refiner
+	: cmk.NMS.Game.Recipes.Collection
+	{
+		public Refiner( NMS.Game.Files.Cache PAK_FILES )
+		: base(PAK_FILES, 600)  // 3.98 - 303
+		{
+		}
+
+		public override void Load() => Load(false);
 	}
 }
 

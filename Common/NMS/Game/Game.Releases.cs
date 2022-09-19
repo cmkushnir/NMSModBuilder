@@ -28,7 +28,7 @@ using System.Net.Http;
 
 namespace cmk.NMS.Game
 {
-	public class Release
+    public class Release
 	{
 		public string   Name         { get; }  // e.g. "Fontiers"
 		public DateTime Date         { get; }  // Steam NMS.exe build date from PE header
