@@ -26,7 +26,7 @@ using Microsoft.Win32;
 
 namespace cmk.NMS.PAK.WEM
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.Item.Data
 	{
 		static Data()
@@ -34,7 +34,6 @@ namespace cmk.NMS.PAK.WEM
 			var extension = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension.Viewers.Insert(0, typeof(Viewer));
 			extension.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".WEM"] = extension;
 		}
 

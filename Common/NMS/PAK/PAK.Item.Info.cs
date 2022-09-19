@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media.Imaging;
@@ -27,11 +28,17 @@ using System.Windows.Media.Imaging;
 namespace cmk.NMS.PAK.Item
 {
 	/// <summary>
-	/// Meta-data for a (compressed) item in a NMS .pak file.
+	/// ModMeta-data for a (compressed) item in a NMS .pak file.
 	/// </summary>
 	public class Info
-	: System.IComparable
+	: System.IComparable<NMS.PAK.Item.Info>
+	, System.IComparable<NMS.PAK.Item.Path>
+	, System.IComparable<string>
 	{
+		public static bool CacheEbin = false;
+
+		//...........................................................
+
 		public Info( NMS.PAK.File.Loader FILE, int ID, uint INDEX, long OFFSET, long LENGTH )
 		{
 			File   = FILE;
@@ -43,13 +50,15 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		public readonly NMS.PAK.File.Loader File = null;
-		public IO.Path                 FilePath      => File?.Path      ?? new();
-		public List<NMS.PAK.Item.Info> FileInfoList  => File?.InfoList  ?? new();
-		public NMS.PAK.Item.Info.Node  FileInfoTree  => File?.InfoTree;
-		public bool                    FileInPCBANKS => File?.InPCBANKS ?? false;
-		public bool                    FileInMODS    => File?.InMODS    ?? false;
-		public string                  FileSubPath   => File?.SubPath   ?? "";
+		public readonly NMS.PAK.File.Loader File          =  null;
+		public ulong                        FileInstance  => File?.Instance  ?? 0;
+		public DateTime                     FileLastWrite => File?.LastWrite ?? DateTime.MinValue;
+		public IO.Path                      FilePath      => File?.Path      ?? new();
+		public List<NMS.PAK.Item.Info>      FileInfoList  => File?.InfoList  ?? new();
+		public NMS.PAK.Item.Info.Node       FileInfoTree  => File?.InfoTree;
+		public bool                         FileInPCBANKS => File?.InPCBANKS ?? false;
+		public bool                         FileInMODS    => File?.InMODS    ?? false;
+		public string                       FileSubPath   => File?.SubPath   ?? "";
 
 		public readonly   int Id     = 0;  // ordinal of EntryInfo in IO.PAK.m_entries
 		public readonly  uint Index  = 0;  // index of first block for Item in PAK.Blocks
@@ -58,14 +67,14 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected NMS.PAK.Item.Path m_path = new NMS.PAK.Item.Path();
+		protected readonly NMS.PAK.Item.Path m_path = new();
 
 		/// <summary>
 		/// Item path, never null.
 		/// </summary>
 		public NMS.PAK.Item.Path Path {
 			get { return m_path; }
-			set { m_path = value ?? new NMS.PAK.Item.Path(); }
+			set { m_path.Full = value ?? ""; }
 		}
 
 		//...........................................................
@@ -78,11 +87,12 @@ namespace cmk.NMS.PAK.Item
 
 		// hack: doesn't belong here, but convenient.
 		// from mbin items only, set for each mbin item when PAK.File.Loader loaded.
-		public NMS.PAK.MBIN.Header MbinHeader { get; set; }
+		public NMS.PAK.MBIN.Header MbinHeader { get; set; } = null;
+		public string              EbinCache  { get; set; } = null;
 
 		//...........................................................
 
-		public Stream Raw( Log LOG = null )
+		public Stream Extract( Log LOG = null )
 		{
 			return File?.Extract(this, LOG);
 		}
@@ -98,7 +108,7 @@ namespace cmk.NMS.PAK.Item
 		}
 
 		public AS_T ExtractData<AS_T>( Log LOG = null )
-		where AS_T : NMS.PAK.Item.Data
+		where  AS_T : NMS.PAK.Item.Data
 		{
 			return File?.ExtractData<AS_T>(this, LOG);
 		}
@@ -119,25 +129,47 @@ namespace cmk.NMS.PAK.Item
 		/// Get this MBIN or MBIN.PC Item Data from File and convert to NMSTemplate based DOM.
 		/// </summary>
 		public AS_T ExtractMbin<AS_T>( Log LOG = null )
-		where AS_T : class  // libMBIN.NMSTemplate
+		where  AS_T : class  // libMBIN.NMSTemplate
 		{
 			return File?.ExtractMbin<AS_T>(this, LOG);
 		}
 
 		//...........................................................
 
-		public int CompareTo( object RHS )
+		public static int Compare( Info LHS, Info RHS )
 		{
-			if( RHS is Info rhs ) return Path.Compare(Path, rhs?.Path);
-			if( RHS.GetType().IsCastableTo(typeof(string)) ) {
-				return Path.Compare(Path, (string)RHS);
-			}
-			return 1;  // RHS is likely something like UnsetValue
+			if( object.ReferenceEquals(LHS, RHS) ) return 0;
+			if( LHS == null ) return -1;
+			if( RHS == null ) return  1;
+
+			var c  = Path.Compare(LHS.Path, RHS.Path);
+			if( c != 0 ) return c;
+
+			return NMS.PAK.File.Loader.Compare(LHS.File, RHS.File);
+		}
+		public static int Compare( Info LHS, Path RHS ) => Path.Compare(LHS?.Path, RHS);
+		public static int Compare( Path LHS, Info RHS ) => Path.Compare(LHS,       RHS?.Path);
+
+		public int CompareTo( Info   RHS ) => Compare(this, RHS);
+		public int CompareTo( Path   RHS ) => Compare(this, RHS);
+		public int CompareTo( string RHS ) => Compare(this, new Path(RHS));
+
+		//...........................................................
+
+		public static bool Equals( Info LHS, Info RHS ) => Compare(LHS, RHS) == 0;
+		public static bool Equals( Info LHS, Path RHS ) => Compare(LHS, RHS) == 0;
+		public static bool Equals( Path LHS, Info RHS ) => Compare(LHS, RHS) == 0;
+
+		public override bool Equals( object RHS )
+		{
+			if( RHS is Info rhs_info ) return Equals(this, rhs_info);
+			return Path.Equals(RHS);
 		}
 
 		//...........................................................
 
-		public override string ToString() => Path;
+		public override int    GetHashCode() => base.GetHashCode();
+		public override string ToString()    => Path;
 
 		//=========================================================================
 

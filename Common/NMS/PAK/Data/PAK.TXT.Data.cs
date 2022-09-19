@@ -26,7 +26,7 @@ using System.Text;
 
 namespace cmk.NMS.PAK.TXT
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.Item.Data
 	{
 		static Data()
@@ -34,7 +34,6 @@ namespace cmk.NMS.PAK.TXT
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".TXT"] = extension_info;
 		}
 
@@ -89,6 +88,7 @@ namespace cmk.NMS.PAK.TXT
 		{
 			lock( Raw ) try {
 				Raw.Position = 0;
+				Raw.SetLength(0);
 				using( var writer = new StreamWriter(Raw, Encoding.UTF8, leaveOpen: true) ) {
 					writer.Write(TEXT);
 					return true;
@@ -108,7 +108,7 @@ namespace cmk.NMS.PAK.TXT
 				if( !TextToRaw(Text, LOG) ) return false;
 				IsEdited = true;
 			}
-			return true;
+			return base.Save(LOG);
 		}
 	}
 }

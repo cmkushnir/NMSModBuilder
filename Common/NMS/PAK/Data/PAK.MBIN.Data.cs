@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
-using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Win32;
 
@@ -45,8 +45,8 @@ namespace cmk.NMS.PAK.MBIN
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(ExmlViewer));
 			extension_info.Viewers.Insert(0, typeof(EbinViewer));
+			extension_info.Differs.Insert(0, typeof(ExmlDiffer));
 			extension_info.Differs.Insert(0, typeof(EbinDiffer));
-
 			s_extensions[".MBIN"] = extension_info;
 			s_extensions[".PC"]   = extension_info;  // all .PC are .MBIN.PC
 		}
@@ -74,27 +74,10 @@ namespace cmk.NMS.PAK.MBIN
 		/// Create new mbin using a given RAW MBINFile.
 		/// </summary>
 		public Data( string PATH, Stream RAW = null, Log LOG = null )
-		: base(PATH, RAW)
+		: base(PATH, RAW, LOG)
 		{
 			Header = new Header(Raw, LOG);
 			PostConstruct(LOG);
-			IsEdited = true;
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Create new mbin using a given RAW MBINFile.
-		/// </summary>
-		public Data( string PATH, string CLASS, Version MBIN_VERSION, Log LOG = null )
-		: base(PATH, null, LOG)
-		{
-			Header = new Header(CLASS, MBIN_VERSION);
-			PostConstruct(LOG);
-			if( Class?.Type != null ) {
-				IsEdited = true;
-				Object(Activator.CreateInstance(Class.Type), LOG);
-			}
 		}
 
 		//...........................................................
@@ -104,12 +87,15 @@ namespace cmk.NMS.PAK.MBIN
 		/// <summary>
 		/// MBINC required|used to decode|modify this mbin|mbin.pc item.
 		/// </summary>
-		public MBINC Mbinc                { get; protected set; }
-		public bool  IsMbincLinkedVersion { get => Mbinc?.IsLinkedVersion ?? false; }
+		public MBINC Mbinc                { get; protected set; } = null;
+		public bool  IsMbincLinkedVersion => Mbinc?.IsLinkedVersion ?? false;
 
 		public MBINC.ClassInfo Class     { get; protected set; }  // top-level class
-		public string          ClassName { get => Class?.Name ?? ""; }
-		public ulong           ClassGuid { get => Class?.NMSAttributeGUID ?? 0; }
+		public string          ClassName => Class?.Name ?? "";
+		public ulong           ClassGuid => Class?.NMSAttributeGUID ?? 0;
+
+		protected object m_mod_object = null;
+		protected Stream m_mod_meta   = null;
 
 		//...........................................................
 
@@ -117,7 +103,14 @@ namespace cmk.NMS.PAK.MBIN
 		{
 			if( Header.Version == null ) return;
 
-			Mbinc = MBINC.LoadMbincVersion(Header.Version);
+			// language mbin's haven't changed since forever,
+			// so ignore the header version info.
+			if( Path.Full.StartsWith("LANGUAGE/") ) {
+				Mbinc = MBINC.Linked;
+			}
+			else {
+				Mbinc = MBINC.LoadMbincVersion(Header.Version);
+			}
 			if( Mbinc == null ) return;
 
 			Class = Mbinc.FindClass(Header.ClassName);
@@ -132,34 +125,36 @@ namespace cmk.NMS.PAK.MBIN
 		/// <summary>
 		/// Parse current Raw, return new instance of top-level class.
 		/// </summary>
-		public object ExtractObject( Log LOG = null )
+		public object RawObject( Log LOG = null )
 		{
 			if( Mbinc == null ||
 				ClassName.IsNullOrEmpty() ||
 				Raw == null || Raw.Length < Header.Size
 			)	return null;
-			Raw.Position = Header.Size;  // skip header
-			return Mbinc.RawToNMSTemplate(Raw, ClassName, LOG);
+			lock( this ) {
+				Raw.Position = Header.Size;  // skip header
+				return Mbinc.RawToNMSTemplate(Raw, ClassName, LOG);
+			}
 		}
 
-		public AS_T ExtractObjectAs<AS_T>( Log LOG )
+		public AS_T RawObjectAs<AS_T>( Log LOG )
 		where  AS_T : class  // libMBIN.NMSTemplate
 		{
-			return ExtractObject(LOG) as AS_T;
+			return RawObject(LOG) as AS_T;
 		}
 
 		//...........................................................
 
 		/// <summary>
-		/// Get new MemoryStream of meta-data tacked onto end of mbin.
+		/// Get new MemoryStream of mod_meta-data tacked onto end of mbin.
 		/// </summary>
-		public Stream ExtractMeta( Log LOG = null )
+		public Stream RawMeta( Log LOG = null )
 		{
 			Stream meta = new MemoryStream();
 			if( Raw != null &&
 				Header.RawPadding > Header.Size &&
 				Header.RawPadding < (ulong)Raw.Length
-			) {
+			) lock( this ) {
 				Raw.Position = (long)Header.RawPadding;
 				Raw.CopyTo(meta);
 			}
@@ -168,51 +163,50 @@ namespace cmk.NMS.PAK.MBIN
 
 		//...........................................................
 
-		protected object m_object;
 
 		/// <summary>
 		/// Get|set cached instance.
 		/// Should only be called on items that are to be modified
 		/// as it assumes mbin uses linked libMBIN.
 		/// </summary>
-		public object Object( Log LOG = null )
+		public object ModObject( Log LOG = null )
 		{
-			if( m_object == null ) {
-				m_object  = ExtractObject(LOG);
+			if( m_mod_object == null ) {
+				lock( this ) if( m_mod_object == null ) {
+					m_mod_object = RawObject(LOG);
+				}
 			}
-			return m_object;
+			return m_mod_object;
 		}
-		public void Object( object OBJECT, Log LOG = null )
+		public void ModObject( object OBJECT, Log LOG = null )
 		{
-			m_object = OBJECT;
-			Save(LOG);
+			lock( this ) m_mod_object = OBJECT;
 		}
 
-		public AS_T ObjectAs<AS_T>( Log LOG = null )
+		public AS_T ModObjectAs<AS_T>( Log LOG = null )
 		where  AS_T : class  // libMBIN.NMSTemplate
 		{
-			return Object(LOG) as AS_T;
+			return ModObject(LOG) as AS_T;
 		}
 
 		//...........................................................
 
-		protected Stream m_meta;
-
 		/// <summary>
-		/// Meta data is added to the end of the file.
+		/// ModMeta data is added to the end of the file.
 		/// It is a distinct (memory) stream from Raw.
 		/// </summary>
-		public Stream Meta( Log LOG = null )
+		public Stream ModMeta( Log LOG = null )
 		{
-			if( m_meta == null ) {
-				m_meta  = ExtractMeta(LOG);
+			if( m_mod_meta == null ) {
+				lock( this ) if( m_mod_meta == null ) {
+					m_mod_meta = RawMeta(LOG);
+				}
 			}
-			return m_meta;
+			return m_mod_meta;
 		}
-		public void Meta( Stream STREAM, Log LOG = null )
+		public void ModMeta( Stream STREAM, Log LOG = null )
 		{
-			m_meta = STREAM;
-			Save(LOG);
+			lock( this ) m_mod_meta = STREAM;
 		}
 
 		//...........................................................
@@ -222,60 +216,65 @@ namespace cmk.NMS.PAK.MBIN
 		/// </summary>
 		public override bool Save( Log LOG = null )
 		{
-			var new_object  = Object(LOG);  // verifies Raw != null
-			if( new_object == null ) return false;
+			var mod_object  = ModObject(LOG);  // may be cached
+			if( mod_object == null ) return false;
 
-			// once file data flagged as edited, keep flagged as edited
-			if( !IsEdited ) {
-				var old_object = ExtractObject(LOG);
-				var old_bytes  = Mbinc.NMSTemplateToBytes(old_object);  // convert current    Raw to data
-				var new_bytes  = Mbinc.NMSTemplateToBytes(new_object);  // convert any cached Raw to data
-				if( old_bytes == null || new_bytes == null ) return false;
-				IsEdited = old_bytes.Length != new_bytes.Length ?
-					true : PInvoke.memcmp(old_bytes, new_bytes, new_bytes.Length) != 0
-				;
+			var raw_object = RawObject(LOG);  // always gets new from Raw
+			var raw_bytes  = Mbinc.NMSTemplateToBytes(raw_object);  // convert current Raw to byte[]
+			var mod_bytes  = Mbinc.NMSTemplateToBytes(mod_object);  // convert any cached object to byte[]
+			if( raw_bytes == null || mod_bytes == null ) return false;
+
+			var is_edited = raw_bytes.Length != mod_bytes.Length ?
+				true : PInvoke.memcmp(raw_bytes, mod_bytes, mod_bytes.Length) != 0
+			;
+
+			// once file data flagged as IsEdited, keep flagged as IsEdited
+			if(  is_edited ) IsEdited = true;
+			if( !is_edited ) return true;  // nothing to update this Save
+
+			lock( this ) {
+				var new_raw  = Mbinc?.NMSTemplateToRaw(mod_object, LOG);
+				if( new_raw == null ) return false;
+
+				Raw.Position = 0;
+				Raw.SetLength(0);
+
+				Header.Format = IsGameReplacement ? HeaderFormat.V0 : HeaderFormat.V2;
+				Header.SaveTo(Raw, LOG);  // write header
+				new_raw.CopyTo(Raw);      // append data after header
+
+				// Header.Padding is only set when we parse raw
+				// or set header Revision, so safe to test for 0,
+				// if 0 then unused i.e. not a TkAnim or TkGeom class.
+				var mod_meta  = ModMeta(LOG);
+				if( mod_meta == null || mod_meta.Length < 1 || Header.RawPadding != 0 ) return true;
+
+				var meta_offset = Raw.Position;  // end of header + data
+				mod_meta.CopyTo(Raw);  // append mod_meta after header and data
+
+				// update mod_meta offset in header
+				var writer = new BinaryWriter(Raw, Encoding.ASCII);
+				Raw.Position = Header.Size - 8;
+				writer.Write(meta_offset);
+
+				Raw.Position = 0;
+				return base.Save(LOG);
 			}
-			if( !IsEdited ) return true;
-
-			var new_raw  = Mbinc?.NMSTemplateToRaw(new_object, LOG);
-			if( new_raw == null ) return false;
-
-			Raw.Position = 0;
-			Raw.SetLength(0);
-
-			Header.Format = IsGameReplacement ? HeaderFormat.V0 : HeaderFormat.V2;
-			Header.SaveTo(Raw, LOG);  // write header
-			new_raw.CopyTo(Raw);      // append data after header
-
-			// Header.Padding is only set when we parse raw
-			// or set header Revision, so safe to test for 0,
-			// if 0 then unused i.e. not a TkAnim or TkGeom class.
-			var meta  = Meta(LOG);
-			if( meta == null || meta.Length < 1 || Header.RawPadding != 0 ) return true;
-
-			var meta_offset = Raw.Position;  // end of header + data
-			meta.CopyTo(Raw);  // append meta after header and data
-
-			// update meta offset in header
-			var writer = new BinaryWriter(Raw, Encoding.ASCII);
-			Raw.Position = Header.Size - 8;
-			writer.Write(meta_offset);
-
-			Raw.Position = 0;
-			return true;
 		}
 
 		//...........................................................
 
 		/// <summary>
-		/// Clone this mbin.
+		/// Clone Raw mbin.
 		/// </summary>
 		public NMS.PAK.MBIN.Data Clone( string PATH, Log LOG = null )
 		{
 			var raw = new MemoryStream();
 
-			Raw.Position = 0;
-			Raw.CopyTo(raw);
+			lock( this ) {
+				Raw.Position = 0;
+				Raw.CopyTo(raw);
+			}
 
 			var clone = new NMS.PAK.MBIN.Data(PATH, raw, LOG);
 			clone.IsGameReplacement = false;
@@ -287,12 +286,17 @@ namespace cmk.NMS.PAK.MBIN
 		//...........................................................
 
 		/// <summary>
-		/// Serailzize Raw to new instance of EBIN.
+		/// Serailzize Raw to EBIN.
 		/// Will use correct MbincVersion version to convert Raw -> mbin -> ebin.
 		/// </summary>
-		public string CreateEBIN( Log LOG = null )
+		public string RawEBIN( Log LOG = null )
 		{
-			return Mbinc?.MbinToEbin(Path, ExtractObject(LOG), LOG) ?? "";
+			return Mbinc?.MbinToEbin(Path, RawObject(LOG), LOG) ?? "";
+		}
+
+		public string ModEBIN( Log LOG = null )
+		{
+			return Mbinc?.MbinToEbin(Path, ModObject(LOG), LOG) ?? "";
 		}
 
 		//...........................................................
@@ -301,10 +305,16 @@ namespace cmk.NMS.PAK.MBIN
 		/// Serailzize Raw to new instance of EXML.
 		/// Will use correct MbincVersion version to convert Raw -> mbin -> exml.
 		/// </summary>
-		public string CreateEXML( Log LOG = null )
+		public string RawEXML( Log LOG = null )
 		{
-			return Mbinc?.NMSTemplateToExml(ExtractObject(LOG), LOG) ?? "";
+			return Mbinc?.NMSTemplateToExml(RawObject(LOG), LOG) ?? "";
 		}
+
+		public string ModEXML( Log LOG = null )
+		{
+			return Mbinc?.NMSTemplateToExml(ModObject(LOG), LOG) ?? "";
+		}
+
 		// we don't support converting exml back to mbin here, use Mbinc.ExmlToNMSTemplate
 
 		//...........................................................
@@ -326,8 +336,8 @@ namespace cmk.NMS.PAK.MBIN
 		/// </summary>
 		protected override void SaveFileTo( string PATH, Log LOG = null )
 		{
-			     if( PATH.EndsWith(".EBIN") ) System.IO.File.WriteAllText(PATH, CreateEBIN(LOG));
-			else if( PATH.EndsWith(".EXML") ) System.IO.File.WriteAllText(PATH, CreateEXML(LOG));
+			     if( PATH.EndsWith(".EBIN") ) System.IO.File.WriteAllText(PATH, RawEBIN(LOG));
+			else if( PATH.EndsWith(".EXML") ) System.IO.File.WriteAllText(PATH, RawEXML(LOG));
 			else                              base.SaveFileTo(PATH, LOG);
 		}
 	}

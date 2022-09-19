@@ -22,41 +22,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //=============================================================================
 
-namespace cmk.NMS.PAK.LUA
+namespace cmk.NMS.PAK.VDF
 {
-    public class Viewer
-	: cmk.TextViewer
-	, Item.IViewer
+    public class Differ
+	: cmk.TextDiffer<Viewer>
+	, Item.IDiffer
 	{
-		public Viewer() : this(null) {}
-
-		public Viewer( Data DATA, Log LOG = null ) : base()
+		public Differ( Data LHS, Data RHS, Log LOG = null ) : base()
 		{
-			LoadHighlighterExtension(".lua");
-			Data = DATA;
+			ViewerLeft .Data = LHS;
+			ViewerRight.Data = RHS;
+			SetDiffSource(
+				LHS?.Text,              RHS?.Text,
+				LHS?.FilePath?.NameExt, RHS?.FilePath?.NameExt
+			);
 		}
 
 		//...........................................................
 
-		public ImageButton ViewerButton { get; } = new() {
+		public ImageButton DifferButton { get; } = new() {
 			ToolTip = "Default",
-			Uri     = Resource.Uri("PakItemLua.png")
+			Uri     = Resource.Uri("PakItemTxt.png")
 		};
-
-		//...........................................................
-
-		protected NMS.PAK.LUA.Data m_data;
-
-		public NMS.PAK.LUA.Data Data {
-			get { return m_data; }
-			set {
-				if( m_data == value ) return;
-				m_data             = value;
-				EditorText         = m_data?.Text;
-				SourceLabel.Text    = m_data?.FilePath?.NameExt;
-				Editor.CaretOffset = 0;
-			}
-		}
 	}
 }
 

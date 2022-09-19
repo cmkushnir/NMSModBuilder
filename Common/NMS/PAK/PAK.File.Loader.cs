@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using cmk.NMS.PAK.Item;
 
 //=============================================================================
 
@@ -43,8 +44,13 @@ namespace cmk.NMS.PAK.File
 	/// </summary>
 	public partial class Loader
 	: cmk.IO.File
-	, cmk.NMS.PAK.Item.ICollection
+	, cmk.NMS.PAK.Item.INamedCollection
+	, System.IComparable<NMS.PAK.File.Loader>
 	{
+		protected static ulong s_instance = 0;
+
+		//...........................................................
+
 		public Loader()
 		: base(null)
 		{
@@ -57,10 +63,23 @@ namespace cmk.NMS.PAK.File
 		public Loader( string PATH, Log LOG = null, CancellationToken CANCEL = default )
 		: base(PATH)
 		{
-			Load(LOG, CANCEL);  // only time Load is called
+			// SaveFileDialog will create then delete empty file,
+			// we may try to construct after deleted,
+			// info.Length will throw and caller can test Length < 1.
+			try {
+				var info  = new System.IO.FileInfo(Path);
+				Length    = (ulong)info.Length;
+				LastWrite = info.LastWriteTimeUtc;
+				Load(LOG, CANCEL);  // only time Load is called
+			}
+			catch {}
 		}
 
 		//...........................................................
+
+		public readonly ulong    Instance = Interlocked.Increment(ref s_instance);
+		public readonly ulong    Length;
+		public readonly DateTime LastWrite;
 
 		public const uint HeaderMagic      = 0x50534152;  // PSAR - PlayStation ARchive
 		public const uint CompressTypeZLIB = 0x7a6c6962;  // [z,l,i,b] big-endian (NMS)
@@ -96,6 +115,10 @@ namespace cmk.NMS.PAK.File
 		/// Tree of meta-data for the contained items.
 		/// </summary>
 		public readonly NMS.PAK.Item.Info.Node InfoTree = new();
+
+		// INamedCollection:
+		public string                  PakItemCollectionName => Path.Name;
+		public NMS.PAK.Item.Info.Node  PakItemCollectionTree => InfoTree;
 
 		//...........................................................
 
@@ -141,6 +164,15 @@ namespace cmk.NMS.PAK.File
 				LOG.AddFailure(EX, $"{Path} - ");
 				return false;
 			}
+		}
+
+		//...........................................................
+
+		public void ClearEbinCache()
+		{
+			InfoList.ForEach(INFO => {
+				lock( INFO ) INFO.EbinCache = null;
+			});
 		}
 
 		//...........................................................
@@ -371,12 +403,16 @@ namespace cmk.NMS.PAK.File
 		//...........................................................
 
 		/// <summary>
-		/// Get an uncompressed blob using the meta-data in ENTRY.
+		/// Get an uncompressed blob using the meta-data in INFO.
+		/// INFO must be from this.InfoList.
 		/// </summary>
-		/// <returns>A MemoryStream if possible, otherwise a FileStream to an auto-delete temp file.</returns>
+		/// <returns>
+		/// Null on error, else a MemoryStream or auto-delete temp FileStream.
+		/// </returns>
 		public Stream Extract( NMS.PAK.Item.Info INFO, Log LOG = null, CancellationToken CANCEL = default )
 		{
 			if( INFO == null ) return null;
+
 			var info_file_path = INFO.FilePath.RelativeTo(Resource.AppDirectory).Full;
 			if( info_file_path.IsNullOrEmpty() ) info_file_path = "memory";
 
@@ -385,6 +421,7 @@ namespace cmk.NMS.PAK.File
 				else                        LOG.AddFailure($"{Path.NameExt} {INFO.Path} - Can't extract, info from {info_file_path}");
 				return null;
 			}
+
 			using( var pak = WaitOpenSharedReadOnly(default, CANCEL) ) {
 				if( pak == null ) {
 					LOG.AddFailure($"{Path.NameExt} {INFO.Path} - Failed to open pak file");
@@ -412,7 +449,7 @@ namespace cmk.NMS.PAK.File
 				}
 				if( read_length != compressed_length ) {
 					LOG.AddFailure($"{Path.NameExt} - Could only read {read_length} of {compressed_length} bytes for block[{block_index}]");
-					return null;
+					return null;  // all or nothing
 				}
 				compressed_offset += read_length;  // next compressed block
 
@@ -440,6 +477,19 @@ namespace cmk.NMS.PAK.File
 			return raw;
 		}
 
+		protected static readonly Type s_mbin_data_type = typeof(NMS.PAK.MBIN.Data);
+
+		// used by ForEachData | ForEachMbin methods to avoid having to open|close file for each item
+		protected NMS.PAK.Item.Data ExtractData( NMS.PAK.Item.Info INFO, Stream PAK, Log LOG )
+		{
+			// Create will use the INFO.Path extension to create an instance of a registered
+			// NMS.PAK.Item.Data derived class i.e. cast return to extension specific derived Data type.
+			var stream  = Extract(INFO, PAK, LOG);
+			if( stream == null ) return null;
+
+			return NMS.PAK.Item.Data.Create(INFO, stream, LOG);
+		}
+
 		//...........................................................
 		// cmk.NMS.PAK.Item.Interface + info versions
 		//...........................................................
@@ -450,9 +500,12 @@ namespace cmk.NMS.PAK.File
 		public NMS.PAK.Item.Info FindInfo( string PATH, bool NORMALIZE = false )
 		{
 			if( NORMALIZE ) PATH = NMS.PAK.Item.Path.Normalize(PATH);
-			if( PATH.IsNullOrEmpty() ) return null;
-			return InfoList.Bsearch(PATH,
-				(ITEM, KEY) => ITEM.Path.CompareTo(KEY)
+
+			var key = new NMS.PAK.Item.Path(PATH);
+			if( key.IsNullOrEmpty() ) return null;
+
+			return InfoList.Bsearch(key,
+				(ITEM, KEY) => ITEM.CompareTo(KEY)
 			);
 		}
 
@@ -482,21 +535,13 @@ namespace cmk.NMS.PAK.File
 		public List<NMS.PAK.Item.Info> FindInfoEndsWith( string PATTERN, bool SORT = true )
 		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoEndsWith(PATTERN, SORT);
 
-		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT);
+		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true, bool WHOLE_WORDS = false, bool CASE_SENS = true, bool PATTERN_IS_REGEX = true )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT, WHOLE_WORDS, CASE_SENS, PATTERN_IS_REGEX);
 
-		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT);
+		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true, bool WHOLE_WORDS = false )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT, WHOLE_WORDS);
 
 		//...........................................................
-
-		protected NMS.PAK.Item.Data ExtractData( NMS.PAK.Item.Info INFO, Stream PAK, Log LOG = null )
-		{
-			// Create will use the INFO.Path extension to create an instance of a registered
-			// NMS.PAK.Item.Data derived class i.e. cast return to extension specific derived Data type.
-			var    stream  = Extract(INFO, PAK, LOG);
-			return stream == null ? null : NMS.PAK.Item.Data.Create(INFO, stream, LOG);
-		}
 
 		/// <summary>
 		/// Extract the INFO item and wrap in an extension specific PAK.Item.Data derived object.
@@ -504,8 +549,12 @@ namespace cmk.NMS.PAK.File
 		/// <returns>Wraper around MemoryStrem if possible, else delete-on-close FileStream.</returns>
 		public NMS.PAK.Item.Data ExtractData( NMS.PAK.Item.Info INFO, Log LOG = null, CancellationToken CANCEL = default )
 		{
-			var    stream  = Extract(INFO, LOG, CANCEL);
-			return stream == null ? null : NMS.PAK.Item.Data.Create(INFO, stream, LOG);
+			if( INFO == null ) return null;
+
+			var stream  = Extract(INFO, LOG, CANCEL);
+			if( stream == null ) return null;
+
+			return NMS.PAK.Item.Data.Create(INFO, stream, LOG);
 		}
 
 		public AS_T ExtractData<AS_T>( NMS.PAK.Item.Info INFO, Log LOG = null, CancellationToken CANCEL = default )
@@ -593,9 +642,8 @@ namespace cmk.NMS.PAK.File
 			var data  = ExtractData<NMS.PAK.MBIN.Data>(INFO, LOG, CANCEL);
 			if( data == null ) return null;
 
-			// since we are going to throw away the MBIN.Data wrapper
-			// we just extracted we may as well get a new NMSTemplate based object.
-			var template  = data.ExtractObject();
+			// data may be cached, so object may be as well
+			var template  = data.ModObject();
 			if( template == null ) {
 				LOG.AddFailure($"{Path.NameExt} {data.Path} - Unable to decompile");
 				return null;
@@ -637,7 +685,6 @@ namespace cmk.NMS.PAK.File
 				INFO => {
 					try   { HANDLER(INFO, LOG, CANCEL); }
 					catch ( Exception EX ) { LOG.AddFailure(EX, $"{Path.NameExt} {INFO.Path}:\n"); }
-					System.Threading.Thread.Yield();
 				}
 			);
 		}
@@ -663,7 +710,6 @@ namespace cmk.NMS.PAK.File
 							if( data != null ) HANDLER(data, LOG, CANCEL);
 						}
 						catch( Exception EX ) { LOG.AddFailure(EX, $"{Path.NameExt} {INFO.Path}:\n"); }
-						System.Threading.Thread.Yield();
 					}
 				);
 			}
@@ -687,15 +733,51 @@ namespace cmk.NMS.PAK.File
 					INFO => {
 						if( INFO.MbinHeader == null ) return;  // not mbin
 						try {
-							var data  = ExtractData(INFO, pak, LOG) as NMS.PAK.MBIN.Data;
-							if( data != null && data.Header != null ) HANDLER(data, LOG, CANCEL);
+							var data = ExtractData(INFO, pak, LOG) as NMS.PAK.MBIN.Data;
+							if( data?.Header != null ) HANDLER(data, LOG, CANCEL);
 						}
 						catch( Exception EX ) { LOG.AddFailure(EX, $"{Path.NameExt} {INFO.Path}:\n"); }
-						System.Threading.Thread.Yield();
 					}
 				);
 			}
 		}
+
+		//...........................................................
+
+		public static int Compare( Loader LHS, Loader RHS )
+		{
+			if( object.ReferenceEquals(LHS, RHS) ) return 0;
+			if( LHS == null ) return -1;
+			if( RHS == null ) return  1;
+
+			var c  = cmk.IO.Path.Compare(LHS.Path, RHS.Path);
+			if( c != 0 ) return c;
+
+			c = DateTime.Compare(LHS.LastWrite, RHS.LastWrite);
+			if( c != 0 ) return c;
+
+			if( LHS.Length < RHS.Length ) return -1;
+			if( LHS.Length > RHS.Length ) return  1;
+
+			return 0;
+		}
+
+		public int CompareTo( Loader RHS ) => Compare(this, RHS);
+
+		//...........................................................
+
+		public static bool Equals( Loader LHS, Loader RHS ) => Compare(LHS, RHS) == 0;
+
+		public override bool Equals( object RHS )
+		{
+			if( RHS is Loader rhs_loader ) return Equals(this, rhs_loader);
+			return Path.Equals(RHS);
+		}
+
+		//...........................................................
+
+		public override int    GetHashCode() => base.GetHashCode();
+		public override string ToString()    => Path;
 	}
 }
 

@@ -28,7 +28,7 @@ using System.Windows.Media;
 
 namespace cmk.NMS.PAK.MBIN
 {
-	public class ExmlViewer
+    public class ExmlViewer
 	: cmk.XmlViewer
 	, Item.IViewer
 	{
@@ -55,8 +55,8 @@ namespace cmk.NMS.PAK.MBIN
 			get { return m_data; }
 			set {
 				if( m_data == value ) return;
-				m_data          = value;
-				EditorText      = m_data?.CreateEXML();
+				m_data           = value;
+				EditorText       = m_data?.RawEXML();
 				SourceLabel.Text = m_data?.FilePath?.NameExt;
 			}
 		}
@@ -95,18 +95,18 @@ namespace cmk.NMS.PAK.MBIN
 		//...........................................................
 
 		public readonly TextBox LanguageIdTextBox = new() {
-			ToolTip             = "Language ID",
+			ToolTip             = "LanguageId ID",
 			HorizontalAlignment = HorizontalAlignment.Center,
 			VerticalAlignment   = VerticalAlignment.Top,
-			Padding  = new( 6, 2, 6, 2),
+			Padding  = new( 4, 2, 4, 2),
 			Margin   = new(16, 2, 2, 2),
-			MinWidth = 60,
+			MinWidth = 24,
 		};
 		public readonly TextBox LanguageValueTextBox = new() {
 			HorizontalAlignment = HorizontalAlignment.Center,
 			VerticalAlignment   = VerticalAlignment  .Top,
 			Background = Brushes.Transparent,
-			Padding    = new(8,2,0,2),
+			Padding    = new(4, 2, 4, 2),
 			Margin     = new(2),
 			Visibility = Visibility.Collapsed,
 			MinWidth   = 0,
@@ -127,10 +127,17 @@ namespace cmk.NMS.PAK.MBIN
 			set {
 				if( m_data == value ) return;
 				m_data             = value;
-				EditorText         = m_data?.CreateEBIN();
-				SourceLabel.Text    = m_data?.FilePath?.NameExt;
+				EditorText         = m_data?.RawEBIN();
+				SourceLabel.Text   = m_data?.FilePath?.NameExt;
 				Editor.CaretOffset = 0;
 			}
+		}
+
+		//...........................................................
+
+		public string SearchLanguageId {
+			get { return LanguageIdTextBox.Text; }
+			set { DoSearchLanguageId(value); }
 		}
 
 		//...........................................................
@@ -155,18 +162,17 @@ namespace cmk.NMS.PAK.MBIN
 
 		//...........................................................
 
-		public string SearchLanguageId {
-			get { return LanguageIdTextBox.Text; }
-			set { DoSearchLanguageId(value); }
-		}
-
-		//...........................................................
-
 		protected void DoSearchLanguageId( string ID )
 		{
-			var found = NMS.Game.Data.Selected?.FindLanguageId(ID);
-			ID        = found?.Id;
-			var text  = found?.Text;
+			// hack: shouldn't use NMS.Game.Data.Selected
+			var game       = NMS.Game.Data.Selected;
+			var in_pcbanks = Data?.FileInPCBANKS ?? true;
+			var found      = in_pcbanks ?
+				game?.PCBANKS.FindLanguageData(ID) :
+				game?.FindLanguageData(ID)  // search MODS then PCBANKS
+			;
+			ID       = found?.Id;
+			var text = found?.Text;
 
 			LanguageIdTextBox   .Text = text.IsNullOrEmpty() ? null : ID;
 			LanguageValueTextBox.Text = text;

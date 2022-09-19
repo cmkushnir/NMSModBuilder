@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.BIN
 {
-	public class Viewer
+    public class Viewer
 	: cmk.TextViewer
 	, Item.IViewer
 	{
@@ -32,7 +32,7 @@ namespace cmk.NMS.PAK.BIN
 
 		public Viewer( Data DATA, Log LOG = null ) : base()
 		{
-			LoadHighlighterExtension(".bin");
+			LoadHighlighterExtension(".xml");
 			Data = DATA;
 		}
 

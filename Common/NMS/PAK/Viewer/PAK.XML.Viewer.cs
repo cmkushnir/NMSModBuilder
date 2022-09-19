@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.XML
 {
-	public class Viewer
+    public class Viewer
 	: cmk.XmlViewer
 	, Item.IViewer
 	{

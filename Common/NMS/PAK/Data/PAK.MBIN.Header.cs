@@ -26,7 +26,7 @@ using System.Text;
 
 namespace cmk.NMS.PAK.MBIN
 {
-	public enum HeaderFormat
+    public enum HeaderFormat
 	{
 		V0, V1, V2
 	}
@@ -77,13 +77,15 @@ namespace cmk.NMS.PAK.MBIN
 
 			if( RawFormatLib == 0 ) {
 				if( RawTimestamp != MagicMbinc ) { // v0, game file
-					m_format  = HeaderFormat.V0;
-					ClassGuid = RawGuid;
+					m_format = HeaderFormat.V0;
 
 					// start optimistic, first see if linked mbinc matches.
 					var mbinc = NMS.MBINC.Linked;
 					var guid  = mbinc.FindClass(ClassName)?.NMSAttributeGUID ?? 0;
-					if( guid == RawGuid ) Version = mbinc.Version;
+					if( guid == RawGuid ) {
+						Version   = mbinc.Version;
+						ClassGuid = RawGuid;
+					}
 
 					#if false  // game has mbin's w/ invalid guid's
 					// go back through each game release until find a mbinc w/ matching guid.

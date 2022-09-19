@@ -28,7 +28,7 @@ using Microsoft.Win32;
 
 namespace cmk.NMS.PAK.SPV
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.TXT.Data
 	{
 		static Data()
@@ -36,7 +36,6 @@ namespace cmk.NMS.PAK.SPV
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".SPV"] = extension_info;
 		}
 

@@ -18,44 +18,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
-
+using System.IO;
 
 //=============================================================================
 
-namespace cmk.NMS.PAK.LUA
+namespace cmk.NMS.PAK.VDF
 {
-    public class Viewer
-	: cmk.TextViewer
-	, Item.IViewer
+    /// <summary>
+    /// Valve controller mappings.
+    /// </summary>
+    public class Data
+	: cmk.NMS.PAK.TXT.Data
 	{
-		public Viewer() : this(null) {}
-
-		public Viewer( Data DATA, Log LOG = null ) : base()
+		static Data()
 		{
-			LoadHighlighterExtension(".lua");
-			Data = DATA;
+			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
+			extension_info.Viewers.Insert(0, typeof(Viewer));
+			extension_info.Differs.Insert(0, typeof(Differ));
+			s_extensions[".VDF"] = extension_info;
+		}
+
+		public Data() : base()
+		{
 		}
 
 		//...........................................................
 
-		public ImageButton ViewerButton { get; } = new() {
-			ToolTip = "Default",
-			Uri     = Resource.Uri("PakItemLua.png")
-		};
+		public Data( NMS.PAK.Item.Info INFO, Stream RAW, Log LOG = null )
+		: base(INFO, RAW, LOG)
+		{
+		}
 
 		//...........................................................
 
-		protected NMS.PAK.LUA.Data m_data;
-
-		public NMS.PAK.LUA.Data Data {
-			get { return m_data; }
-			set {
-				if( m_data == value ) return;
-				m_data             = value;
-				EditorText         = m_data?.Text;
-				SourceLabel.Text    = m_data?.FilePath?.NameExt;
-				Editor.CaretOffset = 0;
-			}
+		public Data( string PATH, Stream RAW, Log LOG = null )
+		: base(PATH, RAW, LOG)
+		{
 		}
 	}
 }

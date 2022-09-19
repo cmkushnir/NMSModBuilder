@@ -24,7 +24,7 @@ using System.IO;
 
 namespace cmk.NMS.PAK.XML
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.TXT.Data
 	{
 		static Data()
@@ -32,7 +32,6 @@ namespace cmk.NMS.PAK.XML
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".EXML"] = extension_info;
 			s_extensions[".XML"] = extension_info;
 		}

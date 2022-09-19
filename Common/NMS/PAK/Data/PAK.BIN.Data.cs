@@ -24,11 +24,11 @@ using System.IO;
 
 namespace cmk.NMS.PAK.BIN
 {
-	/// <summary>
-	/// Note: some .bin files are binary, some are text.
-	/// todo: try to determine if binary and display binary w/ hex viewer.
-	/// </summary>
-	public class Data
+    /// <summary>
+    /// Note: some .bin files are binary, some are text.
+    /// todo: try to determine if binary and display binary w/ hex viewer.
+    /// </summary>
+    public class Data
 	: cmk.NMS.PAK.TXT.Data
 	{
 		static Data()
@@ -36,7 +36,6 @@ namespace cmk.NMS.PAK.BIN
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".BIN"] = extension_info;
 		}
 
@@ -46,16 +45,54 @@ namespace cmk.NMS.PAK.BIN
 
 		//...........................................................
 
-		public Data( NMS.PAK.Item.Info INFO, Stream RAW = null, Log LOG = null )
+		public Data( NMS.PAK.Item.Info INFO, Stream RAW, Log LOG = null )
 		: base(INFO, RAW, LOG)
 		{
+			CheckIfBinary();
 		}
 
 		//...........................................................
 
-		public Data( string PATH, Stream RAW = null, Log LOG = null )
+		public Data( string PATH, Stream RAW, Log LOG = null )
 		: base(PATH, RAW, LOG)
 		{
+			CheckIfBinary();
+		}
+
+		//...........................................................
+
+		public bool IsBinary { get; protected set; } = false;
+
+		protected void CheckIfBinary()
+		{
+			Raw.Position = 0;
+
+			// some bin are xml, some are actual binary
+			if( Raw.ReadByte() != '<' ||
+				Raw.ReadByte() != '!' ||
+				Raw.ReadByte() != '-'
+			) {
+				IsBinary = true;
+				Text     = "";
+			}
+
+			Raw.Position = 0;
+		}
+
+		//...........................................................
+
+		protected override string RawToText( Log LOG = null )
+		{
+			if( IsBinary ) return null;
+			return base.RawToText(LOG);
+		}
+
+		//...........................................................
+
+		protected override bool TextToRaw( string TEXT, Log LOG = null )
+		{
+			if( IsBinary ) return false;
+			return base.TextToRaw(TEXT, LOG);
 		}
 	}
 }

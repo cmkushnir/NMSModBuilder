@@ -60,10 +60,11 @@ namespace cmk.NMS.PAK.Item
 	public class Data
 	: System.IComparable<Data>  // compare Path's, not Raw
 	{
+		// will compile of protected, but RegisterAllClasses Activator will fail
+		// hack: for derived static constructor registration.
+		// all derived must also have a default constructor.
 		public Data()
 		{
-			// hack: for derived static constructor registration.
-			// all derived must also have a default constructor.
 			Path = new();
 		}
 
@@ -71,13 +72,14 @@ namespace cmk.NMS.PAK.Item
 
 		/// <summary>
 		/// Construct from raw data extracted from a pak file.
-		/// If !RAW then uses INFO.Raw(), if !INFO.Raw() uses new MemoryStream().
+		/// If !RAW then uses INFO.Extract().
 		/// </summary>
-		public Data( NMS.PAK.Item.Info INFO, Stream RAW = null, Log LOG = null )
+		public Data( NMS.PAK.Item.Info INFO, Stream RAW, Log LOG )
 		{
-			File = INFO?.File;
-			Path = INFO?.Path ?? new();
-			Raw  = RAW ?? INFO.Raw() ?? new MemoryStream();
+			Info      = INFO;
+			Path      = InfoPath;
+			Raw       = RAW ?? Info?.Extract();
+			Extension = s_extensions.GetValueOrDefault(Path.Extension.ToUpper());
 		}
 
 		//...........................................................
@@ -85,12 +87,14 @@ namespace cmk.NMS.PAK.Item
 		/// <summary>
 		/// Construct new data to be added to a mod pak.
 		/// If !RAW then uses new MemoryStream().
+		/// Sets IsEdited = true.
 		/// </summary>
-		public Data( string PATH, Stream RAW = null, Log LOG = null )
+		public Data( string PATH, Stream RAW, Log LOG )
 		{
-			Path     = new NMS.PAK.Item.Path(PATH);
-			Raw      = RAW ?? new MemoryStream();
-			IsEdited = true;
+			Path      = new NMS.PAK.Item.Path(PATH);
+			Raw       = RAW ?? new MemoryStream();
+			Extension = s_extensions.GetValueOrDefault(Path.Extension.ToUpper());
+			IsEdited  = true;
 		}
 
 		//...........................................................
@@ -108,7 +112,7 @@ namespace cmk.NMS.PAK.Item
 			foreach( var assembly in AppDomain.CurrentDomain.GetAssemblies() ) {
 				var   location = "";
 				try { location = assembly.Location; }
-				catch { }
+				catch {}  // may get System.NotSupportedException
 				if( location.StartsWith(Resource.AppDirectory) ) {
 					RegisterAllClasses(assembly);
 				}
@@ -138,7 +142,6 @@ namespace cmk.NMS.PAK.Item
 					new(INFO, RAW, LOG) :  // unsupported extension
 					Activator.CreateInstance(type.Data, INFO, RAW, LOG) as NMS.PAK.Item.Data
 				;
-				data.Extension = type;
 				return data;
 			}
 			catch( Exception EX ) { LOG.AddFailure(EX, $"{INFO.Path}:\n"); }
@@ -153,14 +156,13 @@ namespace cmk.NMS.PAK.Item
 		/// </summary>
 		public static NMS.PAK.Item.Data Create( string PATH, Stream RAW, Log LOG = null )
 		{
-			if( !PATH.IsNullOrEmpty() ) try {
+			if( !PATH.IsNullOrEmpty() ) try {  // RAW may be null, Data constructor will handle
 				var extension = System.IO.Path.GetExtension(PATH).ToUpper();
 				var type      = s_extensions.GetValueOrDefault(extension);
 				var data      = type?.Data == null ?
 					new(PATH, RAW, LOG) :
 					Activator.CreateInstance(type.Data, PATH, RAW, LOG) as NMS.PAK.Item.Data
 				;
-				data.Extension = type;
 				return data;
 			}
 			catch( Exception EX ) { LOG.AddFailure(EX, $"{PATH}:\n"); }
@@ -169,19 +171,37 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		public readonly NMS.PAK.File.Loader File = null;  // null if we create Data from scratch
+		public NMS.PAK.Item.Data Clone( Log LOG = null )
+		{
+			var data = Create(Path, Raw.Clone(), LOG);
+			if( data == null ) return null;
+
+			data.IsEdited = IsEdited;
+
+			return data;
+		}
+
+		//...........................................................
+
+		public readonly NMS.PAK.Item.Info Info           =  null;  // null if we create Data from scratch
+		public NMS.PAK.Item.Path          InfoPath       => Info?.Path ?? new();
+		public NMS.PAK.Item.Info.Node     InfoTreeNode   => Info?.TreeNode;
+		public NMS.PAK.MBIN.Header        InfoMbinHeader => Info?.MbinHeader;
+		public string                     InfoEbinCache  => Info?.EbinCache;
+
+		public NMS.PAK.File.Loader     File          => Info?.File;
 		public IO.Path                 FilePath      => File?.Path      ?? new();
 		public List<NMS.PAK.Item.Info> FileInfoList  => File?.InfoList  ?? new();
 		public NMS.PAK.Item.Info.Node  FileInfoTree  => File?.InfoTree;
 		public bool                    FileInPCBANKS => File?.InPCBANKS ?? false;
-		public bool                    FileInMODS    => File?.InMODS    ?? true;
+		public bool                    FileInMODS    => File?.InMODS    ?? false;
+		public string                  FileSubPath   => File?.SubPath   ?? "";
 
-		public readonly Stream Raw = null;  // never null, but may be empty
+		public readonly NMS.PAK.Item.Extension Extension;  // from s_extensions
+		public readonly NMS.PAK.Item.Path      Path;       // item path, not all Data have Info
+		public readonly Stream                 Raw;        // never null, but may be empty
 
 		//...........................................................
-
-		public NMS.PAK.Item.Path      Path      { get; }                 // item path
-		public NMS.PAK.Item.Extension Extension { get; protected set; }  // from s_extensions
 
 		/// <summary>
 		/// Has any data for this instance been modified since extract.
@@ -196,7 +216,7 @@ namespace cmk.NMS.PAK.Item
 		/// This is to get around cases where game may force load data
 		/// from PCBANKS and not look at MODS pak files.
 		/// </summary>
-		public bool IsGameReplacement { get; set; } = false;  // todo, not used
+		public bool IsGameReplacement { get; set; } = false;  // todo, unused
 
 		//...........................................................
 
@@ -303,6 +323,7 @@ namespace cmk.NMS.PAK.Item
 		public class Node: cmk.PathNode<NMS.PAK.Item.Data, Node>
 		{
 			public Node() {}
+
 			public Node(
 				Node   PARENT = null,
 				string PATH   = "",
@@ -310,6 +331,7 @@ namespace cmk.NMS.PAK.Item
 			)
 			: base(PARENT, PATH, ENTRY)
 			{}
+
 			protected override PathNode<NMS.PAK.Item.Data, Node> CreateDerived(
 				PathNode<NMS.PAK.Item.Data, Node> PARENT,
 				string                            PATH,

@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.JSON
 {
-	public class Differ
+    public class Differ
 	: cmk.TextDiffer<Viewer>
 	, Item.IDiffer
 	{

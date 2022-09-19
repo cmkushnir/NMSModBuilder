@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.MBIN
 {
-	public class ExmlDiffer
+    public class ExmlDiffer
 	: cmk.TextDiffer<ExmlViewer>
 	, Item.IDiffer
 	{
@@ -33,7 +33,7 @@ namespace cmk.NMS.PAK.MBIN
 			ViewerLeft .Data = LHS;
 			ViewerRight.Data = RHS;
 			SetDiffSource(
-				LHS?.CreateEXML(LOG),   RHS?.CreateEXML(LOG),
+				LHS?.RawEXML(LOG),      RHS?.RawEXML(LOG),
 				LHS?.FilePath?.NameExt, RHS?.FilePath?.NameExt
 			);
 		}
@@ -55,7 +55,7 @@ namespace cmk.NMS.PAK.MBIN
 			ViewerLeft .Data = LHS;
 			ViewerRight.Data = RHS;
 			SetDiffSource(
-				LHS?.CreateEBIN(LOG),   RHS?.CreateEBIN(LOG),
+				LHS?.RawEBIN(LOG),      RHS?.RawEBIN(LOG),
 				LHS?.FilePath?.NameExt, RHS?.FilePath?.NameExt
 			);
 		}

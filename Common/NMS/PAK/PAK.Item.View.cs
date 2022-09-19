@@ -22,16 +22,15 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
-using System.Windows.Input;
 
 //=============================================================================
 
 namespace cmk.NMS.PAK.Item
 {
-	/// <summary>
-	/// View PAK.Item from a specified PAK.Item.Info.Node.
-	/// </summary>
-	public class View
+    /// <summary>
+    /// View PAK.Item from a specified PAK.Item.Info.Node.
+    /// </summary>
+    public class View
 	: cmk.MainDockPanel
 	{
 		// browser like prev|next stack
@@ -164,36 +163,50 @@ namespace cmk.NMS.PAK.Item
 		/// <summary>
 		/// Try to select PATH in current TreeSource.
 		/// </summary>
-		public void SelectItem( string PATH )
+		public void SelectItem( string PATH, TextSearchData SEARCH = null )
 		{
-			SelectItem(TreeSource?.Find(PATH));
+			SelectItem(TreeSource?.Find(PATH), SEARCH);
 		}
 
 		/// <summary>
 		/// Try to get PAK.Item.Info.Node for INFO and select it.
 		/// </summary>
-		public void SelectItem( NMS.PAK.Item.Info INFO )
+		public void SelectItem( NMS.PAK.Item.Info INFO, TextSearchData SEARCH = null )
 		{
 			if( INFO == null ) return;
-			SelectItem(INFO.TreeNode);
+			SelectItem(INFO.TreeNode, SEARCH);
 		}
 
 		/// <summary>
 		/// If TreeSource is PAK.Item.Info.Node then select NODE,
 		/// changing TreeSource if needed.
 		/// </summary>
-		public virtual void SelectItem( NMS.PAK.Item.Info.Node NODE )
+		public virtual void SelectItem( NMS.PAK.Item.Info.Node NODE, TextSearchData SEARCH = null )
 		{
 			if( TreeSource != NODE?.Root ) TreeSource = NODE?.Root;
 			Breadcrumb.SelectedNode = NODE;
+			Search(SEARCH);
 		}
+
+		//...........................................................
 
 		public NMS.PAK.Item.Info.Node SelectedNode => Breadcrumb.SelectedNode as PAK.Item.Info.Node;
 		public NMS.PAK.Item.Data      SelectedData {
-			get {
-				return SelectedNode?.Tag is NMS.PAK.Item.Info info ?
-					info.ExtractData() : null
-				;
+			get => SelectedNode?.Tag is NMS.PAK.Item.Info info ?
+				info.ExtractData() : null
+			;
+		}
+
+		//...........................................................
+
+		public void Search( TextSearchData SEARCH )
+		{
+			if( SEARCH == null ) return;
+			if( Viewer is TextViewer text_view ) {
+				text_view.SearchPanel.Data = SEARCH;
+			}
+			if( Viewer is ITextDiffer text_diff ) {
+				text_diff.TextViewerRight.SearchPanel.Data = SEARCH;
 			}
 		}
 
@@ -220,7 +233,7 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected void OnPrevClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnPrevClick( ImageButton SENDER )
 		{
 			if( m_stack_index >= 0 ) {
 				if( --m_stack_index >= 0 ) {
@@ -234,7 +247,7 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected void OnNextClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnNextClick( ImageButton SENDER )
 		{
 			if( m_stack_index < m_stack.Count ) {
 				if( ++m_stack_index < m_stack.Count ) {
@@ -281,7 +294,7 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected void OnCopyClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnCopyClick( ImageButton SENDER )
 		{
 			// may be partial path, i.e. not a pak item (leaf)
 			Clipboard.SetText(Breadcrumb.SelectedPath);
@@ -289,7 +302,7 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected void OnPasteClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnPasteClick( ImageButton SENDER )
 		{
 			Breadcrumb.SelectedPath = NMS.PAK.Item.Path.NormalizeExtension(Clipboard.GetText(), true);
 		}
@@ -298,7 +311,7 @@ namespace cmk.NMS.PAK.Item
 
 		public CancellationTokenSource CancellationTokenSource { get; protected set; } = new();
 
-		protected void OnSaveClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnSaveClick( ImageButton SENDER )
 		{
 			var selected_node  = SelectedNode;
 			if( selected_node == null ) return;
@@ -319,8 +332,7 @@ namespace cmk.NMS.PAK.Item
 				)	return;
 
 				try {
-					Mouse.OverrideCursor       = Cursors.Wait;
-					CancellationTokenSource    = new();
+					CancellationTokenSource = new();
 					var cancel = CancellationTokenSource.Token;
 					CancelSaveButton.IsEnabled = true;
 					selected_node.ForEachTag(( INFO, CANCEL, LOG ) => {
@@ -330,10 +342,7 @@ namespace cmk.NMS.PAK.Item
 					},	cancel, Log.Default);
 				}
 				catch( Exception EX ) { Log.Default.AddFailure(EX); }
-				finally {
-					CancelSaveButton.IsEnabled = false;
-					Mouse.OverrideCursor       = null;
-				}
+				finally { CancelSaveButton.IsEnabled = false; }
 			}
 			else if( m_stack_index >= 0 ) {  // selected_node is an item
 				m_stack[m_stack_index].Data.SaveFileDialog();
@@ -343,7 +352,7 @@ namespace cmk.NMS.PAK.Item
 
 		//...........................................................
 
-		protected void OnCancelSaveClick( ImageButton SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
+		protected void OnCancelSaveClick( ImageButton SENDER )
 		{
 			CancellationTokenSource.Cancel();
 		}

@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.WEM
 {
-	public class Viewer
+    public class Viewer
 	: cmk.MainDockPanel
 	, Item.IViewer
 	{

@@ -20,12 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.IO;
+using System.Windows.Media.Imaging;
+using Pfim;
 
 //=============================================================================
 
 namespace cmk.NMS.PAK.DDS
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.Item.Data
 	{
 		static Data()
@@ -33,7 +35,6 @@ namespace cmk.NMS.PAK.DDS
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".DDS"] = extension_info;
 		}
 
@@ -43,7 +44,7 @@ namespace cmk.NMS.PAK.DDS
 
 		//...........................................................
 
-		public Data( NMS.PAK.Item.Info INFO, Stream RAW = null, Log LOG = null )
+		public Data( NMS.PAK.Item.Info INFO, Stream RAW, Log LOG = null )
 		: base(INFO, RAW, LOG)
 		{
 			Dds = RawToDDS(LOG);
@@ -51,7 +52,7 @@ namespace cmk.NMS.PAK.DDS
 
 		//...........................................................
 
-		public Data( string PATH, Stream RAW = null, Log LOG = null )
+		public Data( string PATH, Stream RAW, Log LOG = null )
 		: base(PATH, RAW, LOG)
 		{
 			Dds = RawToDDS(LOG);
@@ -60,6 +61,12 @@ namespace cmk.NMS.PAK.DDS
 		//...........................................................
 
 		public Pfim.Dds Dds { get; set; }
+
+		public BitmapSource GetBitmap( bool FREEZE = true )
+		=> Dds.GetBitmap(FREEZE);
+
+		public BitmapSource GetBitmap( int HEIGHT, bool FREEZE = true )
+		=> Dds.GetBitmap(HEIGHT, FREEZE);
 
 		//...........................................................
 
@@ -98,7 +105,7 @@ namespace cmk.NMS.PAK.DDS
 				if( !DDSToRaw(Dds, LOG) ) return false;
 				IsEdited = true;
 			}
-			return true;
+			return base.Save(LOG);
 		}
 	}
 }

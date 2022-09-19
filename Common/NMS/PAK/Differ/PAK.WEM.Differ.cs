@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk.NMS.PAK.WEM
 {
-	public class Differ
+    public class Differ
 	: Item.IDiffer
 	{
 		public Differ( Data LHS, Data RHS, Log LOG = null )

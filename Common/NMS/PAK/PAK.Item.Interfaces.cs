@@ -28,7 +28,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk.NMS.PAK.Item
 {
-	public interface ICollection
+    public interface ICollection
 	{
 		//...........................................................
 		// Find
@@ -39,8 +39,8 @@ namespace cmk.NMS.PAK.Item
 		public List<NMS.PAK.Item.Info> FindInfoStartsWith( string PATTERN, bool SORT = true );
 		public List<NMS.PAK.Item.Info> FindInfoContains  ( string PATTERN, bool SORT = true );
 		public List<NMS.PAK.Item.Info> FindInfoEndsWith  ( string PATTERN, bool SORT = true );
-		public List<NMS.PAK.Item.Info> FindInfoRegex     ( string PATTERN, bool SORT = true );
-		public List<NMS.PAK.Item.Info> FindInfo          ( Regex  REGEX,   bool SORT = true );
+		public List<NMS.PAK.Item.Info> FindInfoRegex     ( string PATTERN, bool SORT = true, bool WHOLE_WORDS = false, bool CASE_SENS = true, bool PATTERN_IS_REGEX = true );
+		public List<NMS.PAK.Item.Info> FindInfo          ( Regex  REGEX,   bool SORT = true, bool WHOLE_WORDS = false );
 
 		public List<NMS.PAK.Item.Info> DefaultFindInfoStartsWith( string PATTERN, bool SORT = true )
 		{
@@ -60,27 +60,49 @@ namespace cmk.NMS.PAK.Item
 			return FindInfo(INFO => INFO.Path.Full.EndsWith(PATTERN), SORT);
 		}
 
-		public List<NMS.PAK.Item.Info> DefaultFindInfoRegex( string PATTERN, bool SORT = true )
+		public List<NMS.PAK.Item.Info> DefaultFindInfoRegex( string PATTERN, bool SORT = true, bool WHOLE_WORDS = false, bool CASE_SENS = true, bool PATTERN_IS_REGEX = true )
 		{
 			Regex  regex = null;
-			try  { regex = PATTERN.CreateRegex(true, true); }
+			try  { regex = PATTERN.CreateRegex(CASE_SENS, PATTERN_IS_REGEX); }
 			catch( Exception EX ) {
 				Log.Default.AddFailure(EX, $"{GetType().FullName}:\n");
 				return new();
 			}
-			return DefaultFindInfo(regex, SORT);
+			return DefaultFindInfo(regex, SORT, WHOLE_WORDS);
 		}
 
-		public List<NMS.PAK.Item.Info> DefaultFindInfo( Regex REGEX, bool SORT = true )
+		public List<NMS.PAK.Item.Info> DefaultFindInfo( Regex REGEX, bool SORT = true, bool WHOLE_WORDS = false )
 		{
 			if( REGEX == null ) return new();
 			return FindInfo(INFO => {
-				try  { return REGEX.IsMatch(INFO.Path); }
+				try {
+					var path = INFO.Path;
+					if( !WHOLE_WORDS ) {
+						return REGEX.IsMatch(path);
+					}
+					else {  // WHOLE_WORDS
+						var matches = REGEX.Matches(path);
+						foreach( Match match in matches ) {
+							var match_end = match.Index + match.Length;
+							if( !IsWordBorder(path, match.Index - 1) ||
+								!IsWordBorder(path, match_end)
+							)	continue;
+							return true;
+						}
+						return false;
+					}
+				}
 				catch( Exception EX ) {
 					Log.Default.AddFailure(EX, $"{GetType().FullName}:\n");
 					return false;
 				}
 			},	SORT);
+		}
+
+		protected bool IsWordBorder( string TEXT, int OFFSET )
+		{
+			if( OFFSET < 0 || OFFSET >= TEXT.Length ) return true;
+			return !Char.IsLetterOrDigit(TEXT[OFFSET]);
 		}
 
 		//...........................................................
@@ -121,6 +143,16 @@ namespace cmk.NMS.PAK.Item
 			Action<NMS.PAK.MBIN.Data, Log, CancellationToken> HANDLER,
 			Log LOG = null, CancellationToken CANCEL = default
 		);
+	}
+
+	//=========================================================================
+
+	// PCBANKS, and each mod pak file
+	public interface INamedCollection
+	: ICollection
+	{
+		public string                  PakItemCollectionName { get; }
+		public NMS.PAK.Item.Info.Node  PakItemCollectionTree { get; }  // may be null
 	}
 }
 

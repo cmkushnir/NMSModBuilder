@@ -24,7 +24,7 @@ using System.IO;
 
 namespace cmk.NMS.PAK.LUA
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.TXT.Data
 	{
 		static Data()
@@ -32,7 +32,6 @@ namespace cmk.NMS.PAK.LUA
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".LUA"] = extension_info;
 		}
 

@@ -25,10 +25,10 @@ using System.Runtime.CompilerServices;
 
 namespace cmk.NMS.PAK.Item
 {
-	/// <summary>
-	/// Path wrapper: full, directory, name, extension.
-	/// </summary>
-	public class Path
+    /// <summary>
+    /// Path wrapper: full, directory, name, extension.
+    /// </summary>
+    public class Path
 	: System.IComparable<Path>
 	, System.IComparable<string>
 	, System.ComponentModel.INotifyPropertyChanged
@@ -285,7 +285,7 @@ namespace cmk.NMS.PAK.Item
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static bool IsNullOrEmpty( this cmk.NMS.PAK.Item.Path PATH )
 		{

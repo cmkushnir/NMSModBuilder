@@ -93,6 +93,19 @@ namespace cmk.NMS.PAK
 
 		//...........................................................
 
+		public void ClearEbinCache()
+		{
+			Lock.AcquireWrite();
+			try {
+				_ = Parallel.ForEach(List, LOADER
+					=> LOADER.ClearEbinCache()
+				);
+			}
+			finally { Lock.ReleaseWrite(); }
+		}
+
+		//...........................................................
+
 		/// <summary>
 		/// Find the index of a pak file in this collection.
 		/// PATH is fully qualified path.
@@ -192,7 +205,7 @@ namespace cmk.NMS.PAK
 		{
 			if( NORMALIZE ) PATH = NMS.PAK.Item.Path.Normalize(PATH);
 			if( PATH.IsNullOrEmpty() ) return null;
-			Lock.AcquireRead();
+ 			Lock.AcquireRead();
 			try {
 				for( var i = List.Count; i-- > 0; ) {
 					var info  = List[i].FindInfo(PATH, false);
@@ -238,11 +251,11 @@ namespace cmk.NMS.PAK
 		public List<NMS.PAK.Item.Info> FindInfoEndsWith( string PATTERN, bool SORT = true )
 		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoEndsWith(PATTERN, SORT);
 
-		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT);
+		public List<NMS.PAK.Item.Info> FindInfoRegex( string PATTERN, bool SORT = true, bool WHOLE_WORDS = false, bool CASE_SENS = true, bool PATTERN_IS_REGEX = true )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfoRegex(PATTERN, SORT, WHOLE_WORDS, CASE_SENS, PATTERN_IS_REGEX);
 
-		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true )
-		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT);
+		public List<NMS.PAK.Item.Info> FindInfo( Regex REGEX, bool SORT = true, bool WHOLE_WORDS = false )
+		=> ((NMS.PAK.Item.ICollection)this).DefaultFindInfo(REGEX, SORT, WHOLE_WORDS);
 
 		//...........................................................
 

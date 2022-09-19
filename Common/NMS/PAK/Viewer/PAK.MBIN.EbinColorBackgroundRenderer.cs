@@ -28,7 +28,7 @@ using avalon = ICSharpCode.AvalonEdit;
 
 namespace cmk.NMS.PAK.MBIN
 {
-	public class EbinColorBackgroundRenderer
+    public class EbinColorBackgroundRenderer
 	: avalon.Rendering.IBackgroundRenderer
 	{
 		// search for RGBA color strings "(#, #, #, #)"

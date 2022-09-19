@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //=============================================================================
 
-namespace cmk.NMS.PAK.LUA
+namespace cmk.NMS.PAK.VDF
 {
     public class Viewer
 	: cmk.TextViewer
@@ -32,7 +32,7 @@ namespace cmk.NMS.PAK.LUA
 
 		public Viewer( Data DATA, Log LOG = null ) : base()
 		{
-			LoadHighlighterExtension(".lua");
+			LoadHighlighterExtension(".json");
 			Data = DATA;
 		}
 
@@ -40,20 +40,20 @@ namespace cmk.NMS.PAK.LUA
 
 		public ImageButton ViewerButton { get; } = new() {
 			ToolTip = "Default",
-			Uri     = Resource.Uri("PakItemLua.png")
+			Uri     = Resource.Uri("PakItemTxt.png")
 		};
 
 		//...........................................................
 
-		protected NMS.PAK.LUA.Data m_data;
+		protected NMS.PAK.VDF.Data m_data;
 
-		public NMS.PAK.LUA.Data Data {
+		public NMS.PAK.VDF.Data Data {
 			get { return m_data; }
 			set {
 				if( m_data == value ) return;
 				m_data             = value;
 				EditorText         = m_data?.Text;
-				SourceLabel.Text    = m_data?.FilePath?.NameExt;
+				SourceLabel.Text   = m_data?.FilePath?.NameExt;
 				Editor.CaretOffset = 0;
 			}
 		}

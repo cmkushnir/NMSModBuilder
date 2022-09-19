@@ -24,7 +24,7 @@ using System.IO;
 
 namespace cmk.NMS.PAK.JSON
 {
-	public class Data
+    public class Data
 	: cmk.NMS.PAK.TXT.Data
 	{
 		static Data()
@@ -32,7 +32,6 @@ namespace cmk.NMS.PAK.JSON
 			var extension_info = new NMS.PAK.Item.Extension{ Data = typeof(Data) };
 			extension_info.Viewers.Insert(0, typeof(Viewer));
 			extension_info.Differs.Insert(0, typeof(Differ));
-
 			s_extensions[".JSON"] = extension_info;
 		}
 
@@ -42,14 +41,14 @@ namespace cmk.NMS.PAK.JSON
 
 		//...........................................................
 
-		public Data( NMS.PAK.Item.Info INFO, Stream RAW = null, Log LOG = null )
+		public Data( NMS.PAK.Item.Info INFO, Stream RAW, Log LOG = null )
 		: base(INFO, RAW, LOG)
 		{
 		}
 
 		//...........................................................
 
-		public Data( string PATH, Stream RAW = null, Log LOG = null )
+		public Data( string PATH, Stream RAW, Log LOG = null )
 		: base(PATH, RAW, LOG)
 		{
 		}
