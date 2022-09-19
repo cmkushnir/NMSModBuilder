@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static bool IsNullOrEmpty( this string STRING )
 		{
@@ -276,6 +276,27 @@ namespace cmk
 			if( INCLUDE_CARRIAGE_RETURN ) normalized = normalized.Replace("\n", "\r\n");
 
 			return normalized;
+		}
+
+		//...........................................................
+
+		/// <summary>
+		/// https://en.wikipedia.org/wiki/Jenkins_hash_function
+		/// </summary>
+		public static uint JenkinsHash( this string STRING )
+		{
+			uint hash = 0;
+			if( STRING != null ) {
+				foreach( var c in STRING ) {
+					hash += c;
+					hash += (hash << 10);
+					hash ^= (hash >>  6);
+				}
+				hash += (hash <<  3);
+				hash ^= (hash >> 11);
+				hash += (hash << 15);
+			}
+			return hash;
 		}
 
 		//...........................................................

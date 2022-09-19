@@ -24,9 +24,9 @@ using System.Collections.Generic;
 //=============================================================================
 namespace cmk
 {
-	// list interfaces have some conflicts.
-	// may get ambiguous errors for some of these (see IList extensions).
-	public static partial class _x_
+    // list interfaces have some conflicts.
+    // may get ambiguous errors for some of these (see IList extensions).
+    public static partial class _x_
 	{
 		//public static bool IsNullOrEmpty<OBJECT_T>(
 		//	this IReadOnlyList<OBJECT_T> LIST

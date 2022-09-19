@@ -27,7 +27,7 @@ using System.Text;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static void Clear( this StringBuilder BUILDER )
 		{

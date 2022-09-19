@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		/// <summary>
 		/// The object passed to IS_ALIVE will be non-null.

@@ -24,7 +24,7 @@ using System;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		/// <summary>
 		/// hh:mm:ss.fff

@@ -24,7 +24,7 @@ using System;
 
 namespace cmk
 {
-	public static partial class Array_x
+    public static partial class Array_x
 	{
 		/// <summary>
 		/// Use msvcrt memcmp to compare min length of LHS, RHS.

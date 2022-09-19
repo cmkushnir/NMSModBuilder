@@ -25,7 +25,7 @@ using Octokit;
 
 namespace cmk
 {
-	public static class GitHub
+    public static class GitHub
 	{
 		/// <summary>
 		/// Disable all GitHub queries.

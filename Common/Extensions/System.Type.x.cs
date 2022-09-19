@@ -27,7 +27,7 @@ using System.Reflection;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static bool IsCastableTo( this Type LHS, Type RHS )
 		{

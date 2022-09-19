@@ -26,7 +26,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		// Only supports Bgr24 and Bgra32 formats.
 		// A is not inverted, instead if A < ALPHA_MULT_THRESHOLD then multiply it by ALPHA_MULT.

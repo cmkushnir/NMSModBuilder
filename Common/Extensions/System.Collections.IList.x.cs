@@ -25,9 +25,9 @@ using System.Collections.Generic;
 //=============================================================================
 namespace cmk
 {
-	// list interfaces have some conflicts.
-	// may get ambiguous errors for some of these (see IReadOnlyList extensions).
-	public static partial class _x_
+    // list interfaces have some conflicts.
+    // may get ambiguous errors for some of these (see IReadOnlyList extensions).
+    public static partial class _x_
 	{
 		public static bool IsNullOrEmpty(
 			this IList LIST
@@ -142,6 +142,21 @@ namespace cmk
 			}
 
 			LIST.Add(OBJECT);
+			return true;
+		}
+
+		//.................................................
+
+		public static bool AddUnique(
+			this IList<string> LIST,
+			           string  STRING,
+					   StringComparison COMPARE = StringComparison.Ordinal
+		){
+			if( LIST == null || STRING.IsNullOrEmpty() ) return false;
+			foreach( var item in LIST ) {
+				if( string.Equals(STRING, item, COMPARE) ) return false;
+			}
+			LIST.Add(STRING);
 			return true;
 		}
 	}

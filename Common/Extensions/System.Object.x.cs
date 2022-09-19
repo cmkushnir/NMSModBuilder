@@ -24,7 +24,7 @@ using System;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		[Obsolete]
 		public static WeakReference GetWeakReference( this object OBJECT )

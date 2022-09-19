@@ -26,7 +26,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public struct Rgba16
+    public struct Rgba16
 	{
 		ushort Raw;
 

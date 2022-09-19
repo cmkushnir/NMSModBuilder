@@ -24,7 +24,7 @@ using System;
 
 namespace cmk
 {
-	public static partial class String
+    public static partial class String
 	{
 		/// <summary>
 		/// All embedded #'s are treated as positive and "01" > "1",

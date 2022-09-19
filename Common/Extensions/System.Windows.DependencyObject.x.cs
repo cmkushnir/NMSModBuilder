@@ -26,7 +26,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		/// <summary>
 		/// Walk upstream through visual tree parents looking for PARENT_T.

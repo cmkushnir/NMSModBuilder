@@ -27,8 +27,34 @@ using System.Threading.Tasks;
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
+		/// <summary>
+		/// Create new stream via cmk.IO.Stream.MemoryOrTempFile(SOURCE.Length, BUFFER_SIZE),
+		/// then copy all of SOURCE to new stream.
+		/// Returns null if SOURCE == null;
+		/// </summary>
+		public static Stream Clone(
+			this Stream SOURCE,
+			     int    BUFFER_SIZE = 65536
+		){
+			if( SOURCE == null ) return null;
+
+			var clone = cmk.IO.Stream.MemoryOrTempFile(SOURCE.Length, BUFFER_SIZE);
+
+			var source_pos = SOURCE.Position;
+			SOURCE.Position = 0;
+
+			SOURCE.CopyTo(clone);
+
+			SOURCE.Position = source_pos;
+			clone .Position = 0;
+
+			return clone;
+		}
+
+		//...........................................................
+
 		/// <summary>
 		/// PROGRESS.Report receives total bytes copied upto that point.
 		/// Caller will need to convert that to a % if needed,
