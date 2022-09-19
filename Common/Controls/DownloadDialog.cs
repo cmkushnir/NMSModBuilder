@@ -24,13 +24,14 @@ using System.Net.Http;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Microsoft.Win32;
 
 //=============================================================================
 
 namespace cmk
 {
-	public class DownloadDialog
+    public class DownloadDialog
 	: System.Windows.Window
 	{
 		protected static HttpClient s_http_client;
@@ -179,6 +180,28 @@ namespace cmk
 		public string ResultText {
 			get { return ResultTextBox.Text; }
 			set { ResultTextBox.Text = value; }
+		}
+
+		//...........................................................
+
+		protected Cursor m_orig_cursor = null;
+
+		protected override void OnInitialized( EventArgs ARGS )
+		{
+			base.OnInitialized(ARGS);
+			Dispatcher.Invoke(() => {
+				m_orig_cursor = Mouse.OverrideCursor;
+				Mouse.OverrideCursor = null;
+			});
+		}
+
+		protected override void OnClosed( EventArgs ARGS )
+		{
+			Dispatcher.Invoke(() => {
+				Mouse.OverrideCursor = m_orig_cursor;
+				m_orig_cursor = null;
+			});
+			base.OnClosed(ARGS);
 		}
 
 		//...........................................................

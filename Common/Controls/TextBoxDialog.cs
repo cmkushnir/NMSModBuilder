@@ -25,7 +25,7 @@ using System.Windows.Controls;
 
 namespace cmk
 {
-	public class TextBoxDialog
+    public class TextBoxDialog
 	: System.Windows.Window
 	{
 		public TextBoxDialog() : base()

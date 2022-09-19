@@ -28,7 +28,7 @@ using System.Windows.Controls;
 
 namespace cmk
 {
-	public class SelectFolderDialog
+    public class SelectFolderDialog
 	: System.Windows.Window
 	{
 		public SelectFolderDialog()

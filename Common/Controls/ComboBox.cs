@@ -26,7 +26,7 @@ using System.Windows.Data;
 
 namespace cmk
 {
-	public class ComboBox
+    public class ComboBox
 	: System.Windows.Controls.ComboBox
 	{
 		public delegate void VisualChildrenChangedEventHandler( DependencyObject ADDED, DependencyObject REMOVED );
@@ -48,10 +48,14 @@ namespace cmk
 
 		//...........................................................
 
+		public ListCollectionView ListCollectionView =>
+			CollectionViewSource.GetDefaultView(ItemsSource) as ListCollectionView
+		;
+
+		//...........................................................
+
 		protected void Construct( bool IS_VIRTUALIZING )
 		{
-			HorizontalContentAlignment = HorizontalAlignment.Stretch;
-
 			Grid.SetIsSharedSizeScope(this, true);
 
 			if( IS_VIRTUALIZING ) ItemsPanel = new() {
@@ -60,20 +64,26 @@ namespace cmk
 			SetValue(VirtualizingStackPanel.IsVirtualizingProperty,             IS_VIRTUALIZING);
 			SetValue(VirtualizingStackPanel.IsVirtualizingWhenGroupingProperty, IS_VIRTUALIZING);
 			SetValue(VirtualizingStackPanel.VirtualizationModeProperty,         VirtualizationMode.Recycling);
+
+			HorizontalContentAlignment = HorizontalAlignment.Stretch;
+			VerticalAlignment = VerticalAlignment.Center;
+			BorderThickness   = new(0);
+			Padding           = new(2);
+			Margin            = new(2);
+			IsEditable        = false;
+			IsReadOnly        = true;
+
+			ToolTipService.SetInitialShowDelay(this, 0);
+			ToolTipService.SetShowDuration(this, 60000);
 		}
 
 		//...........................................................
 
 		protected override void OnVisualChildrenChanged( DependencyObject ADDED, DependencyObject REMOVED )
 		{
+			base.OnVisualChildrenChanged(ADDED, REMOVED);
 			VisualChildrenChanged?.Invoke(ADDED, REMOVED);
 		}
-
-		//...........................................................
-
-		public ListCollectionView ListCollectionView =>
-			CollectionViewSource.GetDefaultView(ItemsSource) as ListCollectionView
-		;
 	}
 }
 

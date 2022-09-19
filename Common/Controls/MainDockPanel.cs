@@ -26,14 +26,14 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	/// <summary>
-	/// DockPanel with toolbar, client area, and statusbar.
-	/// Toolbar   has left, center, and right sub-panels.
-	/// Statusbar has left, center, and right sub-panels.
-	/// Note: center panels are set in column 0 and span all 3 columns in order to be truly centered.
-	///       this means that small horiz size grid can cause sub-panels to overlap.
-	/// </summary>
-	public class MainDockPanel
+    /// <summary>
+    /// DockPanel with toolbar, client area, and statusbar.
+    /// Toolbar   has left, center, and right sub-panels.
+    /// Statusbar has left, center, and right sub-panels.
+    /// Note: center panels are set in column 0 and span all 3 columns in order to be truly centered.
+    ///       this means that small horiz size grid can cause sub-panels to overlap.
+    /// </summary>
+    public class MainDockPanel
 	: System.Windows.Controls.DockPanel
 	{
 		public MainDockPanel() : base()

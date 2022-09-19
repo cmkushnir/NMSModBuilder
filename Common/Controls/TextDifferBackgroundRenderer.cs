@@ -29,7 +29,7 @@ using diffplex = DiffPlex.DiffBuilder;
 
 namespace cmk
 {
-	public class TextDifferBackgroundRenderer
+    public class TextDifferBackgroundRenderer
 	: avalon.Rendering.IBackgroundRenderer
 	{
 		public static readonly Color ModifiedColor = Color.FromRgb(0x88, 0xff, 0xff);

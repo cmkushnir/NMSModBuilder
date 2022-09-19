@@ -28,7 +28,7 @@ using avalon = ICSharpCode.AvalonEdit;
 
 namespace cmk
 {
-	public class TextSearchBackgroundRenderer
+    public class TextSearchBackgroundRenderer
 	: avalon.Rendering.IBackgroundRenderer
 	{
 		public List<Match> Results { get; set; }

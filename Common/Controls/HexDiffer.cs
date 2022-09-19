@@ -26,7 +26,7 @@ using System.Windows.Shapes;
 
 namespace cmk
 {
-	public class HexDiffer
+    public class HexDiffer
 	: System.Windows.Controls.Grid
 	{
 		public HexDiffer( Stream LHS, Stream RHS ) : base()

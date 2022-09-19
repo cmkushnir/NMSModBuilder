@@ -26,11 +26,9 @@ using System.Windows.Input;
 
 namespace cmk
 {
-	public class Breadcrumb
+    public class Breadcrumb
 	: System.Windows.Controls.WrapPanel
 	{
-		protected static readonly Thickness s_padding = new(0, 0, 1, 0);
-
 		public delegate void SelectionChangedEventHandler( Breadcrumb SENDER, IPathNode SELECTED );
 		public event         SelectionChangedEventHandler SelectionChanged;
 
@@ -62,10 +60,8 @@ namespace cmk
 
 		//...........................................................
 
-		public readonly ComboBox Root = new() {
-			Padding       = s_padding,
-			IsEditable    = false,
-			IsReadOnly    = true,
+		public readonly cmk.ComboBox Root = new() {
+			Margin        = new(0, 2, 0, 2),
 			SelectedIndex = -1,
 			Tag           =  1,
 		};
@@ -154,13 +150,11 @@ namespace cmk
 			sender.MoveFocus(new(FocusNavigationDirection.Next));
 			if( selected.Items == null ) return;
 
-			var combobox = new ComboBox{
+			var combobox = new cmk.ComboBox{
 				ItemsSource       = selected.Items,
 				Style             = Root.Style,
+				Margin            = new(0, 2, 0, 2),
 				MaxDropDownHeight = Root.MaxDropDownHeight,
-				Padding           = s_padding,
-				IsEditable        = false,
-				IsReadOnly        = true,
 				SelectedIndex     = -1,
 				Tag               = index + 1,
 			};

@@ -26,7 +26,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public class TreeView
+    public class TreeView
 	: System.Windows.Controls.TreeView
 	{
 		public delegate void VisualChildrenChangedEventHandler( DependencyObject ADDED, DependencyObject REMOVED );
@@ -72,6 +72,7 @@ namespace cmk
 
 		protected override void OnVisualChildrenChanged( DependencyObject ADDED, DependencyObject REMOVED )
 		{
+			base.OnVisualChildrenChanged(ADDED, REMOVED);
 			VisualChildrenChanged?.Invoke(ADDED, REMOVED);
 		}
 	}

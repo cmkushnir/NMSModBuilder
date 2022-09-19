@@ -24,7 +24,7 @@ using System.IO;
 
 namespace cmk
 {
-	public class HexViewer  // todo
+    public class HexViewer  // todo
 	: cmk.TextViewer
 	{
 		public HexViewer( Stream RAW = null ) : base()

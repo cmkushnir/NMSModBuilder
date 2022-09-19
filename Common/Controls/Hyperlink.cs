@@ -29,13 +29,13 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public class Hyperlink
+    public class Hyperlink
 	: System.Windows.Controls.TextBlock
 	{
 		protected bool m_is_over    = false,
 					   m_is_pressed = false;
 
-		public delegate void ClickEventHandler( Hyperlink SENDER, MouseButtonEventArgs ARGS );
+		public delegate void ClickEventHandler( Hyperlink SENDER );
 		public event         ClickEventHandler Click;
 
 		//...........................................................
@@ -83,16 +83,9 @@ namespace cmk
 
 		//...........................................................
 
-		protected virtual void Update()
+		public void PerformClick()
 		{
-			Foreground = NormalBrush;
-			if( !IsEnabled ) {
-				Foreground = DisabledBrush;
-			}
-			else {
-				     if( m_is_pressed ) Foreground = PressedBrush;
-				else if( m_is_over )    Foreground = OverBrush;
-			}
+			OnClick();
 		}
 
 		//...........................................................
@@ -137,24 +130,37 @@ namespace cmk
 			m_is_over    = true;
 			m_is_pressed = ARGS.LeftButton == MouseButtonState.Pressed;
 			Update();
-
-			if( IsEnabled ) OnClick(SENDER as Hyperlink, ARGS);
+			if( IsEnabled ) OnClick();
 		}
 
 		//...........................................................
 
-		protected virtual void OnClick( Hyperlink SENDER, MouseButtonEventArgs ARGS )
+		protected virtual void OnClick()
 		{
-			Click?.Invoke(SENDER, ARGS);
-			if( !ARGS.Handled ) try {
+			Click?.Invoke(this);
+			try {
 				var info = new ProcessStartInfo {
 					FileName        = Url,
 					UseShellExecute = true,
 				};
 				_ = Process.Start(info);
-				ARGS.Handled = true;
 			}
 			catch( Exception EX ) { Log.Default.AddFailure(EX); }
+		}
+
+		//...........................................................
+
+		protected virtual void Update()
+		{
+			Foreground = NormalBrush;
+
+			if( !IsEnabled ) {
+				Foreground = DisabledBrush;
+			}
+			else {
+				     if( m_is_pressed ) Foreground = PressedBrush;
+				else if( m_is_over )    Foreground = OverBrush;
+			}
 		}
 	}
 }

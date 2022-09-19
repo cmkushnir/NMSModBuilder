@@ -26,7 +26,7 @@ using ICSharpCode.AvalonEdit.Folding;
 
 namespace cmk
 {
-	public class TextTabFoldingStrategy
+    public class TextTabFoldingStrategy
 	: cmk.ITextViewerFoldingStrategy
 	{
 		public void UpdateFoldings( FoldingManager MANGER, TextDocument DOCUMENT )

@@ -21,13 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Diagnostics;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 //=============================================================================
 
 namespace cmk
 {
-	public class GitHubButton
+    public class GitHubButton
 	: cmk.ImageButton
 	{
 		public GitHubButton( string USER, string REPOSITORY ) : base()
@@ -74,16 +73,15 @@ namespace cmk
 
 		//...........................................................
 
-		protected override void OnClick( ImageButton SENDER, MouseButtonEventArgs ARGS )
+		protected override void OnClick()
 		{
-			base.OnClick(SENDER, ARGS);
+			base.OnClick();
 			try {
 				var info = new ProcessStartInfo {
 					FileName        = Url,
 					UseShellExecute = true,
 				};
 				_ = Process.Start(info);
-				ARGS.Handled = true;
 			}
 			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 		}

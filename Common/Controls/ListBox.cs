@@ -29,7 +29,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public class ListBox
+    public class ListBox
 	: System.Windows.Controls.ListBox
 	{
 		public delegate void VisualChildrenChangedEventHandler( DependencyObject ADDED, DependencyObject REMOVED );
@@ -70,6 +70,12 @@ namespace cmk
 
 			BuildItemContainerStyle();
 		}
+
+		//...........................................................
+
+		public ListCollectionView ListCollectionView =>
+			CollectionViewSource.GetDefaultView(ItemsSource) as ListCollectionView
+		;
 
 		//...........................................................
 
@@ -157,14 +163,9 @@ namespace cmk
 
 		protected override void OnVisualChildrenChanged( DependencyObject ADDED, DependencyObject REMOVED )
 		{
+			base.OnVisualChildrenChanged(ADDED, REMOVED);
 			VisualChildrenChanged?.Invoke(ADDED, REMOVED);
 		}
-
-		//...........................................................
-
-		public ListCollectionView ListCollectionView =>
-			CollectionViewSource.GetDefaultView(ItemsSource) as ListCollectionView
-		;
 	}
 }
 

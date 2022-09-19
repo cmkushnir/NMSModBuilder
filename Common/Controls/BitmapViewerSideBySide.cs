@@ -26,7 +26,7 @@ using System.Windows.Shapes;
 
 namespace cmk
 {
-	public class BitmapViewerSideBySide
+    public class BitmapViewerSideBySide
 	: System.Windows.Controls.Grid
 	{
 		public BitmapViewerSideBySide() : base()

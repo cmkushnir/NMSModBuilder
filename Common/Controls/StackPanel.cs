@@ -26,7 +26,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public class StackPanel
+    public class StackPanel
 	: System.Windows.Controls.StackPanel
 	{
 		public delegate void VisualChildrenChangedEventHandler( DependencyObject ADDED, DependencyObject REMOVED );
@@ -44,6 +44,7 @@ namespace cmk
 
 		protected override void OnVisualChildrenChanged( DependencyObject ADDED, DependencyObject REMOVED )
 		{
+			base.OnVisualChildrenChanged(ADDED, REMOVED);
 			VisualChildrenChanged?.Invoke(ADDED, REMOVED);
 		}
 	}

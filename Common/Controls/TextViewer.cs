@@ -26,6 +26,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
+using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using avalon = ICSharpCode.AvalonEdit;
@@ -34,7 +35,7 @@ using avalon = ICSharpCode.AvalonEdit;
 
 namespace cmk
 {
-	public class TextViewer
+    public class TextViewer
 	: cmk.MainDockPanel
 	{
 		public static readonly avalon.TextViewPosition MousePositionInvalid = new() {
@@ -44,9 +45,23 @@ namespace cmk
 			IsAtEndOfLine = true,
 		};
 
+		protected static RoutedUICommand s_cmd_editor_copy_as_html = new(
+			"Copy as HTML", "CopyAsHtml", typeof(TextArea)
+		);
+
 		//...........................................................
 
-		public TextViewer( string TEXT = "", string SOURCE_LABEL = "" ) : base()
+		public TextViewer() : base()
+		{
+			Construct("", "");
+		}
+
+		public TextViewer( string TEXT, string SOURCE_LABEL = "" ) : base()
+		{
+			Construct(TEXT, SOURCE_LABEL);
+		}
+
+		protected void Construct( string TEXT, string SOURCE_LABEL )
 		{
 			ToolGrid.Background = Brushes.Silver;
 
@@ -81,6 +96,14 @@ namespace cmk
 			Loaded           += OnLoaded;
 
 			EditorText = TEXT;
+
+			// Alt-H in EditorArea copies selection as HTML to clipboard
+			EditorArea.InputBindings.Add(new KeyBinding(s_cmd_editor_copy_as_html,
+				Key.H, ModifierKeys.Alt
+			));
+			EditorArea.CommandBindings.Add(new(s_cmd_editor_copy_as_html,
+				CopyAsHtml
+			));
 		}
 
 		//...........................................................
@@ -122,24 +145,6 @@ namespace cmk
 		public virtual string EditorText {
 			get { return EditorDocument.Text  ?? ""; }
 			set { EditorDocument.Text = value ?? ""; }
-		}
-
-		//...........................................................
-
-		protected virtual void OnLoaded( object SENDER, RoutedEventArgs ARGS )
-		{
-			Loaded -= OnLoaded;
-		}
-
-		//...........................................................
-
-		protected virtual void OnMouseMove( object SENDER, MouseEventArgs ARGS )
-		{
-			var point     = ARGS.GetPosition(Editor);
-			MousePosition = Editor.GetPositionFromPoint(point) ?? MousePositionInvalid;
-			MouseOffset   = MousePosition == MousePositionInvalid ?
-				-1 : EditorDocument.GetOffset(MousePosition.Line, MousePosition.Column)
-			;
 		}
 
 		//...........................................................
@@ -201,6 +206,32 @@ namespace cmk
 			);
 
 			return defn;
+		}
+
+		//...........................................................
+
+		protected void CopyAsHtml( object SENDER, ExecutedRoutedEventArgs ARGS )
+		{
+			var html = EditorArea.Selection.CreateHtmlFragment(new HtmlOptions(EditorArea.Options));
+			Clipboard.SetText(html);
+		}
+
+		//...........................................................
+
+		protected virtual void OnLoaded( object SENDER, RoutedEventArgs ARGS )
+		{
+			Loaded -= OnLoaded;
+		}
+
+		//...........................................................
+
+		protected virtual void OnMouseMove( object SENDER, MouseEventArgs ARGS )
+		{
+			var point     = ARGS.GetPosition(Editor);
+			MousePosition = Editor.GetPositionFromPoint(point) ?? MousePositionInvalid;
+			MouseOffset   = MousePosition == MousePositionInvalid ?
+				-1 : EditorDocument.GetOffset(MousePosition.Line, MousePosition.Column)
+			;
 		}
 	}
 }

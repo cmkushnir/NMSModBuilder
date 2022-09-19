@@ -29,13 +29,13 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public class ImageButton
+    public class ImageButton
 	: System.Windows.Controls.Border
 	{
 		protected bool m_is_over    = false,
 					   m_is_pressed = false;
 
-		public delegate void ClickEventHandler( ImageButton SENDER, MouseButtonEventArgs ARGS );
+		public delegate void ClickEventHandler( ImageButton SENDER );
 		public event         ClickEventHandler Click;
 
 		//...........................................................
@@ -107,6 +107,13 @@ namespace cmk
 
 		//...........................................................
 
+		public void PerformClick()
+		{
+			OnClick();
+		}
+
+		//...........................................................
+
 		protected virtual void OnLoaded( object SENDER, RoutedEventArgs ARGS )
 		{
 			Loaded -= OnLoaded;
@@ -147,15 +154,14 @@ namespace cmk
 			m_is_over    = true;
 			m_is_pressed = ARGS.LeftButton == MouseButtonState.Pressed;
 			Update();
-
-			if( IsEnabled ) OnClick(SENDER as ImageButton, ARGS);
+			if( IsEnabled ) OnClick();
 		}
 
 		//...........................................................
 
-		protected virtual void OnClick( ImageButton SENDER, MouseButtonEventArgs ARGS )
+		protected virtual void OnClick()
 		{
-			Click?.Invoke(SENDER, ARGS);
+			Click?.Invoke(this);
 		}
 
 		//...........................................................
@@ -169,8 +175,8 @@ namespace cmk
 			}
 			else {
 				Image.Opacity = 1.0;
-				if( m_is_pressed ) Background = PressedBackground;
-				else if( m_is_over ) Background =    OverBackground;
+				     if( m_is_pressed ) Background = PressedBackground;
+				else if( m_is_over )    Background =    OverBackground;
 			}
 
 			Height = Image.Height

@@ -25,15 +25,40 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using static cmk.TextSearchData;
 using avalon = ICSharpCode.AvalonEdit;
 
 //=============================================================================
 
 namespace cmk
 {
-	public partial class TextSearchPanel
+    public class TextSearchData
+	{
+		public enum ScrollEnum
+		{
+			None  = 0,
+			First = -1,
+			Last  = int.MaxValue
+		}
+		public string     Pattern          = null;
+		public string     Text             = null;
+		public int        ScrollLineOffset = int.MaxValue;
+		public ScrollEnum Scroll           = ScrollEnum.First;
+		public bool       WholeWord        = false;
+		public bool       CaseSensitive    = false;
+		public bool       Regex            = false;
+	}
+
+	//=========================================================================
+
+    public partial class TextSearchPanel
 	: System.Windows.Controls.WrapPanel
 	{
+		public delegate void SearchChangedEventHandler( TextSearchPanel SENDER );
+		public event         SearchChangedEventHandler SearchChanged;
+
+		//...........................................................
+
 		protected static string [] s_offsets = new string [] {
 			"", "0",
 			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
@@ -99,14 +124,9 @@ namespace cmk
 			Margin   = new(2),
 			MinWidth = 60,
 		};
-		public readonly ComboBox SearchScrollLineOffsetComboBox = new() {
-			ToolTip = "Search Line Offset",
-			HorizontalAlignment = HorizontalAlignment.Center,
-			VerticalAlignment   = VerticalAlignment.Center,
-			IsEditable = false,
-			Padding    = new(4, 2, 4, 2),
-			Margin     = new(2),
-			MinWidth   = 10,
+		public readonly cmk.ComboBox SearchScrollLineOffsetComboBox = new() {
+			ToolTip  = "Search Line Offset",
+			MinWidth = 10,
 		};
 
 		public readonly ImageButton SearchFirstButton = new() {
@@ -150,12 +170,14 @@ namespace cmk
 			set {
 				if( m_editor == value ) return;
 				if( m_editor != null ) {
+					m_editor.TextChanged -= OnEditorTextChanged;
 					EditorBackgroundRenderers.Remove(SearchBackgroundRenderer);
 				}
 				m_editor = value;
 				if( m_editor != null ) {
 					// Add, always want it to be last one (draw last on top)
 					EditorBackgroundRenderers.Add(SearchBackgroundRenderer);
+					m_editor.TextChanged += OnEditorTextChanged;
 				}
 			}
 		}
@@ -167,9 +189,8 @@ namespace cmk
 		public avalon.Editing  .Caret        EditorCaret    => EditorArea?.Caret;
 		public avalon.Rendering.TextView     EditorView     => EditorArea?.TextView;
 
-		public IList<avalon.Rendering.IBackgroundRenderer> EditorBackgroundRenderers =>
-			EditorView?.BackgroundRenderers
-		;
+		public IList<avalon.Rendering.IBackgroundRenderer> EditorBackgroundRenderers
+		=> EditorView?.BackgroundRenderers;
 
 		//...........................................................
 
@@ -181,6 +202,116 @@ namespace cmk
 				SearchTextBox.Text = value;
 				DoSearch();
 			}
+		}
+
+		//...........................................................
+
+		public TextSearchData Data {
+			get => new TextSearchData() {
+				Pattern          = SearchText,
+				Text             = EditorText,
+				ScrollLineOffset = SearchScrollLineOffset,
+				Scroll           = ScrollEnum.None,
+				WholeWord        = SearchWholeWordButton.IsChecked,
+				CaseSensitive    = SearchCaseSensitiveButton.IsChecked,
+				Regex            = SearchRegexButton.IsChecked,
+			};
+			set {
+				if( value == null ) return;
+				Dispatcher.Invoke(() => {
+					SearchText = "";  // so don't re-search when updating following
+
+					SearchWholeWordButton    .IsChecked = value.WholeWord;
+					SearchCaseSensitiveButton.IsChecked = value.CaseSensitive;
+					SearchRegexButton        .IsChecked = value.Regex;
+
+					if( value.ScrollLineOffset >= 0 &&
+						value.ScrollLineOffset <= s_offsets.Length
+					)	SearchScrollLineOffsetComboBox.SelectedIndex = value.ScrollLineOffset + 1;
+
+					var document  = EditorDocument;
+					if( document != null && value.Text != null ) {
+						EditorDocument.Text = value.Text;
+					}
+
+					SearchText = value.Pattern;
+
+					switch( value.Scroll ) {
+						case ScrollEnum.First: SearchFirstButton.PerformClick(); break;
+						case ScrollEnum.Last:  SearchLastButton .PerformClick(); break;
+					}
+				});
+			}
+		}
+
+		//...........................................................
+
+		protected void OnEditorTextChanged( object SENDER, EventArgs ARGS )
+		{
+			// todo: start timer, DoSearch after timer exprires
+			// to avoid researching after each keystroke.
+			// low-priority as only applies to scripts at the moment,
+			// and they are short enough that re-search is fast.
+			DoSearch();
+		}
+
+		//...........................................................
+
+		protected void OnSearchScrollLineOffsetComboBoxSelectionChanged( object SENDER, SelectionChangedEventArgs ARGS )
+		{
+			var sender  = SENDER as ComboBox;
+			if( sender != null ) {
+				s_selected_offset_index = sender.SelectedIndex;
+				SearchScrollLineOffset  = s_selected_offset_index - 1;
+			}
+		}
+
+		//...........................................................
+
+		protected void OnFirstClick( object SENDER )
+		{
+			var  results = Results;
+			if( !results.IsNullOrEmpty() ) SelectResult(results[0]);
+		}
+
+		//...........................................................
+
+		protected void OnPrevClick( object SENDER )
+		{
+			var results = Results;
+			if( results.IsNullOrEmpty() ) return;
+
+			var i = 0;
+			for( var offset = EditorCaret.Offset; i < results.Count; ++i ) {
+				if( results[i].Index >= offset ) break;
+			}
+			if( --i < 0 ) i = results.Count - 1;
+
+			SelectResult(results[i]);
+		}
+
+		//...........................................................
+
+		protected void OnNextClick( object SENDER )
+		{
+			var results = Results;
+			if( results.IsNullOrEmpty() ) return;
+
+			var i = 0;
+			for( var offset = EditorCaret.Offset + 1; i < results.Count; ++i ) {
+				if( results[i].Index >= offset ) break;
+			}
+			if( i >= results.Count ) i = 0;
+
+			SelectResult(results[i]);
+		}
+
+		//...........................................................
+
+		protected void OnLastClick( object SENDER )
+		{
+			var  results = Results;
+			if( !results.IsNullOrEmpty() ) SelectResult(results[results.Count - 1]);
 		}
 
 		//...........................................................
@@ -197,27 +328,41 @@ namespace cmk
 
 		public void DoSearch()
 		{
-			SearchCountTextBlock.Text = "0";
-
 			EditorArea.ClearSelection();
 			EditorView.InvalidateLayer(avalon.Rendering.KnownLayer.Selection);
 
+			SearchCountTextBlock.Text = "0";
 			Results = null;
 
+			Results = Search(EditorText);
+			if( !Results.IsNullOrEmpty() ) {
+				SearchCountTextBlock.Text = Results.Count.ToString();
+			}
+
+			SearchChanged?.Invoke(this);
+		}
+
+		//...........................................................
+
+		public List<Match> Search( string TEXT )
+		{
+			if( TEXT.IsNullOrEmpty() ) return new();
+
 			// limit the insanity
-			if( SearchText.Length < 2 ) return;
+			var search_text = SearchText;
+			if( search_text.Length < 2 || search_text.Length > TEXT.Length ) return new();
 
 			MatchCollection matches = null;
 			try {
-				var regex = SearchText.CreateRegex(
+				var regex = search_text.CreateRegex(
 					SearchCaseSensitiveButton.IsChecked,
 					SearchRegexButton.IsChecked
 				);
-				matches = regex.Matches(EditorText);
+				matches = regex.Matches(TEXT);
 			}
 			catch( Exception EX ) {
 				Log.Default.AddFailure(EX);
-				return;
+				return new();
 			}
 
 			var results     = new List<Match>(matches.Count);
@@ -233,25 +378,15 @@ namespace cmk
 				results.Add(match);
 			}
 
-			SearchCountTextBlock.Text = results.Count.ToString();
-			Results = results;
-		}
-
-		//...........................................................
-
-		protected void OnSearchScrollLineOffsetComboBoxSelectionChanged( object SENDER, SelectionChangedEventArgs ARGS )
-		{
-			var sender  = SENDER as ComboBox;
-			if( sender != null ) {
-				s_selected_offset_index = sender.SelectedIndex;
-				SearchScrollLineOffset  = s_selected_offset_index - 1;
-			}
+			return results;
 		}
 
 		//...........................................................
 
 		protected void SelectResult( Match MATCH )
 		{
+			EditorView.EnsureVisualLines();
+
 			EditorArea.Selection = avalon.Editing.Selection.Create(
 				EditorArea, MATCH.Index, MATCH.Index + MATCH.Length
 			);
@@ -260,67 +395,11 @@ namespace cmk
 			EditorCaret.BringCaretToView();
 			EditorCaret.Show();
 
-			if( SearchScrollLineOffset >= 0 ) {
-				var lines      = EditorDocument.Lines.Count;
-				var height     = EditorView.ActualHeight;
-				var max_offset = (EditorView.DefaultLineHeight * (lines + 1)) - height;
+			var line   = EditorArea.Selection.StartPosition.Line;
+			if( line   > SearchScrollLineOffset ) line -= SearchScrollLineOffset;
+			var offset = EditorView.GetVisualTopByDocumentLine(line);
 
-				var offset = EditorView.GetVisualTopByDocumentLine(EditorCaret.Line);
-
-				offset -= (EditorView.DefaultLineHeight * SearchScrollLineOffset);
-				if( offset < 0 ) return;
-
-				if( offset > max_offset ) offset = max_offset;
-				Editor.ScrollToVerticalOffset(offset);
-			}
-		}
-
-		//...........................................................
-
-		protected void OnFirstClick( object SENDER, RoutedEventArgs ARGS )
-		{
-			var  results = Results;
-			if( !results.IsNullOrEmpty() ) SelectResult(results[0]);
-		}
-
-		//...........................................................
-
-		protected void OnPrevClick( object SENDER, RoutedEventArgs ARGS )
-		{
-			var results = Results;
-			if( results.IsNullOrEmpty() ) return;
-
-			var i = 0;
-			for( var offset = EditorCaret.Offset; i < results.Count; ++i ) {
-				if( results[i].Index >= offset ) break;
-			}
-			if( --i < 0 ) i = results.Count - 1;
-
-			SelectResult(results[i]);
-		}
-
-		//...........................................................
-
-		protected void OnNextClick( object SENDER, RoutedEventArgs ARGS )
-		{
-			var results = Results;
-			if( results.IsNullOrEmpty() ) return;
-
-			var i = 0;
-			for( var offset = EditorCaret.Offset + 1; i < results.Count; ++i ) {
-				if( results[i].Index >= offset ) break;
-			}
-			if( i >= results.Count ) i = 0;
-
-			SelectResult(results[i]);
-		}
-
-		//...........................................................
-
-		protected void OnLastClick( object SENDER, RoutedEventArgs ARGS )
-		{
-			var  results = Results;
-			if( !results.IsNullOrEmpty() ) SelectResult(results[results.Count - 1]);
+			Editor.ScrollToVerticalOffset(offset);
 		}
 	}
 }

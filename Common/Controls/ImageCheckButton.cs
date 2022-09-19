@@ -28,7 +28,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public class ImageCheckButton
+    public class ImageCheckButton
 	: System.Windows.Controls.Border
 	{
 		protected bool m_is_over = false;
@@ -96,8 +96,8 @@ namespace cmk
 			get { return m_is_checked; }
 			set {
 				if( m_is_checked == value ) return;
-				m_is_checked = value;
-				Update();
+				m_is_checked = value;				
+				OnCheckChanged();
 			}
 		}
 
@@ -143,6 +143,13 @@ namespace cmk
 
 		//...........................................................
 
+		public void PerformClick()
+		{
+			OnClick();
+		}
+
+		//...........................................................
+
 		protected virtual void OnLoaded( object SENDER, RoutedEventArgs ARGS )
 		{
 			Loaded -= OnLoaded;
@@ -177,18 +184,24 @@ namespace cmk
 
 		protected void OnMouseUp( object SENDER, System.Windows.Input.MouseButtonEventArgs ARGS )
 		{
-			m_is_over    = true;
-			m_is_checked = !m_is_checked;
+			m_is_over = true;
 			Update();
-
-			if( IsEnabled ) OnCheckedChanged(m_is_checked);
+			if( IsEnabled ) OnClick();
 		}
 
 		//...........................................................
 
-		protected virtual void OnCheckedChanged( bool IS_CHECKED )
+		protected virtual void OnClick()
 		{
-			CheckedChanged?.Invoke(this, IS_CHECKED);
+			IsChecked = !IsChecked;
+		}
+
+		//...........................................................
+
+		protected virtual void OnCheckChanged()
+		{
+			Update();
+			CheckedChanged?.Invoke(this, IsChecked);
 		}
 
 		//...........................................................

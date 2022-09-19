@@ -33,8 +33,17 @@ using diffplex = DiffPlex.DiffBuilder;
 
 namespace cmk
 {
-	public class TextDiffer<VIEWER_T>
+    public interface ITextDiffer
+	{
+		TextViewer TextViewerLeft  { get; }
+		TextViewer TextViewerRight { get; }
+	}
+
+	//=========================================================================
+
+    public class TextDiffer<VIEWER_T>
 	: System.Windows.Controls.Grid
+	, cmk.ITextDiffer
 	where VIEWER_T : TextViewer, new()
 	{
 		// LHS and RHS are orig text, control will then insert blank
@@ -103,6 +112,9 @@ namespace cmk
 		public TextDifferBackgroundRenderer BackgroundRendererRight { get; }
 
 		public diffplex.Model.SideBySideDiffModel DiffModel { get; protected set; }
+
+		public TextViewer TextViewerLeft  => ViewerLeft;
+		public TextViewer TextViewerRight => ViewerRight;
 
 		//...........................................................
 

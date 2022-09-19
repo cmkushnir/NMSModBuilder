@@ -25,7 +25,7 @@ using avalon = ICSharpCode.AvalonEdit;
 
 namespace cmk
 {
-	public class XmlFoldingStrategyAdapter
+    public class XmlFoldingStrategyAdapter
 	: cmk.ITextViewerFoldingStrategy
 	{
 		public static avalon.Folding.XmlFoldingStrategy XmlFoldingStrategy = new() {

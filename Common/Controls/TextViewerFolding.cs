@@ -25,7 +25,7 @@ using avalon = ICSharpCode.AvalonEdit;
 
 namespace cmk
 {
-	public interface ITextViewerFoldingStrategy
+    public interface ITextViewerFoldingStrategy
 	{
 		void UpdateFoldings(
 			avalon.Folding.FoldingManager MANAGER,
@@ -138,14 +138,14 @@ namespace cmk
 
 		//...........................................................
 
-		protected void OnFoldingsCollapseAllClick( object SENDER, RoutedEventArgs ARGS )
+		protected void OnFoldingsCollapseAllClick( object SENDER )
 		{
 			FoldingsCollapseAll();
 		}
 
 		//...........................................................
 
-		protected void OnFoldingsExpandAllClick( object SENDER, RoutedEventArgs ARGS )
+		protected void OnFoldingsExpandAllClick( object SENDER )
 		{
 			FoldingsExpandAll();
 		}

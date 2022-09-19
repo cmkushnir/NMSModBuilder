@@ -20,14 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
 
 //=============================================================================
 
 namespace cmk
 {
-	public class ImageRadioPanel
+    public class ImageRadioPanel
 	: System.Windows.Controls.Border
 	{
 		public delegate void RadioButtonChangedEventHandler( ImageRadioPanel SENDER, ImageRadioButton BUTTON );
@@ -113,7 +111,7 @@ namespace cmk
 
 		//...........................................................
 
-		protected void OnImageRadioButtonClick( object SENDER, MouseButtonEventArgs ARGS )
+		protected void OnImageRadioButtonClick( object SENDER )
 		{
 			Selected = SENDER as ImageRadioButton;
 		}
@@ -139,27 +137,12 @@ namespace cmk
 
 		protected override void Update()
 		{
-			Background  = NormalBackground;
-			BorderBrush = Brushes.Transparent;
-
-			if( !IsEnabled ) {
-				Image.Opacity = Resource.DisabledOpacity;
-			}
-			else {
-				Image.Opacity = 1.0;
+			base.Update();
+			if( IsEnabled ) {
 				     if( m_is_pressed ) Background = PressedBackground;
 				else if( m_is_over )    Background = OverBackground;
 				else if( m_is_checked ) Background = PressedBackground;
 			}
-
-			Height = Image.Height
-			+   (BorderThickness.Top + BorderThickness.Bottom)
-			+   (Padding.Top         + Padding.Bottom)
-			;
-			Width = Image.Width
-			+   (BorderThickness.Left + BorderThickness.Right)
-			+   (Padding.Left         + Padding.Right)
-			;
 		}
 	}
 }

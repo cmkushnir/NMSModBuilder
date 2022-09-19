@@ -27,7 +27,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public class BitmapViewer
+    public class BitmapViewer
 	: cmk.MainDockPanel
 	{
 		public static int BackgroundRadioIndex { get; protected set; } = 0;
