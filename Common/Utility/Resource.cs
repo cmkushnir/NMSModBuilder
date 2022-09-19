@@ -29,7 +29,7 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	public class Resource
+    public class Resource
 	{
 		public static string AppDirectory { get; } =
 			System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + '\\'
@@ -84,6 +84,9 @@ namespace cmk
 		public static readonly Brush    OverBackgroundBrush;
 		public static readonly Brush PressedBackgroundBrush;
 
+		public static readonly Brush EnabledBackgroundBrush;
+		public static readonly Brush DisabledBackgroundBrush;
+
 		// fade ImageButton's if they are disabled
 		public static readonly float DisabledOpacity = 0.3f;
 
@@ -97,13 +100,13 @@ namespace cmk
 		);
 
 		public static readonly Regex FilePathRegex = new(
-			@"\b[a-zA-Z]*:?[\\_0-9a-zA-Z]*\\[.\\_0-9a-zA-Z]*\b",
+			@"\b[a-zA-Z]*:?[\-\\_0-9a-zA-Z]*\\[.\\_0-9a-zA-Z]*\b",
 			RegexOptions.Singleline | RegexOptions.Compiled,
 			System.TimeSpan.FromSeconds(1)
 		);
 
 		public static readonly Regex ItemPathRegex = new(
-			@"\b[a-zA-Z][\/_0-9a-zA-Z]*\.[a-zA-Z][.a-zA-Z]*\b",
+			@"\b[0-9a-zA-Z][/\-\\_0-9a-zA-Z]*\.[0-9a-zA-Z][.0-9a-zA-Z]*\b",
 			RegexOptions.Singleline | RegexOptions.Compiled,
 			System.TimeSpan.FromSeconds(1)
 		);
@@ -121,11 +124,21 @@ namespace cmk
 				new(OverBackgroundColor, 0.99),
 				new(Colors.Transparent,  1.0),
 			});
-
 			PressedBackgroundBrush = new RadialGradientBrush(new(3) {
 				new(SelectedBackgroundColor, 0.0),
 				new(SelectedBackgroundColor, 0.99),
 				new(Colors.Transparent,      1.0),
+			});
+
+			EnabledBackgroundBrush = new RadialGradientBrush(new(3) {
+				new(LightGreenColor,    0.0),
+				new(LightGreenColor,    0.99),
+				new(Colors.Transparent, 1.0),
+			});
+			DisabledBackgroundBrush = new RadialGradientBrush(new(3) {
+				new(LightRedColor,      0.0),
+				new(LightRedColor,      0.99),
+				new(Colors.Transparent, 1.0),
 			});
 
 			OverBackgroundBrush   .Freeze();

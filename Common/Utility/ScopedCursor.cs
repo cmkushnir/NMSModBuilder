@@ -19,41 +19,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
 using System;
-using System.IO;
+using System.Windows;
+using System.Windows.Input;
 
 //=============================================================================
 
-namespace cmk.IO
+namespace cmk
 {
-    public static class Stream
+    public class ScopedCursor
+	: System.IDisposable
 	{
-		/// <summary>
-		/// If CAPACITY < Int32.MaxValue return a new MemoryStream constructed
-		/// with the specified CAPACITY, else return a FileStream to a temp
-		/// DeleteOnClose file with the specified BUFFER_SIZE.
-		/// CAPACITY should be treated as the maximum size this stream will get
-		/// otherwise may get a MemoryStream only to throw when you write > Int32.MaxValue bytes to it.
-		/// </summary>
-		public static System.IO.Stream MemoryOrTempFile( long CAPACITY, int BUFFER_SIZE = 65536 )
+		protected Cursor m_orig        = null;
+		protected bool   m_is_disposed = true;
+
+		public ScopedCursor( Cursor CURSOR )  // e.g. Cursors.Wait;
 		{
-			System.IO.Stream stream;
-			if( CAPACITY < Int32.MaxValue ) {
-				stream = new MemoryStream((int)CAPACITY);
-			}
-			else {
-				if( BUFFER_SIZE < 4096 ) BUFFER_SIZE = 4096;
-				var temp = System.IO.Path.GetTempFileName();
-				stream   = new FileStream(temp,
-					FileMode.Open,
-					FileAccess.ReadWrite,
-					FileShare.None,
-					BUFFER_SIZE,
-					FileOptions.DeleteOnClose
-				);
-			}
-			stream.Position = 0;
-			return stream;
+			Application.Current.Dispatcher.Invoke(() => {
+				m_orig = Mouse.OverrideCursor;
+				Mouse.OverrideCursor = CURSOR;
+				m_is_disposed = false;
+			});
 		}
+
+		~ScopedCursor() => Dispose(false);
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected void Dispose( bool DISPOSING )
+		{
+			if( m_is_disposed ) return;
+			m_is_disposed = true;
+			Application.Current.Dispatcher.Invoke(() => {
+				Mouse.OverrideCursor = m_orig;
+				m_orig = null;
+			});
+		}
+
 	}
 }
 

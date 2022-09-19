@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -29,18 +28,23 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public class LogViewer
+    public class LogViewer
 	: cmk.MainDockPanel
 	{
 		// broadcast if double-click a path .../... in the code.
-		public delegate void PathDoubleClickEventHandler( string PATH );
-		public event         PathDoubleClickEventHandler PathDoubleClick;
+		public delegate void InfoDoubleClickEventHandler( NMS.PAK.Item.Info INFO, TextSearchData SEARCH );
+		public event         InfoDoubleClickEventHandler InfoDoubleClick;
 
 		//...........................................................
 
-		public LogViewer() : base()
+		public LogViewer( bool IS_VIRTUALIZING = true ) : base()
 		{
 			ToolGrid.Background = Brushes.Silver;
+
+			ListBox = new(IS_VIRTUALIZING) {
+				FontFamily = Resource.DefaultFont,
+				FontSize   = Resource.DefaultFontSize,
+			};
 
 			ToolWrapPanelLeft.Children.Add(ClearButton);
 			ToolWrapPanelLeft.Children.Add(SaveButton);
@@ -51,8 +55,8 @@ namespace cmk
 
 			ListBox.MouseDoubleClick += OnListBoxMouseDoubleClick;
 
-			ClearButton.Click += ( S, E ) => Log?.Clear();
-			SaveButton .Click += ( S, E ) => Log?.Save();
+			ClearButton.Click += ( S ) => Log?.Clear();
+			SaveButton .Click += ( S ) => Log?.Save();
 
 			Loaded += ( S, E ) => ListBox.AutoScroll = true;
 		}
@@ -71,10 +75,7 @@ namespace cmk
 			IsEnabled = false,
 		};
 
-		public readonly ListBox ListBox = new() {
-			FontFamily = Resource.DefaultFont,
-			FontSize   = Resource.DefaultFontSize,
-		};
+		public readonly ListBox ListBox;  // construct w/ IS_VIRTUALIZING
 
 		//...........................................................
 
@@ -120,21 +121,31 @@ namespace cmk
 
 		protected void OnListBoxMouseDoubleClick( object SENDER, MouseButtonEventArgs ARGS )
 		{
-			var handler  = PathDoubleClick;
+			var sender  = SENDER as ListBox;
+			if( sender == null ) return;
+
+			var handler  = InfoDoubleClick;
 			if( handler == null ) return;
-			for( var
-				obj  = ARGS.OriginalSource as DependencyObject;
-				obj != null && obj != SENDER;
-				obj  = VisualTreeHelper.GetParent(obj)
-			) {
-				var text_box = obj as TextBox;
-				var text     = text_box?.Text ?? "";
-				var matches  = Resource.ItemPathRegex.Matches(text);
-				foreach( Match match in matches ) {
-					handler.Invoke(match.Value);
-					break;
-				}		
+
+			var selected  = sender.SelectedItem as LogItem;
+			if( selected == null || selected.Text.IsNullOrEmpty() ) return;
+
+			var info  = selected.Tag0 as NMS.PAK.Item.Info;
+			if( info == null ) {
+				var data  = selected.Tag0 as NMS.PAK.Item.Data;
+				if( data != null ) info = data.Info;
 			}
+			if( info == null ) {
+				var matches = Resource.ItemPathRegex.Matches(selected.Text);
+				foreach( var match in matches ) {
+					info = NMS.Game.Data.Selected.PCBANKS.FindInfo(match.ToString());
+					if( info != null ) break;
+				}
+			}
+
+			var search = selected.Tag1 as TextSearchData;
+
+			if( info != null ) handler.Invoke(info, search);
 		}
 	}
 }

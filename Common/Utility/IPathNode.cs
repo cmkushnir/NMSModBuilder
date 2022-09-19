@@ -26,7 +26,7 @@ using System.Threading;
 
 namespace cmk
 {
-	public interface IPathNode
+    public interface IPathNode
 	: System.IComparable<IPathNode>
 	, System.IComparable<string>
 	{

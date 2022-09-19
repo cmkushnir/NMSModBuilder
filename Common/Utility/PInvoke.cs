@@ -25,11 +25,15 @@ using System.Security;
 
 namespace cmk
 {
-	[SuppressUnmanagedCodeSecurity]
+    [SuppressUnmanagedCodeSecurity]
 	public static class PInvoke
 	{
 		[DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern int memcmp( byte[] LHS, byte[] RHS, long LENGTH );
+
+		[DllImport("kernel32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool GetPhysicallyInstalledSystemMemory( out long KB );
 	}
 }
 

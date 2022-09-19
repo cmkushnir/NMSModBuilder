@@ -31,7 +31,7 @@ using Microsoft.Win32;
 
 namespace cmk
 {
-	public class Log
+    public class Log
 	: System.Collections.Generic.IReadOnlyList<LogItem>
 	, System.Collections.Specialized.INotifyCollectionChanged
 	{
@@ -49,6 +49,13 @@ namespace cmk
 
 		public event PropertyChangedEventHandler         PropertyChanged;
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+		//...........................................................
+
+		public Log( string NAME = null )
+		{
+			Name = NAME;
+		}
 
 		//...........................................................
 
@@ -141,45 +148,46 @@ namespace cmk
 
 	public static partial class _x_
 	{
-		public static void Add( this Log LOG, LogItemType TYPE, string TEXT, object TAG )
+		public static void Add( this Log LOG, LogItemType TYPE, string TEXT, object TAG0, object TAG1 )
 		{
 			LOG?.Add(new LogItem{
 				Type = TYPE,
 				Text = TEXT.IsNullOrEmpty() ? null : $"[{DateTime.Now.ToTimeStamp()}] {TEXT}",
-				Tag  = TAG
+				Tag0 = TAG0,
+				Tag1 = TAG1,
 			});
 		}
 
 		//...........................................................
 
-		public static void AddHeading( this Log LOG, string TEXT, object TAG = null )
+		public static void AddHeading( this Log LOG, string TEXT, object TAG0 = null, object TAG1 = null )
 		{
-			Add(LOG, LogItemType.Heading, TEXT, TAG);
+			Add(LOG, LogItemType.Heading, TEXT, TAG0, TAG1);
 		}
 
-		public static void AddFailure( this Log LOG, string TEXT, object TAG = null )
+		public static void AddFailure( this Log LOG, string TEXT, object TAG0 = null, object TAG1 = null )
 		{
-			Add(LOG, LogItemType.Failure, TEXT, TAG);
+			Add(LOG, LogItemType.Failure, TEXT, TAG0, TAG1);
 		}
 
-		public static void AddWarning( this Log LOG, string TEXT, object TAG = null )
+		public static void AddWarning( this Log LOG, string TEXT, object TAG0 = null, object TAG1 = null )
 		{
-			Add(LOG, LogItemType.Warning, TEXT, TAG);
+			Add(LOG, LogItemType.Warning, TEXT, TAG0, TAG1);
 		}
 
-		public static void AddInformation( this Log LOG, string TEXT, object TAG = null )
+		public static void AddInformation( this Log LOG, string TEXT, object TAG0 = null, object TAG1 = null )
 		{
-			Add(LOG, LogItemType.Information, TEXT, TAG);
+			Add(LOG, LogItemType.Information, TEXT, TAG0, TAG1);
 		}
 
-		public static void AddSuccess( this Log LOG, string TEXT, object TAG = null )
+		public static void AddSuccess( this Log LOG, string TEXT, object TAG0 = null, object TAG1 = null )
 		{
-			Add(LOG, LogItemType.Success, TEXT, TAG);
+			Add(LOG, LogItemType.Success, TEXT, TAG0, TAG1);
 		}
 
 		//...........................................................
 
-		public static void AddFailure( this Log LOG, Exception EX, string PREFIX = null, string SUFFIX = null, object TAG = null )
+		public static void AddFailure( this Log LOG, Exception EX, string PREFIX = null, string SUFFIX = null, object TAG0 = null, object TAG1 = null )
 		{
 			if( EX is OperationCanceledException ) {
 				LOG.AddWarning($"{PREFIX}{EX.Message}{SUFFIX}");
@@ -193,7 +201,7 @@ namespace cmk
 			//	AddFailure(LOG, EX.InnerException, PREFIX, SUFFIX, null);
 			//}
 			else {
-				LOG.AddFailure($"{PREFIX}{EX?.ToString()}{SUFFIX}", TAG);
+				LOG.AddFailure($"{PREFIX}{EX?.ToString()}{SUFFIX}", TAG0, TAG1);
 			}
 		}
 	}

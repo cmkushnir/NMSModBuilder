@@ -26,16 +26,16 @@ using System.Text;
 
 namespace cmk
 {
-	// Defined in EndianBinaryReader
-	//public enum Endian
-	//{
-	//	Big,
-	//	Little,
-	//}
+    // Defined in EndianBinaryReader
+    //public enum Endian
+    //{
+    //	Big,
+    //	Little,
+    //}
 
-	//=========================================================================
+    //=========================================================================
 
-	public class EndianBinaryWriter
+    public class EndianBinaryWriter
 	: System.IO.BinaryWriter
 	{
 		public static readonly Endian SystemEndian = BitConverter.IsLittleEndian ?

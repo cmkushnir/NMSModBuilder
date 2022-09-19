@@ -26,7 +26,7 @@ using System.Text;
 
 namespace cmk
 {
-	public enum Endian
+    public enum Endian
 	{
 		Big,
 		Little,

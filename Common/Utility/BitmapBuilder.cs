@@ -26,10 +26,10 @@ using System.Windows.Media.Imaging;
 
 namespace cmk
 {
-	/// <summary>
-	/// PixelFormats.Bgra32 bitmap builder.
-	/// </summary>
-	public class BitmapBuilder
+    /// <summary>
+    /// PixelFormats.Bgra32 bitmap builder.
+    /// </summary>
+    public class BitmapBuilder
 	{
 		public static readonly PixelFormat PixelFormat = PixelFormats.Bgra32;
 		public static readonly int         Bpp         = 4;  // bytes per pixel

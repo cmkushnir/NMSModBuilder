@@ -26,7 +26,7 @@ using System.Collections.Generic;
 
 namespace cmk.Steam.File
 {
-	public class KeyValue
+    public class KeyValue
 	{
 		public KeyValue( KeyValue PARENT )
 		{

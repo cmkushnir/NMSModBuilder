@@ -25,25 +25,25 @@ using System.Threading;
 
 namespace cmk
 {
-	/// <summary>
-	/// Notes:
-	/// - ReleaseWrite thread must be same as AcquireWrite thread
-	/// - # of ReleaseRead must equal # of AcquireRead
-	/// - Supports re-entrant Acquires for both Readers and Writer
-	/// - Reader not upgradable, Writer not downgradable,
-	///   but Writer can AquireReead.
-	/// - Not fair, does not favor Readers or Writers
-	/// 
-	/// .NET ReadWriteLock|ReadWriteLockSlim have thread affinity (threads track locks acquired).
-	/// This means that when a thread acquires a read|write lock the same thread must release.
-	/// In general this would be desired, but in a AquireRead - yield return or async op - ReleaseRead
-	/// situation the ReleaseRead thread may not be the same as the AquireRead thread.
-	/// </summary>
-	public class ReadWriteLock
+    /// <summary>
+    /// Notes:
+    /// - ReleaseWrite thread must be same as AcquireWrite thread
+    /// - # of ReleaseRead must equal # of AcquireRead
+    /// - Supports re-entrant Acquires for both Readers and Writer
+    /// - Reader not upgradable, Writer not downgradable,
+    ///   but Writer can AquireReead.
+    /// - Not fair, does not favor Readers or Writers
+    /// 
+    /// .NET ReadWriteLock|ReadWriteLockSlim have thread affinity (threads track locks acquired).
+    /// This means that when a thread acquires a read|write lock the same thread must release.
+    /// In general this would be desired, but in a AquireRead - yield return or async op - ReleaseRead
+    /// situation the ReleaseRead thread may not be the same as the AquireRead thread.
+    /// </summary>
+    public class ReadWriteLock
 	{
 		int   m_thd_id    = 0;  // thread id of curernt writer.
-		short m_readers   = 0;  // # of current readers, includes
 		short m_recursion = 0;  // recurrsion for current writer.
+		short m_readers   = 0;  // # of current readers, includes
 
 		//...........................................................
 
@@ -191,11 +191,169 @@ namespace cmk
 
 		//...........................................................
 
-		public bool ReleaseRead()
+		public bool ReleaseRead( TimeSpan TIMEOUT = default )
 		{
-			if( m_readers <= 0 ) return false;
+			if( !acquire_write_read_wait(TIMEOUT) ) return false;
 			--m_readers;
-			return true;
+			return ReleaseWrite();
+		}
+
+		//...........................................................
+
+		public void InvokeRead( Action ACTION, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireRead(TIMEOUT);
+			try {
+				ACTION.Invoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+			}
+			finally {
+				if( !ReleaseRead(TIMEOUT) ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeRead failed to ReleaseRead - report"
+					);
+				}
+			}
+		}
+
+		public RETURN_T InvokeRead<RETURN_T>( Func<RETURN_T> FUNC, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireRead(TIMEOUT);
+			try {
+				return FUNC.Invoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+				return default;
+			}
+			finally {
+				if( !ReleaseRead(TIMEOUT) ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeRead<> failed to ReleaseRead - report"
+					);
+				}
+			}
+		}
+
+		//...........................................................
+
+		public void InvokeDispatcherRead( Action ACTION, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireRead(TIMEOUT);
+			try {
+				ACTION.DispatcherInvoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+			}
+			finally {
+				if( !ReleaseRead(TIMEOUT) ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeRead failed to ReleaseRead - report"
+					);
+				}
+			}
+		}
+
+		public RETURN_T InvokeDispatcherRead<RETURN_T>( Func<RETURN_T> FUNC, Log LOG = null, TimeSpan TIMEOUT = default )
+		where  RETURN_T : class
+		{
+			AcquireRead(TIMEOUT);
+			try {
+				return FUNC.DispatcherInvoke() as RETURN_T;
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+				return default;
+			}
+			finally {
+				if( !ReleaseRead(TIMEOUT) ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeRead failed to ReleaseRead - report"
+					);
+				}
+			}
+		}
+
+		//...........................................................
+
+		public void InvokeWrite( Action ACTION, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireWrite(TIMEOUT);
+			try {
+				ACTION.Invoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+			}
+			finally {
+				if( !ReleaseWrite() ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeWrite failed to ReleaseWrite - report"
+					);
+				}
+			}
+		}
+
+		public RETURN_T InvokeWrite<RETURN_T>( Func<RETURN_T> FUNC, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireWrite(TIMEOUT);
+			try {
+				return FUNC.Invoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+				return default;
+			}
+			finally {
+				if( !ReleaseWrite() ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeWrite<> failed to ReleaseWrite - report"
+					);
+				}
+			}
+		}
+
+		//...........................................................
+
+		public void InvokeDispatcherWrite( Action ACTION, Log LOG = null, TimeSpan TIMEOUT = default )
+		{
+			AcquireWrite(TIMEOUT);
+			try {
+				ACTION.DispatcherInvoke();
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+			}
+			finally {
+				if( !ReleaseWrite() ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeDispatcherWrite failed to ReleaseWrite - report"
+					);
+				}
+			}
+		}
+
+		public RETURN_T InvokeDispatcherWrite<RETURN_T>( Func<RETURN_T> FUNC, Log LOG = null, TimeSpan TIMEOUT = default )
+		where  RETURN_T : class
+		{
+			AcquireWrite(TIMEOUT);
+			try {
+				return FUNC.DispatcherInvoke() as RETURN_T;
+			}
+			catch( Exception EX ) {
+				LOG.AddFailure(EX);
+				return default;
+			}
+			finally {
+				if( !ReleaseWrite() ) {
+					Log.Default.AddFailure(
+						"ReadWriteLock.InvokeDispatcherWrite<> failed to ReleaseWrite - report"
+					);
+				}
+			}
 		}
 	}
 }

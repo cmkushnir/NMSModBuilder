@@ -24,7 +24,7 @@ using System.Windows;
 
 namespace cmk
 {
-	public class DialogWrapper<DIALOG_T>
+    public class DialogWrapper<DIALOG_T>
 	where DIALOG_T : System.Windows.Window, new()
 	{
 		public DIALOG_T Dialog { get; protected set; }

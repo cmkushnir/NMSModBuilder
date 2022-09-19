@@ -24,7 +24,7 @@ using System;
 
 namespace cmk
 {
-	public class FakeEnum
+    public class FakeEnum
 	{
 		public struct ValueType
 		{

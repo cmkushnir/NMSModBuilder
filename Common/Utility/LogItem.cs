@@ -25,7 +25,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public enum LogItemType
+    public enum LogItemType
 	{
 		Heading,
 		Failure,
@@ -40,7 +40,8 @@ namespace cmk
 	{
 		public LogItemType Type { get; set; } = LogItemType.Information;
 		public string      Text { get; set; }
-		public object      Tag  { get; set; }
+		public object      Tag0 { get; set; }
+		public object      Tag1 { get; set; }
 
 		//...........................................................
 		// following controls how LogItem displayed in LogViewer

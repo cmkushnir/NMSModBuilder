@@ -26,10 +26,10 @@ using System.Runtime.CompilerServices;
 
 namespace cmk.IO
 {
-	/// <summary>
-	/// Path wrapper: full, directory, name, extension.
-	/// </summary>
-	public class Path
+    /// <summary>
+    /// Path wrapper: full, directory, name, extension.
+    /// </summary>
+    public class Path
 	: System.IComparable<Path>
 	, System.IComparable<string>
 	, System.ComponentModel.INotifyPropertyChanged
@@ -295,7 +295,7 @@ namespace cmk.IO
 
 namespace cmk
 {
-	public static partial class _x_
+    public static partial class _x_
 	{
 		public static bool IsNullOrEmpty( this cmk.IO.Path PATH )
 		{

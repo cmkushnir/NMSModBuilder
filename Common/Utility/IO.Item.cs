@@ -28,10 +28,10 @@ using System.Threading;
 
 namespace cmk.IO
 {
-	/// <summary>
-	/// Base class for File and Directory wrapper classes.
-	/// </summary>
-	public abstract class Item
+    /// <summary>
+    /// Base class for File and Directory wrapper classes.
+    /// </summary>
+    public abstract class Item
 	: System.IComparable<Item>
 	, System.IComparable<Path>
 	, System.IComparable<string>
@@ -65,18 +65,27 @@ namespace cmk.IO
 
 		//...........................................................
 
-		public override bool Equals( object RHS )
-		{
-			if( RHS is Item rhs_item ) return Path.Equals(Path, rhs_item?.Path);
-			if( RHS is Path rhs_path ) return Path.Equals(Path, rhs_path);
-			return Path.Equals(RHS);
-		}
+		public static int Compare( Item LHS, Item RHS )
+		=> Path.Compare(LHS?.Path, RHS?.Path);
 
-		//...........................................................
+		public static int Compare( Item LHS, Path RHS ) => Path.Compare(LHS?.Path, RHS);
+		public static int Compare( Path LHS, Item RHS ) => Path.Compare(LHS,       RHS?.Path);
 
 		public int CompareTo( Item   RHS ) => Path.Compare(Path, RHS?.Path);
 		public int CompareTo( Path   RHS ) => Path.Compare(Path, RHS);
 		public int CompareTo( string RHS ) => Path.Compare(Path, RHS);
+
+		//...........................................................
+
+		public static bool Equals( Item LHS, Item RHS ) => Compare(LHS, RHS) == 0;
+		public static bool Equals( Item LHS, Path RHS ) => Compare(LHS, RHS) == 0;
+		public static bool Equals( Path LHS, Item RHS ) => Compare(LHS, RHS) == 0;
+
+		public override bool Equals( object RHS )
+		{
+			if( RHS is Item rhs_item ) return Path.Equals(Path, rhs_item?.Path);
+			return Path.Equals(RHS);
+		}
 
 		//...........................................................
 
@@ -211,12 +220,15 @@ namespace cmk.IO
 					fs = new(Path.Full, MODE, ACCESS, SHARE);
 					if( fs != null ) return fs;
 				}
-				catch( IOException ) {  // assume someone else using
+				catch( IOException ) {
 					if( fs != null ) {
 						fs.Dispose();
 						fs = null;
 					}
-					Thread.Sleep(8);
+					// System.IO.FileNotFoundException is a type of IOException,
+					// Exists will fail if no such file, or if caller doesn't have read permission.
+					if( !System.IO.File.Exists(Path.Full) ) break;
+					Thread.Sleep(8);  // assume open by something else
 				}
 				catch( Exception EX ) {
 					Log.Default.AddFailure(EX);

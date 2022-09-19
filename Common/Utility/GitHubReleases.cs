@@ -26,10 +26,10 @@ using System.Windows;
 
 namespace cmk
 {
-	/// <summary>
-	/// Cache a list of releases for a specific GitHub repository.
-	/// </summary>
-	public class GitHubReleases
+    /// <summary>
+    /// Cache a list of releases for a specific GitHub repository.
+    /// </summary>
+    public class GitHubReleases
 	{
 		public GitHubReleases(
 			string USER_AGENT_NAME,    // GitHub user       name for app

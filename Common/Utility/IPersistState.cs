@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace cmk
 {
-	public interface IPersistState
+    public interface IPersistState
 	{
 		void SaveState();
 		void LoadState();

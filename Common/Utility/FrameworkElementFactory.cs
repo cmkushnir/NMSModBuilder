@@ -27,7 +27,7 @@ using System.Windows.Media;
 
 namespace cmk
 {
-	public static partial class FrameworkElementFactory
+    public static partial class FrameworkElementFactory
 	{
 		public static System.Windows.FrameworkElementFactory CreateColumnAuto(
 			string SHAREDSIZEGROUP = null
