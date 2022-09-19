@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Resources\NMS.ico</ApplicationIcon>
     <Platforms>x64</Platforms>
     <Authors>Chris Kushnir</Authors>
     <Description>cmk common library for working with No Man's Sky game data.</Description>
     <RootNamespace>cmk.Common</RootNamespace>
-    <AssemblyVersion>3.90.0.5</AssemblyVersion>
-    <FileVersion>3.90.0.5</FileVersion>
+    <AssemblyVersion>3.99.1.8</AssemblyVersion>
+    <FileVersion>3.99.1.8</FileVersion>
     <Copyright>Copyright ©  2021 Chris Kushnir</Copyright>
-    <Version>3.90.0.5</Version>
+    <Version>3.99.1.8</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,12 +42,14 @@
     <None Remove="Resources\Configure.png" />
     <None Remove="Resources\Copy.png" />
     <None Remove="Resources\CSharp.png" />
+    <None Remove="Resources\Cube.png" />
     <None Remove="Resources\Diff.png" />
     <None Remove="Resources\Egg.png" />
     <None Remove="Resources\Error.png" />
     <None Remove="Resources\ExpandAll.png" />
     <None Remove="Resources\FileCreate.png" />
     <None Remove="Resources\FileDelete.png" />
+    <None Remove="Resources\FindInFile.png" />
     <None Remove="Resources\FindNext.png" />
     <None Remove="Resources\FindPrevious.png" />
     <None Remove="Resources\First.png" />
@@ -67,6 +69,8 @@
     <None Remove="Resources\FlagSpain.png" />
     <None Remove="Resources\FlagUSA.png" />
     <None Remove="Resources\Folder.png" />
+    <None Remove="Resources\FSlash.png" />
+    <None Remove="Resources\GamePass.png" />
     <None Remove="Resources\GitHub.png" />
     <None Remove="Resources\GOG.png" />
     <None Remove="Resources\Gray.png" />
@@ -78,6 +82,7 @@
     <None Remove="Resources\Mirror.png" />
     <None Remove="Resources\Next.png" />
     <None Remove="Resources\NMS.ico" />
+    <None Remove="Resources\NMS.png" />
     <None Remove="Resources\PakItemBin.png" />
     <None Remove="Resources\PakItemBnk.png" />
     <None Remove="Resources\PakItemCs.png" />
@@ -119,6 +124,7 @@
     <None Remove="Resources\Steam.png" />
     <None Remove="Resources\Stop.png" />
     <None Remove="Resources\Stretch.png" />
+    <None Remove="Resources\Text.png" />
     <None Remove="Resources\Tile.png" />
     <None Remove="Resources\TypeArray.png" />
     <None Remove="Resources\TypeEvent.png" />
@@ -146,6 +152,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\Cube.png" />
+    <Resource Include="Resources\FindInFile.png" />
+    <Resource Include="Resources\FSlash.png" />
+    <Resource Include="Resources\GamePass.png" />
     <Resource Include="Resources\Image.png" />
     <Resource Include="Resources\Launch.png" />
   </ItemGroup>
@@ -160,8 +170,8 @@
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.1.3.50" />
     <PackageReference Include="DiffPlex" Version="1.7.1" />
-    <PackageReference Include="Octokit" Version="0.51.0" />
-    <PackageReference Include="Pfim" Version="0.10.3" />
+    <PackageReference Include="Octokit" Version="3.0.0" />
+    <PackageReference Include="Pfim" Version="0.11.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -220,6 +230,7 @@
     <Resource Include="Resources\Mirror.png" />
     <Resource Include="Resources\Next.png" />
     <Resource Include="Resources\NMS.ico" />
+    <Resource Include="Resources\NMS.png" />
     <Resource Include="Resources\PakItemBin.png" />
     <Resource Include="Resources\PakItemBnk.png" />
     <Resource Include="Resources\PakItemCs.png" />
@@ -247,6 +258,7 @@
     <Resource Include="Resources\ScriptPlugin.png" />
     <Resource Include="Resources\ScriptQuery.png" />
     <Resource Include="Resources\ScriptUtil.png" />
+    <Resource Include="Resources\Search.png" />
     <Resource Include="Resources\Settings.png" />
     <Resource Include="Resources\Smiley_Green.png" />
     <Resource Include="Resources\Smiley_Red.png" />
@@ -255,6 +267,7 @@
     <Resource Include="Resources\Steam.png" />
     <Resource Include="Resources\Stop.png" />
     <Resource Include="Resources\Stretch.png" />
+    <Resource Include="Resources\Text.png" />
     <Resource Include="Resources\Tile.png" />
     <Resource Include="Resources\TypeArray.png" />
     <Resource Include="Resources\TypeEvent.png" />
