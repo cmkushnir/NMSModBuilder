@@ -26,6 +26,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+4.0.1, Waypoint, 2022-10-07, 4.0.0.2, v4.0.0-pre2
+4.0,   Waypoint, 2022-10-06, 4.0.0.2, v4.0.0-pre2
+
 3.99.1, Endurance, 2022-08-17, 3.99.1.1, v3.99.1-pre1
 3.99,   Endurance, 2022-08-11, 3.98.0.6, v3.98.0-pre6
 3.98.3, Endurance, 2022-08-09, 3.98.0.5, v3.98.0-pre5
