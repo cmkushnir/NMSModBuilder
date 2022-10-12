@@ -24,16 +24,15 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 //=============================================================================
 
 namespace cmk.NMS.Game
 {
-	/// <summary>
-	/// Hold all state related to a game instance.
-	/// </summary>
-	public partial class Data
+    /// <summary>
+    /// Hold all state related to a game instance.
+    /// </summary>
+    public partial class Data
 	: cmk.NMS.PAK.Item.ICollection
 	{
 		public delegate void LanguageChangedEventHandler(
@@ -265,24 +264,6 @@ namespace cmk.NMS.Game
 				return null;
 			}
 			return info.ExtractData<AS_T>(LOG);
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Loop through all PakCollections for first with PATH.
-		/// Return extracted raw data converted to BitmapSource.
-		/// Note: PakCollections[0] == MODS, PakCollections[1] == PCBANKS
-		/// i.e. get pak item the way the game does.
-		/// </summary>
-		public BitmapSource ExtractDdsBitmapSource( string PATH, bool NORMALIZE = false, int HEIGHT = 32, Log LOG = null, CancellationToken CANCEL = default )
-		{
-			var info  = FindInfo(PATH, NORMALIZE);
-			if( info == null ) {
-				LOG.AddFailure($"{PATH} - unable to find info in any game or mod *.pak file");
-				return null;
-			}
-			return info.ExtractDdsBitmapSource(HEIGHT, LOG);
 		}
 
 		//...........................................................

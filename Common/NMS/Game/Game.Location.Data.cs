@@ -211,7 +211,7 @@ namespace cmk.NMS.Game.Location
 		/// </summary>
 		public static Location.Data Select()
 		{
-			var dialog = new Location.Dialog();
+			var dialog = new Location.Dialog() { Topmost = true };
 			if( dialog.ShowDialog() != true ) return null;
 			return dialog.Data;
 		}

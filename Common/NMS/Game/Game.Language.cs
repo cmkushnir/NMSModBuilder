@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
@@ -196,16 +197,18 @@ namespace cmk.NMS.Game.Language
 	: System.IComparable<Data>
 	, System.IComparable<string>
 	{
-		public Identifier        LanguageId { get; }
-		public NMS.PAK.Item.Info Info       { get; }
-		public string            Id         { get; }
-		public string            Text       { get; }
+		public Identifier LanguageId { get; }
+		public string     MbinPath   { get; }
+		public string     Id         { get; }
+		public string     Text       { get; }
 
-		public Data( Identifier LANGUAGE_ID, NMS.PAK.Item.Info INFO, string ID, string TEXT )
+		//...........................................................
+
+		public Data( Identifier LANGUAGE_ID, string MBIN_PATH, string ID, string TEXT )
 		{
 			Id   = ID;
 			Text = TEXT;
-			Info = INFO;
+			MbinPath   = MBIN_PATH;
 			LanguageId = LANGUAGE_ID;
 		}
 
@@ -257,7 +260,7 @@ namespace cmk.NMS.Game.Language
 
 		public Collection( NMS.Game.Files.Cache PAK_FILES, Identifier IDENTIFIER )
 		{
-			this.EnsureCapacity(100000);  // 3.98 - 59,272
+			this.EnsureCapacity(100000);  // 4.00 - 61229
 			Cache      = PAK_FILES;
 			Identifier = IDENTIFIER;
 			Load();
@@ -265,16 +268,16 @@ namespace cmk.NMS.Game.Language
 
 		//...........................................................
 
-		public readonly NMS.Game.Files.Cache Cache;
-
-		public List<NMS.PAK.Item.Info> LanguageInfo { get; protected set; } = null;
-
+		public readonly NMS.Game.Files.Cache         Cache;
 		public readonly NMS.Game.Language.Identifier Identifier;
+
+		// list of lang mbin's for Identifier lang
+		public List<NMS.PAK.Item.Info> LanguageInfo { get; protected set; } = null;
 
 		//...........................................................
 
-		public List<NMS.PAK.Item.Info> FindLanguageInfo( NMS.Game.Language.Identifier LANGUAGE_ID = null )
-		=> Cache?.LanguageMbinInfo(LANGUAGE_ID);
+		public List<NMS.PAK.Item.Info> FindLanguageInfo()
+		=> Cache?.LanguageMbinInfo(Identifier);
 
 		public bool LanguageInfoAreEqual(
 			List<NMS.PAK.Item.Info> LHS,
@@ -349,7 +352,7 @@ namespace cmk.NMS.Game.Language
 						var path  = INFO.Path;
 						lock( this ) {
 							foreach( var item in mbin.Table ) {
-								this.Add(new(Identifier, INFO, item.Id, item.Ref(language_idx)));
+								this.Add(new(Identifier, path, item.Id, item.Ref(language_idx)));
 							}
 						}
 					});
@@ -358,6 +361,7 @@ namespace cmk.NMS.Game.Language
 
 				Log.Default.AddInformation($"Loaded {GetType().FullName} {Identifier.Name} - {this.Count} entries");
 			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 			finally { Lock.ReleaseWrite(); }
 
 			CollectionChanged?.DispatcherInvoke(this,

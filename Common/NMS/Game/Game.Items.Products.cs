@@ -32,7 +32,7 @@ namespace cmk.NMS.Game.Items.Product
 	: cmk.NMS.Game.Items.Collection
 	{
 		public Collection( NMS.Game.Files.Cache PAK_FILES )
-		: base(PAK_FILES, 4000)  // 3.98 - 1,999
+		: base(PAK_FILES, 4000)  // 4.00 - 2033
 		{
 		}
 
@@ -53,19 +53,18 @@ namespace cmk.NMS.Game.Items.Product
 
 		protected override void LoadMBIN()
 		{
-			var mbin_data = ItemInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
-			var mbin      = mbin_data?.ModObject() as dynamic;
+			var mbin  = ItemInfo?.ExtractMbin<GcProductTable>(Log.Default);
 			if( mbin == null ) return;
 
 			var collection = Cache.IPakItemCollection;
 
-			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, ITEM => {
+			_ = Parallel.ForEach(mbin.Table, ITEM => {
 				var icon      = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename) as string;
 				var cat_name  = ITEM.Type.ProductCategory.ToString() as string;
 				var req_count = ITEM.Requirements?.Count ?? 0;
 
 				var data = new Data(this, GcInventoryType.InventoryTypeEnum.Product) {
-					Id            = (string)ITEM.Id,
+					Id            = (string)ITEM.ID,
 					NameId        = (string)ITEM.NameLower,
 					DescriptionId = (string)ITEM.Description,
 					CategoryName  = cat_name.Expand(),
@@ -76,7 +75,7 @@ namespace cmk.NMS.Game.Items.Product
 				for( var i = 0; i < req_count; ++i ) {
 					// data.Requirements is struct
 					var item_req = ITEM.Requirements[i];
-					data.Requirements[i].Type   =         item_req.InventoryType.InventoryType;
+					data.Requirements[i].Type   =         item_req.Type.InventoryType;
 					data.Requirements[i].Id     = (string)item_req.ID;
 					data.Requirements[i].Amount =         item_req.Amount;
 				}

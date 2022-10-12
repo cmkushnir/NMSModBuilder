@@ -32,7 +32,7 @@ namespace cmk.NMS.Game.Items.Substance
 	: cmk.NMS.Game.Items.Collection
 	{
 		public Collection( NMS.Game.Files.Cache PAK_FILES )
-		: base(PAK_FILES, 200)  // 3.98 - 91
+		: base(PAK_FILES, 200)  // 4.00 - 91
 		{
 		}
 
@@ -53,13 +53,12 @@ namespace cmk.NMS.Game.Items.Substance
 
 		protected override void LoadMBIN()
 		{
-			var mbin_data = ItemInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
-			var mbin      = mbin_data?.ModObject() as dynamic;
+			var mbin  = ItemInfo?.ExtractMbin<GcSubstanceTable>(Log.Default);
 			if( mbin == null ) return;
 
 			var collection = Cache.IPakItemCollection;
 
-			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, ITEM => {
+			_ = Parallel.ForEach(mbin.Table, ITEM => {
 				var icon     = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename) as string;
 				var cat_name = ITEM.Category.SubstanceCategory.ToString() as string;
 

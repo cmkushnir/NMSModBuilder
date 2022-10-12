@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -213,6 +212,7 @@ namespace cmk.NMS.Game.Items
 
 				Log.Default.AddInformation($"Loaded {GetType().FullName} - {this.Count} items");
 			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 			finally { Lock.ReleaseWrite(); }
 
 			UpdateLanguage(NMS.Game.Language.Identifier.Default);

@@ -32,7 +32,7 @@ namespace cmk.NMS.Game.Items.Technology
 	: cmk.NMS.Game.Items.Collection
 	{
 		public Collection( NMS.Game.Files.Cache PAK_FILES )
-		: base(PAK_FILES, 600)  // 3.98 - 309
+		: base(PAK_FILES, 600)  // 4.00 - 310
 		{
 		}
 
@@ -53,13 +53,12 @@ namespace cmk.NMS.Game.Items.Technology
 
 		protected override void LoadMBIN()
 		{
-			var mbin_data = ItemInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
-			var mbin      = mbin_data?.ModObject() as dynamic;
+			var mbin  = ItemInfo?.ExtractMbin<GcTechnologyTable>(Log.Default);
 			if( mbin == null ) return;
 
 			var collection = Cache.IPakItemCollection;
 
-			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, ITEM => {
+			_ = Parallel.ForEach(mbin.Table, ITEM => {
 				var icon      = NMS.PAK.Item.Path.NormalizeExtension(ITEM.Icon.Filename) as string;
 				var cat_name  = ITEM.Category.TechnologyCategory.ToString() as string;
 				var req_count = ITEM.Requirements?.Count ?? 0;
@@ -76,7 +75,7 @@ namespace cmk.NMS.Game.Items.Technology
 				for( var i = 0; i < req_count; ++i ) {
 					// data.Requirements is struct
 					var item_req = ITEM.Requirements[i];
-					data.Requirements[i].Type   =         item_req.InventoryType.InventoryType;
+					data.Requirements[i].Type   =         item_req.Type.InventoryType;
 					data.Requirements[i].Id     = (string)item_req.ID;
 					data.Requirements[i].Amount =         item_req.Amount;
 				}

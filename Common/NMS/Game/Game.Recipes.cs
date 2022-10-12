@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 //=============================================================================
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -210,6 +211,7 @@ namespace cmk.NMS.Game.Recipes
 				LoadMBIN(COOKING);
 				Log.Default.AddInformation($"Loaded {GetType().FullName} - {this.Count} recipes");
 			}
+			catch( Exception EX ) { Log.Default.AddFailure(EX); }
 			finally { Lock.ReleaseWrite(); }
 
 			UpdateLanguage(NMS.Game.Language.Identifier.Default);
@@ -221,27 +223,26 @@ namespace cmk.NMS.Game.Recipes
 		{
 			this.Clear();
 
-			var mbin_data = RecipeInfo?.ExtractData<NMS.PAK.MBIN.Data>(Log.Default);
-			var mbin      = mbin_data?.ModObject() as dynamic;
+			var mbin  = RecipeInfo?.ExtractMbin<GcRecipeTable>(Log.Default);
 			if( mbin == null ) return;
 
-			_ = Parallel.ForEach((IEnumerable<dynamic>)mbin.Table, RECIPE => {
+			_ = Parallel.ForEach(mbin.Table, RECIPE => {
 				if( RECIPE.Cooking != COOKING ) return;
 				var data = new Data(this) {
-					Id           = (string)RECIPE.Id,                         // "REFINERECIPE_41"
-					RecipeTypeId = (string)RECIPE.RecipeType,                 // "RECIPE_DUSTY1"
-					RecipeName   = (string)RECIPE.RecipeName,                 // "R_NAME_DUSTY1"
-					TimeToMake   =         RECIPE.TimeToMake,                 // 90
-					ResultType   =         RECIPE.Result.Type.InventoryType,  // InventoryTypeEnum.Substance
-					ResultId     = (string)RECIPE.Result.Id,                  // "LAND1"
+					Id           = RECIPE.Id,                         // "REFINERECIPE_41"
+					RecipeTypeId = RECIPE.RecipeType,                 // "RECIPE_DUSTY1"
+					RecipeName   = RECIPE.RecipeName,                 // "R_NAME_DUSTY1"
+					TimeToMake   = RECIPE.TimeToMake,                 // 90
+					ResultType   = RECIPE.Result.Type.InventoryType,  // InventoryTypeEnum.Substance
+					ResultId     = RECIPE.Result.Id,                  // "LAND1"
 					ResultAmount = RECIPE.Result.Amount,                      // 1
 					Ingredients  = new Data.Ingredient[RECIPE.Ingredients.Count],
 				};
 				for( var i = 0; i < RECIPE.Ingredients.Count; ++i ) {
 					var recipe_ingredient      = RECIPE.Ingredients[i];
-					data.Ingredients[i].Type   =         recipe_ingredient.Type.InventoryType;
-					data.Ingredients[i].Id     = (string)recipe_ingredient.Id;
-					data.Ingredients[i].Amount =         recipe_ingredient.Amount;
+					data.Ingredients[i].Type   = recipe_ingredient.Type.InventoryType;
+					data.Ingredients[i].Id     = recipe_ingredient.Id;
+					data.Ingredients[i].Amount = recipe_ingredient.Amount;
 				}
 				lock( this ) this.Add(data);
 			});
@@ -348,7 +349,7 @@ namespace cmk.NMS.Game.Recipes
 	: cmk.NMS.Game.Recipes.Collection
 	{
 		public Cooking( NMS.Game.Files.Cache PAK_FILES )
-		: base(PAK_FILES, 2000)  // 3.98 - 857
+		: base(PAK_FILES, 2000)  // 4.00 - 857
 		{
 		}
 
@@ -361,7 +362,7 @@ namespace cmk.NMS.Game.Recipes
 	: cmk.NMS.Game.Recipes.Collection
 	{
 		public Refiner( NMS.Game.Files.Cache PAK_FILES )
-		: base(PAK_FILES, 600)  // 3.98 - 303
+		: base(PAK_FILES, 600)  // 4.00 - 303
 		{
 		}
 

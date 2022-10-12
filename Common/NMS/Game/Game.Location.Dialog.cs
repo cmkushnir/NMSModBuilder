@@ -32,7 +32,7 @@ namespace cmk.NMS.Game.Location
     public class Dialog
 	: System.Windows.Window
 	{
-		public Dialog()
+		public Dialog() : base()
 		{
 			Title = "Select Game Location";
 
