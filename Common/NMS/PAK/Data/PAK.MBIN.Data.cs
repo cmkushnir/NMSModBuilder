@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //=============================================================================
 
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Win32;
 
@@ -27,8 +26,8 @@ using Microsoft.Win32;
 
 namespace cmk.NMS.PAK.MBIN
 {
-	// Replaces libMBIN.MBINFile
-	public class Data
+    // Replaces libMBIN.MBINFile
+    public class Data
 	: cmk.NMS.PAK.Item.Data
 	{
 		// log_mbin_guid_mismatch command-line setting:
@@ -227,10 +226,10 @@ namespace cmk.NMS.PAK.MBIN
 			var is_edited = raw_bytes.Length != mod_bytes.Length ?
 				true : PInvoke.memcmp(raw_bytes, mod_bytes, mod_bytes.Length) != 0
 			;
+			if( !is_edited ) return true;  // nothing to update this Save
 
 			// once file data flagged as IsEdited, keep flagged as IsEdited
-			if(  is_edited ) IsEdited = true;
-			if( !is_edited ) return true;  // nothing to update this Save
+			IsEdited = true;
 
 			lock( this ) {
 				var new_raw  = Mbinc?.NMSTemplateToRaw(mod_object, LOG);

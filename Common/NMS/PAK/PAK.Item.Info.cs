@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Windows.Media.Imaging;
 
 //=============================================================================
 
@@ -111,16 +110,6 @@ namespace cmk.NMS.PAK.Item
 		where  AS_T : NMS.PAK.Item.Data
 		{
 			return File?.ExtractData<AS_T>(this, LOG);
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Get this DDS Item Data from File and convert to a BitmapSource.
-		/// </summary>
-		public BitmapSource ExtractDdsBitmapSource( int HEIGHT = 32, Log LOG = null )
-		{
-			return File?.ExtractDdsBitmapSource(this, HEIGHT, LOG);
 		}
 
 		//...........................................................

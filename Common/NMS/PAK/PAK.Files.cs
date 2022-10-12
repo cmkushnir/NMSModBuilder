@@ -23,16 +23,15 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 
 //=============================================================================
 
 namespace cmk.NMS.PAK
 {
-	/// <summary>
-	/// Manage a collection (directory) of .pak files.
-	/// </summary>
-	public class Files
+    /// <summary>
+    /// Manage a collection (directory) of .pak files.
+    /// </summary>
+    public class Files
 	: cmk.NMS.PAK.Item.ICollection
 	{
 		/// <summary>
@@ -276,26 +275,6 @@ namespace cmk.NMS.PAK
 					return null;
 				}
 				return info.ExtractData<AS_T>(LOG);
-			}
-			finally { Lock.ReleaseRead(); }
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Extract DDS item and convert to a BitmapSource.
-		/// Discards PAK.DDS.Data wrapper after conversion.
-		/// </summary>
-		public BitmapSource ExtractDdsBitmapSource( string PATH, bool NORMALIZE = false, int HEIGHT = 32, Log LOG = null, CancellationToken CANCEL = default )
-		{
-			Lock.AcquireRead();
-			try {
-				var info  = FindInfo(PATH, NORMALIZE);
-				if( info == null ) {
-					LOG.AddFailure($"{PATH} - unable to find info in {SubPath}*.pak");
-					return null;
-				}
-				return info.ExtractDdsBitmapSource(HEIGHT, LOG);
 			}
 			finally { Lock.ReleaseRead(); }
 		}

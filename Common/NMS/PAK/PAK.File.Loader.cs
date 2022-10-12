@@ -25,7 +25,6 @@ using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 using cmk.NMS.PAK.Item;
 
 //=============================================================================
@@ -143,6 +142,8 @@ namespace cmk.NMS.PAK.File
 
 		protected bool Load( Log LOG = null, CancellationToken CANCEL = default )
 		{
+			if( Path.Name == "x" ) {
+			}
 			try {
 				using( var pak = WaitOpenSharedReadOnly(default, CANCEL) ) {
 					if( pak == null ) {
@@ -587,41 +588,6 @@ namespace cmk.NMS.PAK.File
 				return null;
 			}
 			return ExtractData<AS_T>(info, LOG, CANCEL);
-		}
-
-		//...........................................................
-
-		/// <summary>
-		/// Extract DDS item and convert to a BitmapSource.
-		/// Discards PAK.DDS.Data wrapper after conversion.
-		/// </summary>
-		public BitmapSource ExtractDdsBitmapSource( NMS.PAK.Item.Info INFO, int HEIGHT = 32, Log LOG = null, CancellationToken CANCEL = default )
-		{
-			if( INFO.Path.Extension.ToUpper() != ".DDS" ) {
-				LOG.AddFailure($"{Path.NameExt} {INFO.Path} - Not a *.DDS file");
-				return null;
-			}
-
-			var data  = ExtractData<NMS.PAK.DDS.Data>(INFO, LOG, CANCEL);
-			if( data == null ) return null;
-
-			var bitmap  = data.Dds?.GetBitmap(HEIGHT < 16 ? 256 : HEIGHT, true);
-			if( bitmap == null ) {
-				LOG.AddFailure($"{Path.NameExt} {data.Path} - Unable to convert dds to bitmap");
-				return null;
-			}
-
-			return bitmap;
-		}
-
-		public BitmapSource ExtractDdsBitmapSource( string PATH, bool NORMALIZE = false, int HEIGHT = 32, Log LOG = null, CancellationToken CANCEL = default )
-		{
-			var info  = FindInfo(PATH, NORMALIZE);
-			if( info == null ) {
-				LOG.AddFailure($"{Path.NameExt} {PATH} - Unable to find info");
-				return null;
-			}
-			return ExtractDdsBitmapSource(info, HEIGHT, LOG, CANCEL);
 		}
 
 		//...........................................................

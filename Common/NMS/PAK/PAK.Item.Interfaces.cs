@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Windows.Media.Imaging;
 
 //=============================================================================
 
@@ -113,8 +112,6 @@ namespace cmk.NMS.PAK.Item
 
 		public AS_T ExtractData<AS_T>( string PATH, bool NORMALIZE = false, Log LOG = null, CancellationToken CANCEL = default )
 		where  AS_T : NMS.PAK.Item.Data;
-
-		public BitmapSource ExtractDdsBitmapSource( string PATH, bool NORMALIZE = false, int HEIGHT = 32, Log LOG = null, CancellationToken CANCEL = default );
 
 		public AS_T ExtractMbin<AS_T>( string PATH, bool NORMALIZE = false, Log LOG = null, CancellationToken CANCEL = default )
 		where  AS_T : class;  // libMBIN.NMSTemplate

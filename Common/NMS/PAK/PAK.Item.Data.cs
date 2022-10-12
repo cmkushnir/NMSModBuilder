@@ -29,7 +29,7 @@ using Microsoft.Win32;
 
 namespace cmk.NMS.PAK.Item
 {
-	public interface IViewer
+    public interface IViewer
 	{
 		ImageButton ViewerButton { get; }
 	}
@@ -278,7 +278,7 @@ namespace cmk.NMS.PAK.Item
 				),
 			};
 			SaveFilePrepare(dialog, LOG);
-			if( dialog.ShowDialog() == true ) {
+			if( dialog.ShowDialog(System.Windows.Application.Current.MainWindow) == true ) {
 				try {
 					Resource.SaveDirectory = dialog.FileName;
 					SaveFileTo(dialog.FileName, LOG);
