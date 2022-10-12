@@ -186,7 +186,7 @@ namespace cmk.NMS
 			// if not on disk then download from GitHub
 			if( !File.Exists(target) ) {
 				var action = () => {
-					var dialog = new DownloadDialog {
+					var dialog = new cmk.DownloadDialog() {
 						DescriptionText =
 						"You don't have the required version of libMBIN | MBINCompiler.\n" +
 						"Would you like to download the required file ?",
