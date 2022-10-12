@@ -29,6 +29,19 @@ namespace cmk
 {
     public static partial class _x_
 	{
+		public static byte[] ToArray(
+			this Stream SOURCE
+		) {
+			if( SOURCE is MemoryStream source ) {
+				return source.ToArray();
+			}
+			var mem = new MemoryStream();
+			SOURCE.CopyTo(mem);
+			return mem.ToArray();
+		}
+
+		//...........................................................
+
 		/// <summary>
 		/// Create new stream via cmk.IO.Stream.MemoryOrTempFile(SOURCE.Length, BUFFER_SIZE),
 		/// then copy all of SOURCE to new stream.

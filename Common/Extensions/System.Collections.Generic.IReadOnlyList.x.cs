@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 //=============================================================================
 namespace cmk
@@ -41,10 +42,12 @@ namespace cmk
 		/// </summary>
 		public static int IndexOfLast<AS_T>(
 			this IReadOnlyList<AS_T> LIST,
-			     Predicate<AS_T>     MATCH
+			     Predicate<AS_T>     MATCH,
+				 CancellationToken   CANCEL  = default
 		){
 			if( LIST != null )
 			for( var i = LIST.Count; i-- > 0; ) {
+				if( CANCEL.IsCancellationRequested ) break;
 				if( MATCH(LIST[i]) ) return i;
 			}
 			return -1;
@@ -107,10 +110,12 @@ namespace cmk
 		public static AS_T Find<AS_T>(
 			this IReadOnlyList<AS_T> LIST,
 			     Predicate<AS_T>     MATCH,
+				 CancellationToken   CANCEL  = default,
 			     AS_T                ON_NULL = default
 		){
 			if( LIST != null )
 			for( var i = 0; i < LIST.Count; ++i ) {
+				if( CANCEL.IsCancellationRequested ) break;
 				if( MATCH(LIST[i]) ) return LIST[i];
 			}
 			return ON_NULL;
@@ -137,10 +142,12 @@ namespace cmk
 		public static AS_T FindLast<AS_T>(
 			this IReadOnlyList<AS_T> LIST,
 			     Predicate<AS_T>     MATCH,
+				 CancellationToken   CANCEL  = default,
 			     AS_T                ON_NULL = default
 		){
 			if( LIST != null )
 			for( var i = LIST.Count; i-- > 0; ) {
+				if( CANCEL.IsCancellationRequested ) break;
 				if( MATCH(LIST[i]) ) return LIST[i];
 			}
 			return ON_NULL;

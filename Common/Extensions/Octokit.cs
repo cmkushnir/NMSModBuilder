@@ -54,9 +54,19 @@ namespace cmk
 		/// For unauthenticated requests, the rate limit allows for up to 60 requests per hour.
 		/// Unauthenticated requests are associated with the originating IP address, and not the user making requests.
 		/// </summary>
+		public static Octokit.MiscellaneousRateLimit MiscellaneousRateLimit( this GitHubClient CLIENT )
+		{
+			var    rate_limit_client = CLIENT?.RateLimit;
+			return rate_limit_client?.GetRateLimits().Result;
+		}
+
+		/// <summary>
+		/// For unauthenticated requests, the rate limit allows for up to 60 requests per hour.
+		/// Unauthenticated requests are associated with the originating IP address, and not the user making requests.
+		/// </summary>
 		public static Octokit.RateLimit Rate( this GitHubClient CLIENT )
 		{
-			var    rates = CLIENT?.Miscellaneous.GetRateLimits().Result;
+			var    rates = CLIENT?.MiscellaneousRateLimit();
 			return rates?.Resources.Core;
 		}
 
@@ -67,7 +77,7 @@ namespace cmk
 		/// </summary>
 		public static Octokit.RateLimit RateSearch( this GitHubClient CLIENT )
 		{
-			var    rates = CLIENT?.Miscellaneous.GetRateLimits().Result;
+			var    rates = CLIENT?.MiscellaneousRateLimit();
 			return rates?.Resources.Search;
 		}
 
