@@ -8,24 +8,26 @@
     <Authors>Chris Kushnir</Authors>
     <Description>cmk common library for working with No Man's Sky game data.</Description>
     <RootNamespace>cmk.Common</RootNamespace>
-    <AssemblyVersion>3.99.1.8</AssemblyVersion>
-    <FileVersion>3.99.1.8</FileVersion>
+    <AssemblyVersion>4.3.0.0</AssemblyVersion>
+    <FileVersion>4.3.0.0</FileVersion>
     <Copyright>Copyright ©  2021 Chris Kushnir</Copyright>
-    <Version>3.99.1.8</Version>
+    <Version>4.3.0.0</Version>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="SharpZipLib\**" />
-    <EmbeddedResource Remove="SharpZipLib\**" />
-    <None Remove="SharpZipLib\**" />
-    <Page Remove="SharpZipLib\**" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Resources\About.png" />
     <None Remove="Resources\Avalon_csx.xshd" />
     <None Remove="Resources\Avalon_ebin.xshd" />
     <None Remove="Resources\Avalon_exml.xshd" />
+    <None Remove="Resources\Avalon_spv.xshd" />
     <None Remove="Resources\BaseComputer.png" />
     <None Remove="Resources\BinocsMod.png" />
     <None Remove="Resources\Black.png" />
@@ -133,6 +135,7 @@
     <None Remove="Resources\UncheckAll.png" />
     <None Remove="Resources\Undo.png" />
     <None Remove="Resources\Viewer.ico" />
+    <None Remove="Resources\Vulkan.png" />
     <None Remove="Resources\Warning.png" />
     <None Remove="Resources\WarpCell.png" />
     <None Remove="Resources\White.png" />
@@ -152,6 +155,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\Avalon_spv.xshd" />
     <Resource Include="Resources\Cube.png" />
     <Resource Include="Resources\FindInFile.png" />
     <Resource Include="Resources\FSlash.png" />
@@ -170,14 +174,15 @@
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.1.3.50" />
     <PackageReference Include="DiffPlex" Version="1.7.1" />
-    <PackageReference Include="Octokit" Version="3.0.0" />
+    <PackageReference Include="Octokit" Version="4.0.0" />
     <PackageReference Include="Pfim" Version="0.11.1" />
+    <PackageReference Include="Veldrid.SPIRV" Version="1.0.15" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="libMBIN">
       <HintPath>libMBIN.dll</HintPath>
-      <Private>true</Private>
+      <Private>True</Private>
       <SpecificVersion>false</SpecificVersion>
     </Reference>
   </ItemGroup>
@@ -276,6 +281,7 @@
     <Resource Include="Resources\UncheckAll.png" />
     <Resource Include="Resources\Undo.png" />
     <Resource Include="Resources\Viewer.ico" />
+    <Resource Include="Resources\Vulkan.png" />
     <Resource Include="Resources\Warning.png" />
     <Resource Include="Resources\WarpCell.png" />
     <Resource Include="Resources\White.png" />
