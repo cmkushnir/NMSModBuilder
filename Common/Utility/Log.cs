@@ -128,7 +128,7 @@ namespace cmk
 				FileName = name + ".log",
 				Filter   = "Log|*.log",
 			};
-			if( dialog.ShowDialog() != true ) return false;
+			if( dialog.ShowDialog(System.Windows.Application.Current.MainWindow) != true ) return false;
 			lock( this ) try {
 				using( var file = System.IO.File.CreateText(dialog.FileName) ) {
 					foreach( var item in m_list ) {

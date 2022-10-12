@@ -21,10 +21,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //=============================================================================
 
+using System.Windows;
+
 namespace cmk
 {
     public static class Dialog
 	{
+		public static MessageBoxResult ShowMessageBoxOnMainWindow(
+			string           MESSAGE,
+			string           TITLE,
+			MessageBoxButton BUTTON,
+			MessageBoxImage  ICON,
+			MessageBoxResult DEFAULT
+		){
+			MessageBoxResult result = MessageBoxResult.None;
+			_x_.DispatcherInvoke(() => result = MessageBox.Show(
+				System.Windows.Application.Current.MainWindow,
+				MESSAGE, TITLE, BUTTON, ICON, DEFAULT
+			));
+			return result;
+		}
+
+		//...........................................................
+
 		public static string SelectFolder()
 		{
 			var path   = "";
@@ -49,7 +68,9 @@ namespace cmk
 					FileName         = INITIAL_FILEPATH,
 					Multiselect      = false,
 				};
-				if( dialog.ShowDialog() == true ) path = dialog.FileName;
+				if( dialog.ShowDialog(System.Windows.Application.Current.MainWindow) == true ) {
+					path = dialog.FileName;
+				}
 			};
 			action.DispatcherInvoke();
 			return path;
@@ -69,7 +90,9 @@ namespace cmk
 					FileName         = INITIAL_FILEPATH,
 					CreatePrompt     = CREATE_PROMPT,
 				};
-				if( dialog.ShowDialog() == true ) path = dialog.FileName;
+				if( dialog.ShowDialog(System.Windows.Application.Current.MainWindow) == true ) {
+					path = dialog.FileName;
+				}
 			};
 			action.DispatcherInvoke();
 			return path;
@@ -83,7 +106,7 @@ namespace cmk
 		){
 			var text   = TEXT;
 			var action = () => {
-				var dialog = new cmk.TextBoxDialog {
+				var dialog = new cmk.TextBoxDialog() {
 					Title = TITLE ?? "Enter value:",
 					Text  = TEXT  ?? ""
 				};

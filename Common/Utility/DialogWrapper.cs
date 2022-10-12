@@ -33,9 +33,9 @@ namespace cmk
 
 		public DialogWrapper()
 		{
-			Application.Current?.Dispatcher.Invoke(() => {
-				Dialog = new DIALOG_T();
-			});
+			Application.Current?.Dispatcher.Invoke(()
+				=> new DIALOG_T() { Topmost = true }
+			);
 		}
 
 		//...........................................................

@@ -71,11 +71,12 @@ namespace cmk
 						if( rate.Remaining > 0 ) {
 							m_releases = client.Releases(User, Repository);
 						}
-						else MessageBox.Show(  // don't init m_releases, allow try again later
+						else Dialog.ShowMessageBoxOnMainWindow(  // don't init m_releases, allow try again later
 							$"Hit GitHub query rate limit {rate.Limit}/hr\nResets: {rate.Reset.LocalDateTime}.",
 							"Version Check",
 							MessageBoxButton.OK,
-							MessageBoxImage.Error
+							MessageBoxImage.Error,
+							MessageBoxResult.OK
 						);
 					}
 					catch( Exception EX ) { Log.Default.AddFailure(EX); }
