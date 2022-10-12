@@ -195,6 +195,7 @@ namespace cmk
 				case ".exml": name = "EXML"; xshd = new MemoryStream(cmk.Common.Properties.Resources.Avalon_exml); break;
 				case ".ebin": name = "EBIN"; xshd = new MemoryStream(cmk.Common.Properties.Resources.Avalon_ebin); break;
 				case ".csx":  name = "CSX";  xshd = new MemoryStream(cmk.Common.Properties.Resources.Avalon_csx);  break;
+				case ".spv":  name = "SPV";  xshd = new MemoryStream(cmk.Common.Properties.Resources.Avalon_spv);  break;
 			}
 			if( xshd == null ) return defn;
 

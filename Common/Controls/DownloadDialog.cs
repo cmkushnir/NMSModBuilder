@@ -219,7 +219,7 @@ namespace cmk
 				CreatePrompt     = true,
 			};
 
-			if( dialog.ShowDialog() == true ) {
+			if( dialog.ShowDialog(System.Windows.Application.Current.MainWindow) == true ) {
 				TargetText = dialog.FileName;
 			}
 		}

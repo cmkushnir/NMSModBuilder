@@ -31,7 +31,7 @@ namespace cmk
     public class SelectFolderDialog
 	: System.Windows.Window
 	{
-		public SelectFolderDialog()
+		public SelectFolderDialog() : base()
 		{
 			Title = "Select Folder";
 
