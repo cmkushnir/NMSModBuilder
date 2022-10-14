@@ -1,312 +1,305 @@
 # NMS Mod Builder
 
+## <div align="center"> >>> [Quick Start](Doc/QuickStart/Readme.md) <<< </div>
+
 <div align="center"><img src="Doc/Splash.png" width="540px"></div>
-</br>
+
+---
 
 <!--ts-->
-* [Features](#Features)
 * [License](#License)
 * [Install](#Install)
 * [Configuration](#Configuration)
-  * [cmkNMSReleases.txt](#cmkNMSReleases.txt)
   * [Command Line](#Command-Line)
-* [Startup](#Startup)
+  * [.editorconfig](#.editorconfig)
+  * [cmkNMSReleases.txt](#cmkNMSReleases.txt)
   * [Plugins](#Plugins)
-  * [Toolbar](#Toolbar)
-  * [Statusbar](#Statusbar)
-  * [Download](#Download)
-  * [Loading](#Loading)
-* [Tabs](Doc/Tab/Tabs.md)
-  * [Application](Doc/Tab/Application/Application.md)
-  * [libMBIN API](Doc/Tab/MBINC/MBINC.md)
-  * [Language](Doc/Tab/Language/Language.md)
-  * [Search MBIN](Doc/Tab/SearchMbin/Mbin.md)
-  * [Search DDS](Doc/Tab/SearchDds/Dds.md)
-  * [Substances, Products, Technologies](Doc/Tab/Items/Items.md)
-  * [Refiner & Cooking Recipes](Doc/Tab/Recipes/Recipes.md)
-  * [PAK Conflicts](Doc/Tab/PakConflicts/PakConflicts.md)
-  * [PAK Items](Doc/Tab/PakItems/PakItems.md)
-  * [Query Scripts](Doc/Tab/ScriptQuery/ScriptQuery.md)
-  * [Mod Scripts](Doc/Tab/ScriptMod/ScriptMod.md)
-  * [Build](Doc/Tab/Build/Build.md)
+* [Startup](#Startup)
+* [Tabs](Doc/Tab/Readme.md)
+  * [Application](Doc/Tab/Application/Readme.md)
+  * [libMBIN API](Doc/Tab/MBINC/Readme.md)
+  * [Language](Doc/Tab/Language/Readme.md)
+  * [Substances, Products, Technologies](Doc/Tab/Items/Readme.md)
+  * [Refiner & Cooking Recipes](Doc/Tab/Recipes/Readme.md)
+  * [Search Paths](Doc/Tab/SearchPaths/Readme.md)
+  * [Search DDS Paths](Doc/Tab/SearchDds/Readme.md)
+  * [Search Text](Doc/Tab/SearchText/Readme.md)
+  * [PAK Conflicts](Doc/Tab/PakConflicts/Readme.md)
+  * [PAK Items](Doc/Tab/PakItems/Readme.md)
+  * [Scripts](Doc/Script/Readme.md)
+    * [Utility Scripts](Doc/Tab/ScriptUtil/Readme.md)
+    * [Query Scripts](Doc/Tab/ScriptQuery/Readme.md)
+    * [Mod Scripts](Doc/Tab/ScriptMod/Readme.md)
+  * [Build](Doc/Tab/Build/Readme.md)
 * [Dependencies](#Dependencies)
 <!--te-->
 
-</br>
-</br>
-
-## Quick Start
-- Unzip download, will create a NMSModBuilder folder with all required files, including sample scripts.
-- Make sure .NET 6 x64 Desktop runtime is installed.
-- Run NMSModBuilder/cmkNMSModBuilder.exe, will take 3 sec or so to start.
-- Click GoG or Steam icon in toolbar to have it load your game data.
-- Use research tabs on the left, script tabs on the right.
-- To build the included mod scripts:
-  - goto the Mod Scripts tab and click Compile All button.  Check for errors in log.
-  - goto the Build and Save tab and click Execute.  Check for errors in log.
-  - on the same Build and Save tab click Build & Save.  Will prompt to save cmk.pak in game MODS folder.
-  - can now look at cmk.pak diffs using one of the PAK Items tabs.
-
-</br>
-</br>
-
-## Features
-A one-stop solution for creating NMS mods using C#</br>
-- Automatically detects normally installed GoG and Steam game instances.
-  - Optionally select game instance using folder browser dialog, for non-standard installs.
-  - Optionally specify a custom install location via the command-line to have a toolbar button added for it.
-- View MBINCompiler | libMBIN Enums, Classes, Fields.
-- Select NMS language to view all language ID's and their localized values.
-- Search for DDS image paths, in the game pak files, using wildcards 
-- View all substances, products, and technologies - ID, icon, localized names.
-- View all refiner and cooking recipes - ID's, icons, localized names.
-- Auto-generates list of conflicts between PCBANKS/MODS/*.pak files.
-- View all game and mod pak items without having to unpack or decompile anything - it's all done in-memory on-demand.
-  - Specialized viewers for common pak item types e.g. .mbin, .dds, .xml, .cs, .lua, ... .
-  - Side-by-side views of game & mod pak items, with built-in differ for text-based views.
-- Use C# to create query scripts that search game and mod pak items.
-- Use C# to create mod scripts that modify pak items, create new mod pak files from the modified pak items.
-- Includes a number of query and mod scripts to get you started.
-
-</br>
-</br>
+---
 
 ## License
 All released items, including but not limited to: binaries, source files, documentation, are made available under the AGPL license,
 with the additional provision that the released items may not be used to create forked or otherwise competing products.
 A competing product would be one that can compile and execute .NET (e.g. C#) code at runtime to create modified game assets.</br>
-> The additional provision will be removed once the Repository is Archived (i.e. development|maintenance is stopped).
+> The additional provision may be removed once the Repository is Archived (i.e. development | maintenance is stopped).
 
-</br>
-</br>
+---
 
 ## Install
+Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions greater than 3.82.1.</br>
 Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed for versions up to 3.82.1.</br>
-Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions 3.82.2.2 onwards.</br>
-Select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
+
+[Download the latest release](https://github.com/cmkushnir/NMSModBuilder/releases/latest/download/NMSModBuilder.7z), or select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
 There is no installer, simply unzip the contents of NMSModBuilder.7z into a (new) folder.</br>
 
-> When updating, remember to backup any bundled [Query Scripts](Doc/Scripts/Query/Query.md) or [Mod Scripts](Doc/Scripts/Mod/Mod.md) you may have modified, before overwritting them with those from a newer Release.
+GitHub may have pre-release versions not uploaded to Nexus.
+Versions are generally tagged as pre-release when a significant amount of code was added or changed.
+The pre-relesae tag may be removed once they have been in-use for some period of time without any detected issues.
 
-</br>
-</br>
+> When updating, remember to backup any bundled [Util](Doc/Tab/ScriptUtil/Readme.md), [Query](Doc/Tab/ScriptQuery/Readme.md), or [Mod](Doc/Tab/ScriptMod/Readme.md) scripts you may have modified, before overwritting them with those from a newer Release.
+
+---
 
 ## Configuration
-The application should be able to run without the user having to make any configuration changes.<br/>
-
-</br>
-
-### cmkNMSReleases.txt
-The cmkNMSReleases.txt file in the application folder binds game releases to MBINCompiler | libMBIN versions.
-It is generally updated when new game releases and|or MBINCompiler | libMBIN versions are installed.</br>
-The application will automatically merge the entries from the local file with the latest entries from the GitHub file when started,
-unless the **no_github** command-line option is specified.  This means the user should generally not need to edit this file as long as the GitHub file is kept up-to-date.
-
-> You will only be able to create mods for game releases supported by the libMBIN.dll version in the application folder, as specified in cmkNMSReleases.txt.
-
-</br>
+NMSMB should be able to run without the user having to make any configuration changes.<br/>
 
 ### Command-Line
 
-#### no_split_tabs
-> May be removed in future releases.
-
-Force the application to start with a single set of tabs.<br/>
-By default the application will start with [split-tabs](Doc/Tab/Tabs.md).<br/>
-
-#### no_github
-Prevent the application from connecting to GitHub.<br/>
-By default the application will connect to GitHub to get:
-- A copy of the latest cmkNMSReleases.txt when the application starts.
-  It will merge those entries with the ones loaded from the local cmkNMSReleases.txt in the application folder.
+#### `no_github`
+Prevent NMSMB from connecting to GitHub.<br/>
+By default NMSMB will connect to GitHub to get:
+- A copy of the current [cmkNMSReleases.txt](https://github.com/cmkushnir/NMSModBuilder/blob/main/Common/cmkNMSReleases.txt) when the application starts.
+  It will merge those entries with the ones loaded from the local cmkNMSReleases.txt in the NMSMB folder.
   As long as the GitHub version is maintained, this should alleviate the need for the user to update their local cmkNMSReleases.txt.
   Note that the entries are only merged in-memory, the local cmkNMSReleases.txt is not updated.
-- A list of all releases for the application when the user clicks the application version button in the statusbar.
-  The list is only retrieved once per application run and cached in-memory.
-- A list of all MBINCompiler releases the first time the application needs to use a libMBIN.dll version other than the one in the application folder.
+- A list of all NMSMB releases when the user clicks the NMSMB version button in the statusbar.
+  The list is only retrieved once per NMSMB run and cached in-memory.
+- A list of all MBINCompiler | libMBIN releases the first time NMSMB needs to use a libMBIN.dll version other than the one in the NMSMB folder.
   e.g. when trying to view a mod mbin item compiled with an older MBINC version.
-  The list is only retrieved once per application run and cached in-memory.
+  The list is only retrieved once per NMSMB run and cached in-memory.
 
-#### no_persist_ui
-Prevent the application from storing window state in the registry when it closes and restoring it from the registry when it starts.<br/>
-By default the application will store window state in **HKCU\SOFTWARE\cmkushnir\NMSMB\Windows**.
-Note that the user is responsible for deleting the registry information if they remove the application, there is no uninstaller. 
+#### `no_registry`
+Prevent NMSMB from storing window state in the registry when it closes and restoring it from the registry when it starts.<br/>
+NMSMB stores window state in **HKCU\SOFTWARE\cmkushnir\NMSMB\Windows**.
+>The user is responsible for deleting the registry information if they remove NMSMB, there is no uninstaller.
+>Note that if you use multiple NMSMB copies they all share the same registry key.
 
-#### log_mbin_guid_mismatch
-Add warnings to the current Log when extracting mbin's and the mbin guid != libMBIN guid. 
+#### `p"path"`
+Add a single game location to the toolbar.
+A button will be added to the left of the GoG, Steam, Select buttons.
 
-#### prompt_del_on_exec
-When Executing mod scripts, check if the game has a mod pak with the same name as the mod project.  If it does then prompt the user to delete the mod pak before Executing the mod scripts.  This is for users that are using Game as the script IPakItemCollection, to prevent the scripts from patching an old version of the project mod pak.
+#### `r#.#.#`
+Force the game release for the `p` game instance.
+Only used if `p` also specified.
+Ignored if `v` specified.<br/>
 
-#### no_mbin_cache
-By default extracted mbin's are cached with the corresponding Info object.  This can give significant performance benefits, especially to the Search MBIN tab (2 min w/o cache, 1 sec w/ cache).  However, caching all mbin objects requires 36 - 42GB of memory, so you system would need more that that or you will get significant memory page thrashing.  If your system has < 48GB of physical memory you should enable this.
+#### `v#.#.#.#`
+Force the MBINC version for the `p` game instance.
+Only used if `p` also specified.
+Overrides `r`.
 
-#### -p"path"
-Add a single game location to the toolbar.  A button will be added to the left of the GoG, Steam, Select buttons.
+#### `lg`, `ls`, `lx`, or `lp`
+Try to auto-load a game instance on start (GoG, Steam, Xbox Game Pass, or `p` location).
 
-#### -r#.#.#
-Force the game release for the -p game instance.  Only used if -p also specified.  Ignored if -v specified.<br/>
+>If `p` specified but neither `r` or `v` are specified, then will lookup the build date of the NMS.exe in cmkNMSReleases.txt to determine the release.
 
-#### -v#.#.#.#
-Force the MBINC version for the -p game instance.  Only used if -p also specified.  Overrides -r.
+### .editorconfig
+The .editorconfig file, in the NMSMB folder, is used by the script Format toolbar button to control things like indentation and spacing.
 
-If -p specified but neither -r or -v are specified, then will lookup the build date of the NMS.exe in cmkNMSReleases.txt to determine the release.
+### cmkNMSReleases.txt
+The cmkNMSReleases.txt file, in the NMSMB folder, binds game releases to MBINCompiler | libMBIN versions.
+It is generally updated when new game releases and|or MBINCompiler | libMBIN versions are released | installed.</br>
 
-</br>
-</br>
+NMSMB will automatically merge the entries from the local file with the latest entries from the [GitHub file](https://github.com/cmkushnir/NMSModBuilder/blob/main/Common/cmkNMSReleases.txt) when started,
+unless the [**no_github**](#no_github) command-line option is specified.
+This means the user should generally not need to edit this file as long as the [GitHub file](https://github.com/cmkushnir/NMSModBuilder/blob/main/Common/cmkNMSReleases.txt) is kept up-to-date.
 
-## Startup
-> If you have multiple game instances that require different libMBIN.dll versions, then you will need to manually change libMBIN.dll to the appropriate version for the Release you want to mod.
-> You do not need to do this for viewing mbins only modding them, it will prompt to download whatever it needs for viewing.<br/>
-> Note that like libMBIN.dll, the application does not attempt to be backwards compatible, so only libMBIN.dll versions released around the same time as the application may be supported for modding
-> i.e. earlier and later libMBIN.dll versions may change some classes that are directly used by the application (NMSString*, serialize methods namespaces and signatures, language, substance, product, technology, recipe mbin's).
+The NMS.exe build date for a given game release can be different for each platform, including GoG vs Steam.
+The NMS.exe build date may be a couple days before the official release date.
+The cmkNMSReleases.txt build dates should correspond to the Steam NMS.exe build dates.
 
-Run cmkNMSModBuilder.exe with any desired command-line options, e.g.:</br>
-_X:\Games\NMS\Tools\cmk\NMSModBuilder>cmkNMSModBuilder.exe -p"G:\Games\No Man's Sky"_
-
-![](Doc/Tab/Application/StartTabs.png)
-
-When the application starts it may take 1-3 seconds before the window is displayed.
-During that time the application is loading and linking all enums, classes, and fields from the libMBIN.dll in the application folder,
-searching for installed Steam and GoG game instances, loading any ./Plugins/*.dll files.
-
-</br>
+> You will only be able to create mods for game releases supported by the libMBIN.dll version in the NMSMB folder, as specified in cmkNMSReleases.txt.
 
 ### Plugins
-
-A plugin dll simply references cmkNMSCommon.dll and cmkNMSModBuilder.exe, and has a class derived from cmk.NMS.ModBuilder.Plugin.
-When the application starts it will load all ./Plugins/*.dll files.
+A plugin dll is a .NET core dll that simply references cmkNMSCommon.dll and cmkNMSModBuilder.exe, and has a class derived from cmk.NMS.ModBuilder.Plugin.
+When NMSMB starts it will load all ./Plugins/*.dll files.
 For each dll it will create an instance of the first cmk.NMS.ModBuilder.Plugin derived class it finds and call its Load() method.
-When the application closes it will call the Unload() method for all Plugin instances.
+When NMSMB closes it will call the Unload() method for all Plugin instances.
 
 Plugins can be used for things like:
 - add classes and methods that can be used by the scripts.
-- add or replace Data|Viewer|Differ classes for pak item types.
-- add custom Viewer|Differ classes for top-level mbin classes.
+- add or replace Data | Viewer | Differ classes for pak item types.
+- add custom Viewer | Differ classes for top-level mbin classes.
 - add or replace UI tabs.
 - interface with another applications.
 
 See: Plugins/Sample/ in the Repository.  
 
-</br>
+---
 
-### Toolbar
-![](Doc/Tab/Application/Toolbar.png)
+## Startup
+Run cmkNMSModBuilder.exe with any desired command-line options, e.g.:</br>
+`X:\Games\NMS\Tools\NMSModBuilder>cmkNMSModBuilder.exe p"G:\Games\No Man's Sky" lp`
 
-- **Command-line -p game instance:**  Green - can mod, Yellow - can mod but GitHub disabled, Red - can't mod, only view pak items.  Only displayed if -p command-line path is for a valid game instance.
-- **GoG game instance:**  Only displayed if found a GoG game instance.
-- **Steam game instance:**  Only displayed if found a Steam game instance.  If multiple Steam accounts only first found is used.
-- **Select game instance:**  Opens dialog to select game instance folder.
-- **GitHub project:**  Open application project page in default browser.
-- **Application information:**  Open dialog with links to other GitHub projects used by application.
+When NMSMB starts it may take 1-3 seconds before the window is displayed.
+During that time NMSMB is loading and linking all enums, classes, and fields from the libMBIN.dll in the NMSMB folder,
+searching for installed GoG, Steam, and Xbox Game Pass game instances, loading any ./Plugins/*.dll files, ... .
 
-Select game instance dialog:</br>
+![](Doc/Application.png)
+
+### [Application](Doc/Tab/Application/Readme.md)
+Default log window and NMSMB state toggle buttons.
+
+### [libMBIN API](Doc/Tab/MBINC/Readme.md)
+All Enums, Structs, Fields from linked libMBIN.dll.</br>
+Top-level structs have links to mbin's that use them.</br>
+Can filter displayed items using wildcard or regex pattern.
+
+### [Language](Doc/Tab/Language/Readme.md)
+Consolidated and sorted list of all ID - Text pairs for the selected language.</br>
+The selected language is used to display Text in all tabs that use a language ID.</br>
+Can filter displayed items using wildcard or regex pattern.
+
+### [Substances, Products, Technologies](Doc/Tab/Items/Readme.md)
+List items from corresponding `METADATA/REALITY/TABLES/*.MBIN`.</br>
+For each item display Icon, ID's, Text, Description, Requirements.</br>
+Can filter displayed items using wildcard or regex pattern.
+
+### [Refiner and Cooking Recipes](Doc/Tab/Recipes/Readme.md)
+List items from `METADATA/REALITY/TABLES/NMS_REALITY_GCRECIPETABLE.MBIN`.</br>
+For each item display Icons, ID's, Text, Description, Requirements.</br>
+Can filter displayed items using wildcard or regex pattern.
+
+### [Search Paths](Doc/Tab/SearchPaths/Readme.md)
+Use wildcard or regex pattern to search all item paths in game or mod pak files.
+
+### [Search DDS Paths](Doc/Tab/SearchDds/Readme.md)
+Use wildcard or regex pattern to search all *.dds paths in game or mod pak files.</br>
+A thumbnail image is displayed for each result.
+
+### [Search Text](Doc/Tab/SearchText)
+Use wildcard or regex pattern to search items in game or mod pak files that can be represented as text.</br>
+Optionally cache mbin text to significantly speed up subsequent searches.
+
+### [PAK Conflicts](Doc/Tah/PakConflicts/Readme.md)
+Only displayed if conflicts are detected.</br>
+NMSMB watches the selected game `GAMEDATA/PCBANKS/MODS/` folder for *.pak adds | deletes | changes.
+Whenever a change is detected it rechecks for conflicts, and displays the tab if any are found, otherwise it hides the tab.
+
+### [PAK Items](Doc/Tab/PakItems/Readme.md)
+View items in game or mod pak files.  Can save items to disk.</br>
+Specialized viewers and diff viewers for common item types e.g. mbin, dds, spv, txt, ... .
+
+### [Scripts](Doc/Script/Readme.md)
+#### [Utility Scripts](Doc/Tab/ScriptUtil/Readme.md)
+Create, edit, compile C# scripts that can be used by Query and Mod scripts.
+
+#### [Query Scripts](Doc/Tab/ScriptQuery/Readme.md)
+Create, edit, compile, execute C# scripts that can query data from game and mod pak files.
+
+#### [Mod Scripts](Doc/Tab/ScriptMod/Readme.md)
+Create, edit, compile C# scripts that create modified copies of game and installed mod pak files.
+
+### [Build](Doc/Tab/Build/Readme.md)
+Execute Mod script objects, use resulting modified items to Build new mod pak files.
+
+### Custom Location
+Only displayed if a valid `p` command-line path is specified.
+- **Green:** can mod, the linked libMBIN.dll matches the NMS.exe version.
+- **Yellow:** can mod, but GitHub disabled
+- **Red:** can't mod, can only view pak items
+
+### GoG Location
+Checks registry for `HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\`.</br>
+The registry key contains the install path and the game release.
+
+### Steam Location
+Searches all Steam game install locations for `appmanifest_275850.acf`.</br>
+Manifest contains install path, game release from cmkNMSReleases.txt based on NMS.exe build date.
+
+### Xbox Game Pass Location
+Uses Windows package manager to look for pack ID `HelloGames.NoMansSky`.</br>
+Package contains both install path and game release.
+
+### Select | Browse Location
+Selecting a valid game path will display the NMS.exe build date and matching game release from cmkNMSReleases.txt.
+The user can override the game release.
 ![](Doc/Tab/Application/SelectGameFolder.png)</br>
-Selecting a valid game folder will display the build date of the NMS.exe and the best guess of the game release.
-If the selected path matches a discovered GoG or Steam install path, then any pre-loaded GoG or Steam game instance data will be used
-i.e. you cannot load two instances of the same game instance (uses path to determine if game instances are the same, may load same instance if reachable through different paths e.g. hard|sym links).
 
-</br>
+### NMSMB GitHub Site
+https://github.com/cmkushnir/NMSModBuilder
 
-Since there is no official way to determine the game release from an installed instance, the application does the following:
-- **GoG:** Release information is extracted from a string in the registry.</br>
-  e.g. 3.53 is extracted from Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\ver = "3.53_Prisms_73811"
-- **Steam:** Release is looked up in cmkNMSReleases.txt based on the NMS.exe build date.
-- **Selected Folders:** Release is looked up in cmkNMSReleases.txt based on the NMS.exe build date, but the user can override by selecting a different release in the Select Game Location dialog.
+Note: user contributed scripts and documents can be found at:</br>
+https://github.com/cmkushnir/NMSModBuilderContrib
 
-> The NMS.exe build date for a given game release can be different for each platform, including GoG vs Steam.
-> The NMS.exe build date may be a couple days before the official release date.
-> The cmkNMSReleases.txt build dates should correspond to the Steam NMS.exe build dates.
+### NMSMB Information
+Display splash screen and links to dependencies.
 
-</br>
+### Linked libMBIN.dll version
+- **Green:** can mod, the linked libMBIN.dll matches the selected NMS.exe version.
+- **Yellow:** can mod, but GitHub disabled
+- **Red:** can't mod, can only view pak items
 
-### Statusbar
-![](Doc/Tab/Application/Statusbar.png)
+The version of the link loaded libMBIN.dll in the NMSMB folder determines what game releases can be modded.
+It does not control what mbin versions can be viewed, NMSMB will prompt to download the appropriate libMBIN.dll it needs to view a given mbin as needed.
 
-- Version of libMBIN.dll in application folder (one link loaded by application).
-  Green - can mod, Yellow - can mod but GitHub disabled, Red - can't mod, only view pak items.
-- Build date of the current game instance NMS.exe.
-- Application version.  When clicked will check GitHub for a newer version,
-  and prompt the user to download if one is found.
-  The user is responsible for unzipping and updating the application files from the downloaded file.
+If you have multiple game instances you want to mod, each requiring a different libMBIN.dll, then the easiest option is to create a NMSMB install folder for each game instance, each with the appropriate libMBIN.dll version;
+otherwise you will have to manually make sure the correct libMBIN.dll version is in the NMSMB folder before modding a given game instance.
 
-</br>
+### NMS.exe build date
+The build date is stored in NMS.exe, so the file needs to be readable.</br>
+Xbox Game Pass NMS.exe cannot be read by default, the date is from cmkNMSReleases.txt based on the game release.
 
-### Download
+### Launch NMS.exe
+Minimize the NMSMB window and launch the selected NMS.exe in a new process.
+
+### NMSMB version
+Clicking this button will query GitHub for latest release.
+User will be prompted to download NMSModBuilder.7z is a newer release is available.
+
+### Note
+
+Like libMBIN.dll, NMSMB does not attempt to be backwards compatible, so only libMBIN.dll versions released around the same time as the given NMSMB version may be supported for modding
+i.e. earlier and later libMBIN.dll versions may change some classes that are directly used by NMSMB (NMSString*, serialize methods namespaces and signatures, language, substance, product, technology, recipe mbin's).
+
+---
+
+## Download
 ![](Doc/Tab/Application/Download.png)
 
-There are two times the application may prompt you to download a file:
-1) You try to view an mbin that was built using a version of libMBIN that isn't in the application folder.
-2) You click the application version button, in the bottom-right of the statusbar, and a newer application version is available on GitHub.
+There are two times NMSMB may prompt you to download a file:
+1) You try to view an mbin that was built using a version of libMBIN that isn't in the NMSMB folder.
+2) You click the NMSMB version button, in the bottom-right of the statusbar, and a newer NMSMB version is available on GitHub.
 
-</br>
-
-### Loading
-![](Doc/Tab/Application/LoadedTabs.png)
-
-Once the main window is displayed, select the game instance by clicking the Custom, GoG, Steam, or Select Folder button on the application toolbar.
-It will take 8 - 15 sec to load and index the various pak files.
-The [Application tab](Doc/Tab/Application/Application.md) log window will update as tasks are started and completed.
-
-- **Loading Types from ... :**
-  Each game instance gets it's own wrapper around the linked libMBIN.dll.
-  This allows different game instances that use the same libMBIN.dll version, but may have different mbin's,
-  to display the game instance specific mbins in the [libMBIN API tab](Doc/Tab/MBINC/MBINC.md).
-  So even though it already did this at the application level, it needs to do it again per game instance.
-- **Loading item info from ... :**
-  Load meta-data for each pak file in the PCBANKS and PCBANKS/MODS folders.
-  - Load each pak header and manifest.
-    Pak item Info objects are created for each manifest entry.
-    The Info objects contain the item Path and meta-data required to extract the item Data.
-    Each pak file wrapper maintains both a sorted list and a tree of manifest Info objects.
-  - Load the header for each pak mbin item.  Mainly used to get the top-level class for each mbin, so the mbin can be linked to the corresponding MBINC class.
-- **Building merged item info tree from ... :**
-  The game pak files (PCBANKS) have their Info lists added to a merged Info tree.
-- **Linking MBIN paths to libMBIN classes:**
-  Link the Path of each game pak mbin item to the top-level class in the game instance libMBIN wrapper.
-- **Loading cmk.NMS.Game.Language.Collection:**
-  Each supported language has Id - value pairs stored in 5 or more mbin's.
-  This loads all the mbin's for the current language, and adds all Id - value pairs to a dictionary.
-  The dictionary is displayed in the [Language tab](Doc/Tab/Language/Language.md).
-  It is also used to map Game.Item Id's to localized strings.
-- **Loading cmk.NMS.Game.Items.\*.Collection:**
-  Load the corresponding mbin, create a wrapper for each item.
-  The wrapper objects contain the Id's, localized strings, and bitmap versions of the icon.
-  These collections are displayed in the [Substances, Products, Technologies tabs](Doc/Tab/Items/Items.md).
-- **Loading cmk.NMS.Game.Recipes.\*.Collection:**
-  Load the recipes mbin and create wrappers for each item.
-  The wrapper objects contain the Id's, localized strings, and bitmap versions of the icon.
-  These collections are displayed in the [Refiner & Cooking Recipes tabs](Doc/Tab/Recipes/Recipes.md).
-- **Updated cmk.NMS.\*.Collection 'ENGLISH':**
-  Whenever the current language is changed the Game.Items and Game.Recipes lists have their localized strings updated.
-  It takes 1-2 seconds to load a different language.
-
-The above tasks are done in parallel.
-This means that having a processor that supports more concurrent threads will help keep the load time down.
-It also means the load may become I/O limited, especially if the game files are on a hard-disk instead of an SSD.
-
-</br>
-</br>
+---
 
 ## Dependencies
 <div align="center"><img src="Doc/About.png" width="1080px"></div>
 
+- https://github.com/cmkushnir/NMSModBuilderContrib</br>
+User contributions e.g. scripts, plugins, doc's, ...
+
 - https://github.com/monkeyman192/MBINCompiler</br>
-MBINCompiler.exe | libMBIN.dll decompiles|recompiles .mbin items to|from in-memory dom and .exml text.
+Decompile and recompile *.mbin items to | from in-memory dom, and text.
 
 - https://github.com/dotnet/roslyn</br>
-Microsoft .NET C# compiler, used to compile C# scripts.
+Microsoft .NET compiler, used to compile C# scripts.
 
 - https://github.com/icsharpcode/AvalonEdit</br>
-AvalonEdit view|edit items that can be converted to text.
+View and edit items that can be converted to text.
 
 - https://github.com/nickbabcock/Pfim</br>
-Pfim converts (most) .dds items to bitmaps for viewing.
+Convert *.dds to bitmaps for viewing.
+
+- https://github.com/KhronosGroup/SPIRV-Cross</br>
+Convert *.spv to | from glsl text.
+
+- https://github.com/mellinoe/veldrid-spirv</br>
+Convert *.spv to | from glsl text.
 
 - https://github.com/mmanela/diffplex</br>
-DiffPlex calculates differences between items that can be converted to text.
+Determine differences between text items.
 
 - https://github.com/octokit/octokit.net</br>
-Octokit.NET provides access to GitHub to query application and MBINC release information.
+Query GitHub for release information.
 
-</br>
+---
