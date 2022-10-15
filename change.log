@@ -1,9 +1,3 @@
-4.3.0.1: libmbin >= 4.3.0.4
-- update:
-  - ability auto-load detected Xbox Game Pass instance on start using lx command-line option.
-- change:
-  - 'play-as' changed to 'profile' in code and documentation.
-
 4.3.0.0: libmbin.dll >= 4.3.0.2
 - change:
   - cmk.NMS.Script.GetLanguage*() and SetLanguage*() methods reworked to avoid pulling
