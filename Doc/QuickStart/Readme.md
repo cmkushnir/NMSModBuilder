@@ -11,6 +11,14 @@ e.g. https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-deskto
 There is no installer, the 7z contains a NMSModBuilder folder with all the application contents, including default scripts.
 Don't unzip a new version over an existing instance.
 
+>A given NMSMB version can only roll the libmbin.dll version forward.
+>For example, NMSMB version 4.0.0.0 comes with libmbin 4.0.0.2,
+>you can only try to replace the included libmbin with newer versions like 4.0.0.3,
+>you can not use older versions like 4.0.0.1.
+>If your game release needs an older libmin then you need to use an older NMSMB version that supports it.
+>Look in the NMSMB change.log to see what libmbin version is included with each NMSMB version,
+>or just check the libmbin in the download file.
+
 ---
 
 ## Start
