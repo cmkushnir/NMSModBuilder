@@ -1,0 +1,680 @@
+4.3.0.1: libmbin >= 4.3.0.4
+- update:
+  - ability auto-load detected Xbox Game Pass instance on start using lx command-line option.
+- change:
+  - 'play-as' changed to 'profile' in code and documentation.
+
+4.3.0.0: libmbin.dll >= 4.3.0.2
+- change:
+  - cmk.NMS.Script.GetLanguage*() and SetLanguage*() methods reworked to avoid pulling
+    language mbin's into mod DataCache unless they are going to be updated.
+  - Scripts/Mod/cmk/Lang_All_English.cs rewritten to use updated|new language methods.
+  - cmk.NMS.PAK.File.Builder now breaks save and compress loop into two loops.
+    The save loop saves each item and logs any unedited items,
+    the compress loop compresses edited items and adds them to the mod pak stream.
+    This should help identify long builds due to many unedited items in DataCache;
+    scripts should be reworked to avoid those cases.
+- notes:
+  - List<string> GetGameLanguagePrefixes( bool LOG = false )
+    Get list of prefixes from PCBANKS GCDEBUGOPTIONS.GLOBAL.MBIN.LocTableList.
+  - List<string> GetAddedLanguagePrefixes( bool LOG = false )
+    Get list of prefixes from any cached GCDEBUGOPTIONS.GLOBAL.MBIN.LocTableList
+    that aren't in PCBANKS GCDEBUGOPTIONS.GLOBAL.MBIN.LocTableList.
+  - List<string> GetLanguagePrefixes( bool LOG = false )
+    Get list of prefixes from any cached GCDEBUGOPTIONS.GLOBAL.MBIN.LocTableList
+    or return GetGameLanguagePrefixes.
+  - List<TkLocalisationEntry> GetLanguageSnapshot( NMS.Game.Language.Identifier IDENTIFIER, bool LOG = false )
+    Get snapshot of all language entries for IDENTIFIER.  Treat as read-only !
+    Gets from any cached mbin's, including any new prefixes.
+    Does not pull any mbin's into DataCache, returns entries from
+    existing DataCache mbin's or GameFilesCache.Languages.Get(IDENTIFIER) entries.
+  - List<TkLocalisationEntry> GetLanguage( NMS.Game.Language.Identifier IDENTIFIER, bool LOG = false )
+    Get ref of all current language entries for IDENTIFIER.  Ensures all mbin's are in DataCache.
+	Returned entries ref cached mbin's, so they can be edited.
+  - NMS.Game.Language.Data GetLanguageData( NMS.Game.Language.Identifier IDENTIFIER, string ID, bool LOG = false, NMS.Game.Language.Data ON_NULL = null )
+    Look through all IDENTIFIER GetLanguagePrefixes mbin's for ID.
+    Does not pull any mbin's into DataCache, returns entries
+    from existing DataCache language mbin's or GameFilesCache.Languages.Get(IDENTIFIER).GetData(ID).
+  - TkLocalisationEntry GetLanguageEntry( NMS.Game.Language.Identifier IDENTIFIER, string ID, bool LOG = false, TkLocalisationEntry ON_NULL = null )
+    Use GetLanguageData to get mbin path, then ExtractMbin to ensure in cache, then return cached entry.
+  - TkLocalisationEntry SetLanguageText( NMS.Game.Language.Identifier IDENTIFIER, string ID, string TEXT, bool LOG = false )
+    If ID already exists for IDENTIFIER then update it's Ref(IDENTIFIER) with TEXT, else add {ID, TEXT} to
+	LANGUAGE/{LanguageMbinPrefix}_*.MBIN", ensures mbin in cache.
+
+4.0.0.2: libmbin.dll >= 4.0.0.2
+- fix:
+  - cmk.NMS.Game.Language.Collection.FindLanguageInfo was taking a language id arg that
+    was always null, resulting in it always returning the info for the current language.
+	The method does not need an arg, it should always use the Collection Identifier.
+- update:
+  - cmk mod script Lang_All_English.  added Cancel checks, added ProgressReport calls,
+    new optimized method that uses new GetLanguage mod script method.
+    note: ProgressReport report updates both Script tab and Build tab toolbars.
+  - GitHub Octokit NuGet package from 3.0.0 to 4.0.0.
+- change:
+  - rename util script Global LangId to LanguageId (to be consistant w/ code).
+  - rename cmk.NMS.Script.GetLanguageGamePrefixes  to GetGameLanguagePrefixes.
+  - rename cmk.NMS.Script.GetLanguageAddedPrefixes to GetAddedLanguagePrefixes.
+  - GetLanguageData loops through all GetLanguagePrefixes in parallel to look for ID.
+  - GitHub Octokit extensions to replace deprecated methods.
+- add:
+  - List<TkLocalisationEntry> cmk.NMS.Script.GetLanguage( NMS.Game.Language.Identifier IDENTIFIER )
+    to get a sorted list snapshot of all ID's for IDENTIFIER, including any cached and|or
+	new ID's in from new prefixes.  List sorted on TkLocalisationEntry.Id using string.Compare.
+  - cmk.NMS.Script.GetLanguagePrefixes to get currently cached prefixes.
+  - cmk.NMS.Script.GetLanguageEntry like GetLanguageData but returns cached TkLocalisationEntry.
+  - progress report textbox to Build tab.
+- notes:
+  - if doing infrequent language changes (< 10,000) then can just use SetLanguageText,
+    if doing a lot then use GetLanguage, Bsearch, Ref to find and change entries.
+
+4.0.0.1: libmbin.dll >= 4.0.0.2
+- add:
+  - string cmk.NMS.PAK.SPV.Data.Main( Log LOG = null ) method to return "void main() { ... }"
+  - string cmk.NMS.PAK.SPV.Data.Main( string MAIN, bool UPDATE = true, Log LOG = null )
+    method to search and replace "void main() { ... }" with MAIN.
+	Returns updated full shader text.  If UPDATE == true then update SPV.Data.Text,
+	else just applies update to a temp copy that is returned.  SPV.Data.Text is what
+	will get converted back to the spv binary on Save, this does not Save.
+  - Shader_Replace cmk mod script to test cmk.NMS.PAK.SPV.Data.Main methods
+    and demonstrate their use.  Makes a trivial change in a shader that can then be
+	viewed in PAK Item tab when viewing the generated mod pak shader diff.
+
+4.0.0.0: libmbin.dll >= 4.0.0.2
+- fix:
+  - recent Roslyn update broke .editorconfig support.
+- update:
+  - mbinc field names e.g. Id to ID, TechType to Type, ...
+  - scripts, focus on getting to compile and execute, not correctness
+  - MS Roslyn NuGet package from 4.3.0 to 4.3.1.
+  - cmkNMSReleases.txt
+- change:
+  - enable code to convert glsl to spv in cmk.NMS.PAK.SPV.Data class.
+    ShaderStages is set based on the name containing "_COMP_", "_VERT_", or "_FRAG_".
+	Options are set to preserve debug info, but no MacroDefinition have been specified (any needed ?).
+    experimental at this point, but does round-trip spv glsl text.
+  - Text search tab uses cmk.NMS.PAK.SPV.RawToTextVeldridCompute, whereas PAK Item view tab
+    and scripts use cmk.NMS.PAK.SPV.RawToTextSpirvCross.  This allows text search tab to use
+	quick dll based decompile, while pak item tab and scripts use accurate spirv-cross.
+	The differences are minor in the output, but enough to prevent Vedrid from recompiling its
+	own output by default (possibly since game spv are 450 and Veldrid only outputs 430).
+- add:
+  - spv specific syntax highlight rules based on csx rules.
+    todo: tweak for glsl specific things.
+
+3.99.1.8
+- change:
+  - wrap MessageBox.Show calls so they are executed from app MainWindow thread (ui),
+    and use app MainWindow as owner (to prevent opening behind MainWindow).
+  - add sleep call before deciding if need to delete associated mod script folder,
+    hopefully this will allow external app saves to finish first.
+  - add cancel option when prompted to save|move mod script folder on mod script delete,
+    for cases where you know external app save takes a long time.
+  - support for converting .spv to glsl (v 430) text using Veldrid.SPIRV,
+    searching all 59223 spv's goes from 6 min (using spirv-cross.exe) to 35 sec (using Veldrid.SPIRV dll's).
+- add:
+  - scripts can call ProgressReport(string) to update a toolbar TextBlock control. 
+	only query scripts can use in any meaningful way.
+	see: new Search_SPV query script for example.
+  - new toggle to search .SPV items in Text Search tab.
+    searching all 59223 spv's takes about 6 min using current spirv-cross.exe,
+	looking into replacing with a spirv-cross dll to avoid starting process to convert.
+  - Veldrid.SPIRV NuGet package 1.0.15.
+
+3.99.1.7
+- fix:
+  - FINALLY! binding anything from a AssemblyLoadContext Assembly, e.g. ModScript instances,
+    to a WPF control seems to result in WPF pinning the Assembly (caches internally ?).
+	changed Build tab to bind to list of new entry class instances instead of ModScript instances,
+	this seems to allow mod assemblies to finally be released.
+- change:
+  - remove all use of static's from included scripts i.e. util and mod,
+    in an attempt to prevent pinning cmk mod assemblies in memory.
+  - Mod<script_name>()    renamed to Script<script_name>().
+  - PlayAs<script_name>() renamed to Execute<script_name>();
+  - Script<> and Execute<> can now be called for any (mod) script.
+- add:
+  - ModClass class now has virtual void OnDispose() method that should be overridden
+    in mod classes to unhook any events they may have hooked.  Failing to do this
+	may result in hook pinning the mod Assembly and preventing it from being unloaded.
+	An example of this is in the cmk/(Configure) script.
+
+3.99.1.6
+- add:
+  - example code to cmk/(Configure) script to show how to register a callback for
+    when mod pak stream is built, and log all modified items and the scripts that extracted them.
+- change:
+  - ModFiles.DataCache now tracks what mods (scripts) extracted a given pak item (data),
+    it doesn't track if the mod actually edited the pak item.
+- update:
+  - GitHub Octokit NuGet package from 2.0.1 to 3.0.0.
+
+3.99.1.5
+- add:
+  - mbin.pc search toggle added to text search tab.
+    mbin.pc ebin's are only cachable if >= 32 GB of physical memory.
+  - mbin and text (*.txt, *.?xml, *.json, *.vdf, *.bin) toggles added to text search tab.
+  - support for viewing vdf items (value controller mappings ?)
+- fix:
+  - cmk.NMS.Game.Items.Data con wasn't setting ItemType, so all substances and technologies
+    were tagged as products (default value).  would only affect scripts looking at ItemType.
+  - new cache and mbin.pc button weren't disabled while search running, would hang if toggled while searching.
+- change:
+  - mbin cache toggle button moved from app to text search tab.
+  - prompt to delete existing mod toggle button moved from app to build tab.
+  - search all scripts on update toggle button moved fom app to all script tabs,
+    setting is now per script tab instead of applying to all script tabs.
+  - since now showing technology requirements, have changed technology tab list to be virtual.
+  - product and technology tab searches now include requirements (like recipe tabs)
+    e.g. find all products that require 'star silk' to build.
+  - sync'd logic between recipe and item tab searches,
+    product and technology - searches id and name for item and all requirements,
+	recipe - searches id and name for recipe and all requirements, and recipe type id and name
+  - bin items now check if the data starts with "<!-" to see if they are xml
+    vs other bin items that store actual binary data.
+  - target|supported os from 10.0.22000.0 (Win11) to 10.0.19041.0 (Win10).
+- update:
+  - Roslyn .NET compiler NuGet package from 4.2.0 to 4.3.0.
+- notes:
+  - text search tab never searches "LANGUAGE/" mbin items, use language tab.
+  - product and technology tabs now complex enough that scrolling through full lists
+    may result in significant stuttering as ui elements get rebuilt,
+	suggest filtering lists first.
+
+3.99.1.4
+- fix:
+  - replaced Lo2K and old NMS icons with new that has 256x256 -> 16x16 mipmaps.
+- change:
+  - Target OS and Supported OS versions changed from 7 to 10.0.22000.0 in order to use UWP dll's.
+  - detection of Game Pass no longer tries to read NMS.exe, instead gets game
+    path and version from AppX|UWP|Game Pass API and uses cmkNMSReleases.txt date.
+	modding Game Pass requires game to be moved to XboxGames folder via Xbox App,
+	does not require changing any folder or file permissions.
+- add:
+  - Format button to script toolbar.
+  - .editorconfig file in app folder controls script Format options.
+  - alt-h in TextViewer control will copy selected text as html fragment to clipboard.
+  - alt-d in Script editor will copy selected text as ```cs ... ``` fragment to clipboard
+    for posting in Discord.
+  - alt-f in Script editor will format script.
+- notes:
+  - current script editor shortcut keys:
+    - ctrl-s save script.
+	- ctrl-f toggle focus between script editor and search textbox.
+	- alt-f format script.
+	- alt-h copy selected text to clipboard as html fragment.
+	- alt-d copy selected text to clipboard as discord cs fragment.
+
+3.99.1.3
+- chage:
+  - Lo2K provided an icon w/ more mipmaps for higher res desktop shortcuts.
+- add:
+  - code to discover|use Game Pass versions on PC.
+    requires read permission on nms.exe in oder to get the internal build date,
+	so it can determine the release and required libmbin vesion.
+	requires read permission on PCBANKS/*.pak files, and read|write permission
+	on PCBANKS/MODS/ folder.
+	it seems that nms.exe is normally not able to be read, may require manually
+	adjusting permissions.  no feedback yet on default permissions for other folders|files.
+- fix:
+  - race when building existing mod pak. when delete existing mod pak on execute
+    the app doesn't get delete event until after scripts start executing.
+	if a script tries to look through mod pak's the deleted mod pak will
+	still be listed and result in loop with long timeout trying to open.
+
+3.99.1.2
+- add:
+  - d-click on substance|product|technology item in corresponding tab
+    will open mbin, search for item id, and scroll to first result in right PAK Item tab.
+  - d-click on recipe item in corresponding tab
+    will open mbin, search for item id, and scroll to first result in right PAK Item tab.
+  - progress while searching on mbin text search tab.
+- change:
+  - removed all use of wait cursor.
+  - disable mbin cache option if system has < 48 GB physical mem.
+  - mbin cache disabled when launch nms via nmsmb (to free mem for game).
+  - updated command-line options:
+	- no_github   - disable querying GitHub for MBINC and NMSMB release info.
+	- no_registry - disable saving|loading state from registry on start|stop.
+	  uses registry key: HKEY_CURRENT_USER\SOFTWARE\cmkushnir\NMSMB\
+	  user responsible for deleteing registry key if delete NMSMB, there is no uninstaller.
+	- p"path" - e.g. p"g:/games/archive/nms/1", if valid game path then adds
+	  as custom path and adds smiley face icon to toolbar to load it.
+	  - r#.##.#   - e.g. r3.98,     specify game release for p"path" option, will use v if not specified.
+	  - v#.##.#.# - e.g. v3.98.0.1, specify libmbin.dll version for p"path" option, will use r if not specifed.
+	  - if both r and v specified for p"path" option, will use v.
+	  - if neither r nor v specified for p"path" option, will lookup nms.exe build date in cmkNMSReleases.txt.
+	- lg, ls, lp, auto-load gog, steam, or p"path" if they are detected|specified.
+	- e.g. cmkNMSModBuilder.exe p"g:/games/nms/" v3.98.0.1 lp
+	  will auto-load the game instance at g:/games/nms/ and require libmbin.dll 3.98.0.1 to mod.
+
+3.99.1.1
+- fix:
+  - double-click on string in MBIN only looked in MODS for matching language ID.
+  - incorrect left padding in MBIN view language text box.
+- add:
+  - app tab toggle button to search all scripts for search text,
+    highlights updated on next script or search text change.
+  - scripts tabs will search all scripts when a script it edited or the search text changes,
+    scripts with matching text will have a bold name.
+  - new util scripts for searching unlockable trees for nodes.
+  - report number of enum's, classes, and fields for each loaded libmbin.
+Known Issues:
+  - wpf gets into infinite ui size recalc loop in some cases when viewing virtualized lists
+    e.g. the Products tab, in particular when viewing some filtered results.
+	this causes the ui thread to bog down as long as the offending product is visible,
+	scrolling up|down so the product is no longer visible breaks the recalc loop.
+	To see effect search for "egg" and scroll to the bottom.
+
+3.99.1.0
+- update:
+  - libmbin.dll, compiled with and includes 3.99.1.1.
+  - cmkNMSReleases.txt updated w/ 3.99.1 info.
+- change:
+  - if app tab view mod data toggle is off then does not hold or update cached data.
+- fix:
+  - parsing GoG version info from registry assumed #.##, didn't support #.##.#.
+Known Issues:
+  - crashes on start if gog registry string not present (found after release).
+
+3.99.0.0
+- update:
+  - libmbin.dll, compiled with and includes 3.98.0.6.
+  - GitHub Octokit NuGet package from 1.0.0 to 2.0.1.
+  - Pfim NuGet package from 0.10.3 to 0.11.1.
+  - various scripts to handle breaking changes.
+    breaking changes mainly related to cached data being moved from Game
+	to Game.PCBANKS and Game.MODS to support viewing data from mods.
+- fix:
+  - copy & paste typo in cmkNMSReleases.txt.
+  - command-line option no_mbin_cache wasn't enabled, was always caching.
+  - re-search script when edited, to realign highlights.
+- remove: command-line options
+  - no_split_tabs, now always shows split set of tabs
+  - log_mbin_guid_mismatch, use App tab toggle button instead
+  - prompt_del_on_exec, use App tab toggle button instead
+- change:
+  - reorder tabs.
+  - steam and gog game data instances now released when another game instance is loaded.
+  - some log views are now non-virtualizing e.g. script and build log views.
+  - First looks for local mbinc version before querying GitHub for mbinc assets.
+  - language/*.mbin are always decompiled using the linked libmbin.dll.
+  - substance|product|technology and recipe mbin tab contents are generated
+    from dynamically typed mbin's, this allows them to come from mbin's w/ header
+    versions that are different than the linked libmbin.dll, as long as the fields
+    haven't changed i.e. Id, NameLower, Description, Icon.Filename, and whatever is used for category.
+  - cached language, substance|product|technology, and recipe data now stored
+    per pak collection i.e. Game.PCBANKS and Game.MODS.
+	e.g. now use Game.PCBANKS.Language instead of Game.Language.
+- add:
+  - size to fixed size array field names in libMBIN API tab.
+    value taken from NMSAttribute.Size field if present.
+  - string extension method JenkinsHash see: https://en.wikipedia.org/wiki/Jenkins_hash_function
+  - script method TkSceneNodeDataNameHash,
+    Bladehawke found that Jenkins hash must be applied to upper-case version of Name.
+  - popup warning when deleting mod script if corrsponding folder not empty,
+    will delete folder once popup is dismissed.
+- add: toggle buttons to Application tab toolbar
+  - GitHub access (default true).
+  - view mod data (default false).
+    If enabled will view language, substance|product|technology, and recipe items
+	like game i.e. pull from mod if present else from game pak's.
+  - log mbin guid mismatch (default false).
+  - cache mbin data (default true).
+  - prompt to delete existing mod pak on execute (default true).
+
+3.98.0.0
+- add: command-line option to auto-load a game instance on start.
+  one of: -lg, -ls, -lp for gog, steam, command-line -p path.
+
+3.96.0.1
+- fix: hang when edit and save a selected script externally e.g. via notepad.
+
+3.96.0.0
+- update: octokit nuget package from 0.51 to 1.0.
+- update: 3.97.0.1 libmbin.dll, updated cmkNMSReleases.txt.
+- update: various scripts as needed for libmbin 3.97.0.1.
+- fix: rare race condition when extracting and decompiling mbin's.
+
+3.94.0.0
+- fix: cmk.NMS.PAK.TXT.Data.TextToRaw was not setting Raw.SetLength(0) before writing
+  string to Raw.  If string was shorter than orig then would leave orig crud at end.
+
+3.90.0.9
+- fix: when game first loaded the PAK tree isn't initialized to the game merged tree
+  in the various tabs that support selecting a pak file.
+- add: query all class static when a script class is constructed to ensure
+  that any static init exceptions are caught and logged in mod scripts tab on compile
+  as it's too late in build tab where wpf binding queries and may crash.
+
+3.90.0.8
+- add: Ctrl-F in any script editor window will toggle focus between editor and search textbox.
+- add: Ctrl-F in the 'left side' tabs will set focus to search textbox.
+- change: Search tabs (ebin, path, dds path) support selecting (mod) pak to search.
+- change: Double-click on Log entry w/ PAK Item path will select pak as well as path if
+  Log entry tagged w/ NMS.PAK.Item.Data or Info, else displays from Game.PCBANKS (prior behaviour).
+- change: NMS.PAK.MBIN.Data.Object renamed to ModObject and ObjectAs to ModObjectAs,
+  results in 1 breaking change in a util script, and 1 in a mod script.
+
+3.90.0.7
+- add: Ctrl+S in a script editor will save the script as if the Save button had been clicked,
+  and can only be done if the Save button is enabled.
+- change: Extracted mbin's are cached by default.  Use command-line option no_mbin_cache
+  to disable.  Requires ~36-42GB of memory to cache all mbin's, disable if have less than
+  ~48GB of physical memory else will get significant thrashing of paging file.
+- add: Search MBIN text (EBIN) tab.  Searches all mbin's for regex expression.
+  Takes ~2 min to search all 70K mbin's.  Takes about 1 sec once mbin's are cached.
+- change: Text search boxes now recognize when Enter (return) key released and use to do search.
+- fix: Regex string to find pak item paths didn't include '-' as a valid path char.
+  Valid chars include: 0-9, a-z, A-Z, \, /, -, _
+- update: Some doc's (command-line options, new Search MBIN tab).
+
+3.90.0.6
+- add: command-line parameter: prompt_del_on_exec
+  if specified will cause Delete File dialog to be shown before mod Execute
+  if an existing mod pak has same name as mod project (folder) being Executed.
+  this is to aid those creating a patch via IPakItemCollection = Game,
+  so that the Execute doesn't patch an old version of itself.
+- add: Open Folder button to all scripts tabs to open File Explorer at script folder.
+- fix: Query Scripts tab buttons not sync'd correctly in certain cases.
+
+3.90.0.5
+- change: cmk.NMS.PAK.MBIN.Data.Save changed to allow saving changes
+  even if mbin libmbin.dll != app link loaded libmbin.dll.
+- change: add more info to some log messages.
+- change: save all mod scripts in pak, even those not Executed.
+
+3.90.0.4
+- fix: pak file rename used incorrect index when refreshing PAK Item combobox,
+  which would result in corruption of the combobox entries.
+- fix: 3.90.0.2 changes PAK Item tab to allow saving folders,
+  it accidently changed logic used to clear view when breadcrumb changed.
+
+3.90.0.3
+- change: Pak files sorted|searched for using game load order rules.
+  Based on how game discovers items in paks it must be converting all pak names
+  to upper-case and then comparing.  App now does case-sensitve compare of directory,
+  then case-insensitive compare of name, then case-insensitive compare of extension.
+  Can see this in pak combobox in PAK Item tab now lists mod paks in load-order.
+  Effect also applies to script names, so mod [play-as] script now sort last.
+- add: static DefaultIPakItemCollection.  set in an early script,
+  IPakItemCollection = DefaultIPakItemCollection is set before each script Execute.
+- fix: libMBIN API tab split bar was spanning 3 columns, should only span 2.
+
+3.90.0.2
+- add: Add NMS.exe build date to game icon (custom|gog|steam) tooltip.
+- change: 8 sec timeout when trying to open a script file for read|write.
+  VS may keep script files open if you have it open and editing scripts at same
+  time as NMSMB is open, NMSMB does not keep files open, it opens on-demand,
+  this could cause it to hang as it waits for VS to release file handle.
+- change: 8 sec timeout when trying to download cmkNMSReleases.txt from GitHub,
+  also refactored code to try and help catch odd errors.
+- change: Default save type changed to raw binary format for all types
+  e.g. MBIN default changed from EBIN to MBIN, SPV default changed from GLSL to SPV.
+- change: PAK Items tab can now save folders, items are saved as stored in pak,
+  experimental, may mess up prev|next tracking, report any issues.
+
+3.90.0.1
+- fix: update code to identify steam install location from alternate location.
+- change: built against libMBIN 3.88.0.2, so supports that version or later.
+- change: renamed Find and IndexOf to Bsearch and BsearchIndexOf to avoid
+  confusion with scan methods.
+- fix: mbin viewer lang text did not update when lang id manually changed.
+- add: warnings when specify -p and can't find path, invalid path, can't determine release.
+
+3.90.0.0
+- add: Dialog.TextPrompt wrapper method.
+- add: DialogWrapper<> class.  Allows using dialogs in scripts.
+  For some reason Roslyn won't compile a script if it uses a System.Windows.Window object,
+  complains that DependencyObject defined in WindowsBase but can't find WindowsBase,
+  have verified that same version of WindowsBase loaded by app and into compiler host.
+- change: limit MBIN paths listed for a class in libMBIN API tab to 1,000.
+  Had removed prior limit to test in last release, but too easy to make seem like it's
+  hanging while wpf builds list w/ many 1,000's of mbin's.
+- change: libMBIN API tab class list filter updated to include classes that have a matching field.
+- change: libMBIN API tab now requires Apply Filter button click instead of textbox text changed
+  event in order to apply filter criteria.  This is because WPF seems to have significant lag
+  when applying a filter where the selected class will have many fields or mbinc paths.
+- update: Updated spriv-cross.exe to latest from Vulkan SDK.
+- change: various query and mod/cmk scripts.
+- add: warning if load game that requires different libMBIN version than link loaded one.
+
+3.88.0.4
+- change: libMBIN API tab could take a long time to refresh when changing filter text.
+- change: update a couple more mbin's in Add_Decal script to better (?) support making many decals (100's or 1,000's).
+- change: small tweaks to try and make log more responsive in certain places.
+- update: Roslyn nuget from 4.1.0 to 4.2.0.
+
+3.88.0.3
+- fix: roll-back dispatcher.begininvoke to invoke change to Log,
+  now calls begininvoke on add and invoke on clear.
+- change: make more script button click handlers async,
+  as before not fully tested, may introduce new issues, please report steps if hangs.
+
+3.88.0.2
+- fix: Adjusted script locking to prevent (some|all?) deadlocks.
+- change: Log.Add nows calls Invoke instead of BeginInvoke so log entries appear
+  as they are added, instead of being queued until ui thread scheduled.
+  This may introduce new deadlocks, report your steps if you encounter a hang.
+- bug: There is still an outstanding issue with releasing assembly load contexts,
+  you will see errors like "AssemblyLoadContext cmk_cmk_637878395229621213 failed to unload".
+  These are relatively harmless, it just means there will be orphaned assemblies in memory
+  until the app exits.  Each orphaned assembly is usually ~127 KB.
+  This can happen when a .NET API class caches a ref to the assembly,
+  or an object created from the assembly.
+
+3.88.0.1
+- change: log when cmk.NMS.Script.ModClass.SetLanguageText creates|extracts lang mbin's.
+- change: add new using enum's and LangId to /Scripts/Util/(Global).cs.
+- change: move sln|proj helpers from ./Scripts/Mod/cmk/ to ./Scripts/.
+- change: update ./Scripts/Scripts.csproj to use .NET 6, and update ref paths.
+
+3.88.0.0
+- add: ./Scripts/Mod/ folder now contains subfolders, each representing a diff 'project'.
+  The mod scripts included w/ the app are now in ./Scripts/Mod/cmk/.
+  There is currently no in-app ability to create a new project folder, must do from OS.
+  The app does not currently detect when a mod project folder is added|deleted, must restart the app.
+- add: Mod Script and Build tabs now have a project selection combobox on their toolbars.
+- add: Utility script RewardSpecificShip to help create custom ships to add to reward table.
+- add: cmk Mod script Add_Custom_Ship to show how to use new utility script RewardSpecificShip.
+- change: Steam|GoG|Custom game selection toolbar icon tooltips have improved formatting
+  to make it clearer what version the game is, what version of MBINC is required,
+  and if the current linked MBINC matches the required version.
+- chage: cmk Mod script Mission_Skip provides 3 ways to skip missions:
+  remove them from their mbin's, modify to make auto-completing, add to SKIP_TUT mission.
+- change: Utility script (Global) is used by utility, all query, all mod projects.
+- fix: Update (Global) script to add using cmk.NMS in order to make class extension
+  methods in that namespace available, in particalar AddUnique for NMS string types.
+- fix: Script tab toolbar button enabled states should have fewer issues staying in-sync.
+
+3.87.0.0
+- change: Change code to find certain MBINC methods where there are now overloads to be resolved
+  i.e. prevent FindMethod from throwing Ambiguous match errors.
+- change: File paths are displayed relative to app folder.
+- change: Version of libMBIN.dll add to Application tab log when loading|loaded game.
+- change: Mbin guid mismatch errors (mbin guid != libMBIN struct guid) are now only
+  displayed if command-line option log_mbin_guid_mismatch is used.
+- change: Dds tab always calls DoSearch, so will now show e.g. "Showing 0 of 22539"
+  instead of blank when no search string.
+- change: Substance and technologies tabs now use non-virtual lists for smooth scrolling,
+  this results in a small delay the first time the tab is selected (~1 sec).
+  Products still uses a virtual list for fast initial access, but results in stuttering
+  when scrolling quickly as WPF regen's new items.
+- change: Significant refactoring of Roslyn based code.
+- add: Utility scripts tab.  These scripts are compiled into an in-memory Assembly
+  that is included in each Query project (per Query script), and the Mod project.
+  These can contain any helper code that you'd like to use in 1+ Query|Mod script,
+  they do no contain classes derived from the Query|Mod base script classes.
+- add: Query script list now has a (Global) script like Mod's.
+  It is automatically included in each Query project (per Query script).
+- change: Query|Mod scripts no longer need to be defined in a namespace.
+- change: Query script base class changed from cmk.NMS.QueryScript to cmk.NMS.Script.QueryClass.
+- change: Mod   script base class changed from cmk.NMS.ModScript   to cmk.NMS.Script.ModClass.
+- change: Intellisense infomation logic updated (wip).
+- add: Script editors now display script name in toolbar (right-side).
+- add: Script editors now have search toolbar controls enabled.
+- change: Script tab controls enabled|disabled state updated based on availability logic (wip).
+- change: Mod scripts formalize two naming conventions:
+  - (name) for scripts that are not displayed in Build tab and always executed.
+  - [name] for play-as scripts that are not displayed in Build tab and only executed
+    when another Mod script calls PlayAs<name>().
+- add: New Mod script variables:
+  - IsVisible: read-only, determines if script will be displayed in Build tab.
+  - IsPlayAs:  read-only, play-as scripts are not automatically executed in Build tab
+    but can be executed by another script calling PlayAs<name>().
+  - IsExecutable: read-write, determines if script will be executed by Build Execute.
+    Scripts can change this to effect what following scripts will Execute,
+	e.g. (Configure) can do Mod<Blah>().IsExecutable = false to disable script Blah
+	programatically, as opposed to via checkboxes.
+  - [NMSScriptDisabled] class attribute: if applied to a script class it will prevent
+    instances of that class from being created.  They will not be availble in the
+	Build tab or to other scripts via Mod<name>() or PlayAs<name>().
+- change: Double-clicking on an item in the Build tab will no longer toggle its checked state,
+  this was required to support multi-select, specifically Ctrl-double-click to select unselected item.
+- add: Use Shift-click to select a range of mods in the Build tab, then use + to check
+  , - to uncheck, and / or \ to toggle check, all selected.  Ctrl-click on a selected
+  item will deselect it.  Ctrl-double-click on an unselected item will select it.
+- fix: Ebin code was writing all Vector4f.t values as 4.
+
+3.82.2.2
+- change: TextSearchPanel defaults SearchScrollLineOffset = 2,
+  selected value persisted for app run in a static.
+- change: most tabs now have similar search abilities e.g. case-sensitive, regex, wildcard.
+- change: selecting an enum in the libMAIN API tab no longer selects its class.
+- change: libMBIN API tab enum value list now has # column.
+- change: adjusted most tooltips to display immediately and last a long time.
+- change: cannot deselect (...) scripts from executing.
+- change: move recipe helpers from Mbinc to script, so they can use new prod|subst id's added by prior scripts.
+- add: pak name added to PAK Items tab viewer|differ toolbars
+- fix: EbinColorBackgroundRenderer regex could find invalid matches leading to crash.
+- fix: typo in mod script language methods, could cause crash when setting French text.
+- fix: Language tab, selecting another language would hang the app, ui thread blocked.
+- fox: selecting an unsupported item type in PAK Items tab could throw uncaught exception.
+
+3.82.2.1
+- change: libMBIN API tab limits displayed list of mbin's that use a top-level class to 500.
+  This is to prevent classes like TkMaterialData w/ > 31,000 mbin's from effectively hanging the app.
+  Scripts can still access full list of mbin's per class.
+- fix: adding|editing|deleting a script could cause an exception when file system watcher tried to
+  notify of script change, had to change to ensure the notification was handled by ui thread.
+
+3.82.2
+- update: cmk.Roslyn.Source
+  Improved intellisense.
+- change: (Loose_Files) renamed (Global).
+- change: (Global) now has all global using statements
+  so they don't need to be added to each mod script.
+- change: OperationCanceledException now just logs "Operation Canceled"
+  instead of full exception message w/ stack.
+- change: Only top-level exception message logged,
+  as opposed to recursively logging all inner exceptions.
+- change: TabConflicts
+  Sort conflict paks by mbin version, or name if not mbin.
+- change: MBINC Load
+  Serialize popup requests to download MBINC versions.
+  Previously you could get flooded w/ popups as mbin's were loaded in parallel.
+- change: libMBIN API tab, enum now listed as "count name" instead of "name [count]"
+- change: SharpZipLib removed from Common dll dep, but added to Mod Buidler dep.
+  Can use System.IO.Compression.DeflateStream to unpack, but it doesn't add
+  zlib 2byte header or 4byte adler32 checksum footer when deflating, and no
+  easy way to get the correct adler32 to manually add.
+- change: DDS tab
+  Path now above tumbnail, both are horiz centered.
+- change: cmk.NMS.ModBuilder.Tab.ScriptMod
+  Now always visible, instead of only visible once loaded a game instance.
+- change: cmk.NMS.Game.Language.*
+  Add Cache class that hold an array of Language.Collection's.
+  Add a TkLocalisationEntry.Ref extension method to get the string ref
+  for a given language based on Identifier or index.
+  e.g. TkLocalisationEntry.Ref(Identifier.English) will get string ref TkLocalisationEntry.English.Value.
+- change: CSharpEditor
+  Add undo|redo support.
+  Intellisense list in statusbar now a list control w/ a splitbar.
+  Intellisense now updated when caret changes not when mouse moves.
+- change: auto-add global using document to all projects.
+  No longer need to specify common using statements in scripts.
+  User can add other "global using ..." to (Configure) or (Loose Files) scripts.
+- change: add 8 sec timeout when asking github for cmkNMSReleases.txt,
+  30 sec timeout when downloading a file via popup dialog e.g. download libMBIN.dll.
+- change: sort scripts after getting list from OS.
+- fix: when adding a new script was comparing full paths to determine insert location,
+  now compares folders then name then extension.
+  for cases of "Blah.cs" vs "Blah_.cs" would compare '.' vs '_' and
+  Blah.cs would sort after Blah_.cs on add, but then opposite when reloading app (order from OS).
+- fix: CreateMbin mod script method.
+- fix: Array fields were not always linked to their class.
+  e.g. GcPlayerWeaponPropertiesData was not linked to parent GcPlayerWeaponPropertiesTable
+  which has field GcPlayerWeaponPropertiesData[] PropertiesData;
+- add: search line offset to text viewer.
+  When walking through search matches will offset match line from top by this many lines
+  e.g. 1 - match will be scrolled to be second line in view.
+- add: language tab, id tooltip set to mbin path
+- add: cmk.NMS.Game.Data
+  Added NMS.Game.Language.Cache Languages field to keep any loaded languages
+  cached.  Makes switching between langauges fast, and used by mod scripts
+  that want to copy language text from multiple languages e.g. to create
+  new language ID-Text pairs.
+- add: cmk.NMS.ModScript
+  Add static string LanguageMbinPrefix property, default = "CMK",
+  defines the name for mod specific language mbin's e.g. "LANGUAGE/NMS_CMK_ENGLISH.MBIN".
+  Add GetLanguageData method to get the localized data for a given language and ID.
+  Add SetLanguageText method to set the localized text for a given language and ID.
+  Both will first look in the mod language mbin specified by LanguageMbinPrefix.
+  See: Add_Rocket_Tech and Normalize_Names scripts for examples.
+- add: cmk.CSharpEditor
+  Undo, redo support
+- add: Add_Decal script.  Put dds in script folder and it gen's buildable decals|posters.
+- add: Inventory_Trade script.  Adds optional items to stores.
+
+3.82.1
+- fix: Pfim.Dds extensions
+  3.82.0 created new Bgra32 data for certain Pfim formats, but wasn't using
+  the new data when generating the BitmapSource - doh!.
+
+3.82.0
+- update: Roslyn updated from 4.0.1 to 4.1.
+  NuGet Microsoft.CodeAnalysis.CSharp.Features.
+- refactor: cmk.NMS.PAK.Item.ICollection
+  Specify default methods, derived still need wrappers to call interface methods.
+- refactor: cmk.NMS.PAK.File.Loader
+  Reduce time pak stream is locked when extracting item data from pak.
+  Was held while reading|decompressing all blocks for item,
+  now only held while reading single block.
+  Should improve concurrancy for SSD, _may_ decrease for large pak on HDD.
+- refactor: cmk.NMS.Game.Files.View
+  OnMODSChanged updated to handle new cmk.NMS.PAK.File.Loader instance
+  instead of re-Loaded one.
+- refactor: Minor tweaks|updates for some query|mod scripts.
+- change: cmk.NMS.ModBuilder.Tab.ModBuild
+  Store mod scripts in mod pak w/ leading "_SCRIPTS/MOD/" path.
+- fix: cmk.NMS.Game.Location.Data
+  Cosmetic, was not ensuring discovered game path ended w/ slash (GoG).
+- fix: cmk.NMS.Game.Language.Collection.Collection
+  Was setting Name|Identifier before IPakItemCollection
+  which could cause Access Violation, as setting Name|Identifier
+  triggers Load which requires IPakItemCollection.
+- fix: cmk.NMS.PAK.File.Loader
+  Method to normalize pak item paths was not making them uppercase
+  in order to preserve script name case, but this would leave game
+  item path cases as stored, which could cause later case-sensitive
+  searches|compares to fail.  Load now makes all paths in manifest,
+  that don't end in ".cs" (case-insensitive), uppercase.
+- fix: BitmapSource extensions
+  Wrap creation of BitmapSource in try-catch, as not all dds formats are supported.
+- add: BitmapSource extensions
+  Add support for Pfim Rgb8 (gray scale), Rgba16 (4444), and R5g5b5a1 formats.
+  todo: Mapping of channels isn't fully tested.
+- add: NMS.exe launch button
+  - in statusbar, to right of NMS.exe build date.
+  - in build tab, to right of save button.
+- add: cmk.NMS.Game.PCBANKS.Files
+  A list of all game dds items is captured while the merged game tree is built.
+  This is the source list used when searching for dds items in the new Dds tab.
+- add: cmk.NMS.ModBuilder.Tab.Dds
+  New tab to search for dds items using path wildcard searches,
+  displays a thumbnail list of results.
+  Double-click on thumbnail to open in PAK Item View tab.
+
+3.80.0
+- change: App version now reflects earliest supported game release.
+- fix: NMS 3.81 broke recipes, field name changes in struct.
