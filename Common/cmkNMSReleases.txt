@@ -26,11 +26,6 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-- 4.04 was orig an exp, on the 15th that they made it pub
-- on the 15th they released a new exp that didn't update nms.exe
-- then later on the 15th they released a new exp that did update nms.exe
-- so we don't have an entry for the first exp on the 15th.
-- there are breaking changes between 4.04 and 4.04.1
 4.04.1, Waypoint, 2022-10-15, 4.4.0.1, v4.4.0-pre1
 4.04,   Waypoint, 2022-10-14, 4.3.0.4, v4.3.0-pre4
 4.03.1, Waypoint, 2022-10-13, 4.3.0.3, v4.3.0-pre3
