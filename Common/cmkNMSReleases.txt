@@ -26,13 +26,13 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-4.04.1, Waypoint, 2022-10-15, 4.4.0.1, v4.4.0-pre1
-4.04,   Waypoint, 2022-10-14, 4.3.0.4, v4.3.0-pre4
-4.03.1, Waypoint, 2022-10-13, 4.3.0.3, v4.3.0-pre3
-4.03,   Waypoint, 2022-10-12, 4.3.0.2, v4.3.0-pre2
-4.0.3,  Waypoint, 2022-10-10, 4.3.0.1, v4.3.0-pre1
-4.0.1,  Waypoint, 2022-10-07, 4.0.0.2, v4.0.0-pre2
-4.0,    Waypoint, 2022-10-06, 4.0.0.2, v4.0.0-pre2
+4.04.0.1, Waypoint, 2022-10-15, 4.4.0.1, v4.4.0-pre1
+4.03.0.3, Waypoint, 2022-10-14, 4.3.0.4, v4.3.0-pre4
+4.03.0.2, Waypoint, 2022-10-13, 4.3.0.3, v4.3.0-pre3
+4.03.0.1, Waypoint, 2022-10-12, 4.3.0.2, v4.3.0-pre2
+4.03,     Waypoint, 2022-10-10, 4.3.0.1, v4.3.0-pre1
+4.00.0.1, Waypoint, 2022-10-07, 4.0.0.2, v4.0.0-pre2
+4.00,     Waypoint, 2022-10-06, 4.0.0.2, v4.0.0-pre2
 
 3.99.1, Endurance, 2022-08-17, 3.99.1.1, v3.99.1-pre1
 3.99,   Endurance, 2022-08-11, 3.98.0.6, v3.98.0-pre6
