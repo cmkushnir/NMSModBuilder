@@ -74,6 +74,10 @@ The [cmkNMSReleases.txt](https://github.com/cmkushnir/NMSModBuilder/blob/main/Co
 If you have multiple game instances you want to mod, each requiring a different libMBIN.dll version, the easiest option is to create a NMSMB install folder for each game instance, each with the appropriate libMBIN.dll version;
 otherwise you will have to manually make sure the correct libMBIN.dll version is in the NMSMB folder before modding a given game instance.
 
+>The app may download other versions of libmbin e.g. libmbin_3.9.0.1.dll.
+>They are ONLY used when decompiling mbin's.
+>They are NOT used when starting the app, to load the research tabs, or when compiling|running scripts.
+
 >A given NMSMB version can only roll the libmbin.dll version forward.
 >For example, NMSMB version 4.0.0.0 comes with libmbin 4.0.0.2,
 >you can only try to replace the included libmbin with newer versions like 4.0.0.3,
