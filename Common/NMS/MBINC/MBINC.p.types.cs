@@ -29,7 +29,7 @@ using System.Windows;
 
 namespace cmk.NMS
 {
-    public static partial class _x_
+	public static partial class _x_
 	{
 		// AddUnique is already an extension for IList
 		// see: cmkNMSCommon/Extensions/System.Collections.IList.x.cs
@@ -69,8 +69,8 @@ namespace cmk.NMS
 
 namespace cmk.NMS
 {
-    // partial: index all classes, enums, fields in an instance
-    public partial class MBINC
+	// partial: index all classes, enums, fields in an instance
+	public partial class MBINC
 	{
 		public class TypeInfo
 		: System.IComparable<TypeInfo>
@@ -79,6 +79,47 @@ namespace cmk.NMS
 			public string Name     { get; protected set; }  // type
 			public string WrapName { get; protected set; }  // class.type
 			public string FullName { get; protected set; }  // namespace.class.type
+
+			// NMSAttribute:
+			public readonly int      AttrSize         = 0;
+			public readonly bool     AttrIgnore       = false;
+			public readonly object   AttrDefaultValue = null;
+			public readonly string[] AttrEnumValue    = null;
+			public readonly Type     AttrEnumType     = null;
+			public readonly byte     AttrPadding      = 0;
+			public readonly int      AttrAlignment    = 0;
+			public readonly ulong    AttrGUID         = 0;
+			public readonly ulong    AttrNameHash     = 0;
+			public readonly bool     AttrBroken       = false;
+			public readonly bool     AttrIDField      = false;
+
+			public TypeInfo( MBINC MBINC, MemberInfo MEMBER_INFO )
+			{
+				if( MBINC == null || MEMBER_INFO == null ) return;
+
+				dynamic attr = MEMBER_INFO.GetCustomAttribute(MBINC.NMSAttributeType);
+				if( attr == null ) return;
+
+				if( MBINC.HasAttrSize )         AttrSize         = attr.Size;
+				if( MBINC.HasAttrIgnore )       AttrIgnore       = attr.Ignore;
+				if( MBINC.HasAttrDefaultValue ) AttrDefaultValue = attr.DefaultValue;
+				if( MBINC.HasAttrEnumValue )    AttrEnumValue    = attr.EnumValue;
+				if( MBINC.HasAttrEnumType )     AttrEnumType     = attr.EnumType;
+				if( MBINC.HasAttrPadding )      AttrPadding      = attr.Padding;
+				if( MBINC.HasAttrAlignment )    AttrAlignment    = attr.Alignment;
+				if( MBINC.HasAttrGUID )         AttrGUID         = attr.GUID;
+				if( MBINC.HasAttrNameHash )     AttrNameHash     = attr.NameHash;
+				if( MBINC.HasAttrBroken )       AttrBroken       = attr.Broken;
+				if( MBINC.HasAttrIDField )      AttrIDField      = attr.IDField;
+
+				if( AttrSize < 1 && MEMBER_INFO is System.Reflection.FieldInfo field_info &&
+					field_info.FieldType.IsArray
+				) {
+					// would be an error, all array fields w/ enum should also have size
+					var fake_enum = MBINC.NMSAttributeEnumType(field_info.FieldType.Name, attr);
+					AttrSize = fake_enum?.Values.Length ?? 0;
+				}
+			}
 
 			public static Predicate<object> CreateFilter( Regex REGEX )
 			{
@@ -111,16 +152,20 @@ namespace cmk.NMS
 
 			public readonly ClassInfo Parent;
 			public readonly Type      Type;
-			public readonly FakeEnum  Enum;
-			public          int       Count { get { return Enum.Values.Length; } }
+			public readonly FakeEnum  Fake;
+			public          int       Count => Fake.Values.Length;
 
 			public readonly List<ClassInfo> Classes = new();
 
+			public FontWeight FontWeight
+			=> Fake.IsMask ? FontWeights.Bold : FontWeights.Normal;
+
 			public EnumInfo( ClassInfo PARENT, Type TYPE )
+			: base(PARENT?.Mbinc, TYPE as MemberInfo)
 			{
 				Parent = PARENT;
 				Type   = TYPE;
-				Enum   = new(Type);
+				Fake   = new(Type);
 
 				Counts.AddUnique(Count);
 
@@ -139,7 +184,7 @@ namespace cmk.NMS
 					if( REGEX == null ) return true;  // just match COUNT
 
 					if( REGEX.IsMatch(info.Name) ) return true;
-					foreach( var value in info.Enum.Values ) {
+					foreach( var value in info.Fake.Values ) {
 						if( REGEX.IsMatch(value.Name) ) return true;
 					}
 
@@ -155,7 +200,6 @@ namespace cmk.NMS
 		{
 			public readonly MBINC           Mbinc;
 			public readonly Type            Type;
-			public readonly ulong           NMSAttributeGUID = 0;
 			public readonly List<FieldInfo> Fields   = new();
 			public readonly List<ClassInfo> Classes  = new();  // parent classes
 			public readonly List<string>    PakItems = new();  // mbin paths that have this as a top-level object, only set if this a game MbincVersion
@@ -164,18 +208,28 @@ namespace cmk.NMS
 			=> PakItems.IsNullOrEmpty() ? FontWeights.Normal : FontWeights.Bold;
 
 			public ClassInfo( MBINC MBINC, Type TYPE )
+			: base(MBINC, TYPE as MemberInfo)
 			{
 				Mbinc = MBINC;
 				Type  = TYPE;
 
-				if( Mbinc.HasNMSAttributeGUID ) {
-					var attr = Type.GetCustomAttribute(Mbinc.NMSAttributeType);
-					NMSAttributeGUID = Mbinc.NMSAttributeGUID(attr);
-				}
-
 				Name     = Type.GenericName(false);
 				WrapName = Name;
 				FullName = Type.GenericName(true);
+
+				// LoadFields(); have to wait until after enum's loaded
+			}
+
+			public void LoadFields()
+			{
+				Fields.Clear();
+				var fields = Type.GetFields();
+				Fields.Capacity = fields.Length;
+				foreach( var field in fields ) {
+					if( field.IsPublic &&
+						!field.Name.Contains("padding", StringComparison.CurrentCultureIgnoreCase)
+					)	Fields.Add(new(this, field));
+				}
 			}
 
 			new public static Predicate<object> CreateFilter( Regex REGEX )
@@ -200,8 +254,8 @@ namespace cmk.NMS
 			///       this would be mod mbinc, TO would be game mbinc.
 			///       mappings would then be used to describe how to go from a given
 			///       mod mbin field to the corresponding game mbin field.
-			///       more than a niave field name matching, try to map fields
-			///       w/ sligh name changes using soundex and lenenshtein values
+			///       more than a naive field name matching, try to map fields
+			///       w/ slight name changes using soundex and levenshtein values
 			///       and in same order i.e. we assume fields are added, removed,
 			///       renamed, but not reordered.
 			/// </summary>
@@ -247,32 +301,37 @@ namespace cmk.NMS
 			public string TypeAndFullName { get; protected set; }
 			public readonly ClassInfo                   Parent;
 			public readonly System.Reflection.FieldInfo Info;
-			public readonly int                         AttrSize = 0;
+			public readonly EnumInfo                    Enum;  // if field is enum value or array indexed by enum
+			public readonly FakeEnum                    Fake;  // Enum.Fake or field specific FakeEnum 
 
 			public FieldInfo( ClassInfo PARENT, System.Reflection.FieldInfo INFO )
+			: base(PARENT.Mbinc, INFO)
 			{
 				Parent = PARENT;
 				Info   = INFO;
-
-				if( Parent.Mbinc.HasNMSAttributeSize ) {
-					var attr = Info.GetCustomAttribute(Parent.Mbinc.NMSAttributeType);
-					AttrSize = Parent.Mbinc.NMSAttributeSize(attr);
-				}
 
 				Name     = Info.Name.TrimEnd('[', ']');   // remove any trailing array "field[]"
 				WrapName = Parent.Name     + "." + Name;  // class.field
 				FullName = Parent.FullName + "." + Name;  // namespace.class.field
 
 				TypeGenericName = Info.FieldType.GenericName(false);
+
+				Enum = PARENT.Mbinc.FindEnum(AttrEnumType?.Name);
+				Fake = Enum?.Fake;
+
+				// old mbinc didn't have an actual enum type, had string[]
+				if( Fake == null && !AttrEnumValue.IsNullOrEmpty() ) {
+					Fake  = new(Name, AttrEnumValue);
+				}
+
 				if( AttrSize > 0 && TypeGenericName.Contains("[]") ) {
-					TypeGenericName = TypeGenericName.Replace("[]", $"[{AttrSize}]");
+					if( Enum == null ) TypeGenericName = TypeGenericName.Replace("[]", $"[{AttrSize}]");
+					else               TypeGenericName = TypeGenericName.Replace("[]", $"[{AttrSize}:{Enum.Name}]");
 				}
 
 				TypeAndName     = TypeGenericName + "  " + Name;
 				TypeAndWrapName = TypeGenericName + "  " + WrapName;
 				TypeAndFullName = TypeGenericName + "  " + FullName;
-
-				PARENT.Fields.Add(this);
 			}
 
 			new public static Predicate<object> CreateFilter( Regex REGEX )
@@ -287,9 +346,9 @@ namespace cmk.NMS
 
 		//=====================================================================
 
-		public readonly List<EnumInfo>  Enums   = new(  500);
-		public readonly List<ClassInfo> Classes = new( 2000);
-		public readonly List<FieldInfo> Fields  = new(20000);
+		public readonly List<EnumInfo>  Enums   = new( 2000);  // 4.00 -    959
+		public readonly List<ClassInfo> Classes = new( 3000);  // 4.00 -  2,156
+		public readonly List<FieldInfo> Fields  = new(20000);  // 4.00 - 18,154
 
 		//...........................................................
 
@@ -298,58 +357,41 @@ namespace cmk.NMS
 			if( Fields.Count > 0 ) return;
 
 			var path    = ".\\" + System.IO.Path.GetRelativePath(Resource.AppDirectory, Assembly.Location);
-			var version = Assembly.GetName().Version.Normalize();
+			var version = Assembly.GetName().Version.Normalize().NMSMbincString();
 
 			Log.Default.AddInformation(
 				$"Loading Types from {path} {version}"
 			);
 
 			foreach( var type in Assembly.GetExportedTypes() ) {
-				if( type.IsSubclassOf(NMSTemplateType) ) {
-					var class_info = new ClassInfo(this, type);
-					Classes.Add(class_info);
-
-					var fields = type.GetFields();
-					Fields.Capacity += fields.Length;
-
-					foreach( var field in fields ) {
-						if( field.IsPublic &&
-							!field.Name.Contains("padding", StringComparison.CurrentCultureIgnoreCase)
-						)	Fields.Add(new(class_info, field));
-					}
-				}
+				if( type == NMSTemplateType ||
+					type.IsSubclassOf(NMSTemplateType)
+				)	Classes.Add(new(this, type));  // does not load fields
 			}
+			Classes.Sort();
 
-			Parallel.Invoke(
-				() => Classes.Sort(),
-				() => Fields .Sort()
-			);
-
-			LoadEnums();  // need sorted Classes to get Parent
-
+			foreach( var type in Assembly.GetExportedTypes() ) {
+				if( !type.IsEnum ) continue;
+				var class_name = type.ParentClassName(false);
+				var class_info = FindClass(class_name);
+				Enums.Add(new(class_info, type));
+			}
 			Parallel.Invoke(
 				() => Enums          .Sort(),
-				() => EnumInfo.Counts.Sort(),
-				() => LinkTypes()
+				() => EnumInfo.Counts.Sort()
 			);
+
+			Classes.ForEach(CLASS => {
+				CLASS.LoadFields();  // links field to enum as required
+				Fields.AddRange(CLASS.Fields);
+			});
+			Fields.Sort();
+
+			LinkTypes();
 
 			Log.Default.AddInformation(
 				$"Loaded Types from {path} {version}: {Enums.Count} enum's, {Classes.Count} classes, {Fields.Count} fields"
 			);
-		}
-
-		//...........................................................
-
-		private void LoadEnums()
-		{
-			foreach( var type in Assembly.GetExportedTypes() ) {
-				if( !type.IsEnum ) continue;
-				var class_name = type.ParentClassName(false);
-				var class_info = Classes.Bsearch(class_name,
-					(ITEM, KEY) => string.Compare(ITEM.Name, KEY)
-				);
-				Enums.Add(new(class_info, type));
-			}
 		}
 
 		//...........................................................
@@ -376,22 +418,14 @@ namespace cmk.NMS
 		private void LinkField( ClassInfo PARENT, Type TYPE )
 		{
 			if( TYPE.IsEnum ) {
-				var enum_info = Enums.Bsearch(TYPE.Name,
-					(ITEM, KEY) => string.Compare(ITEM.Name, KEY)
-				);
+				var enum_info  = FindEnum(TYPE.Name);
 				if( enum_info != null &&
 					enum_info.Parent != PARENT
-				) {
-					enum_info.Classes.AddUnique(PARENT);
-				}
+				)	enum_info.Classes.AddUnique(PARENT);
 			}
 			else {
-				var class_info = Classes.Bsearch(TYPE.Name.Trim('[', ']'),
-					(ITEM, KEY) => string.Compare(ITEM.Name, KEY)
-				);
-				if( class_info != null ) {
-					class_info.Classes.AddUnique(PARENT);
-				}
+				var class_info  = FindClass(TYPE.Name.Trim('[', ']'));
+				if( class_info != null ) class_info.Classes.AddUnique(PARENT);
 			}
 		}
 
@@ -399,7 +433,7 @@ namespace cmk.NMS
 
 		public ClassInfo FindClass( string NAME )
 		{
-			return Classes.Bsearch(NAME,
+			return NAME == null ? null : Classes.Bsearch(NAME,
 				(ITEM, KEY) => string.Compare(ITEM.Name, KEY)
 			);
 		}
@@ -408,7 +442,7 @@ namespace cmk.NMS
 
 		public EnumInfo FindEnum( string NAME )
 		{
-			return Enums.Bsearch(NAME,
+			return NAME == null ? null : Enums.Bsearch(NAME,
 				(ITEM, KEY) => string.Compare(ITEM.Name, KEY)
 			);
 		}
@@ -417,7 +451,7 @@ namespace cmk.NMS
 
 		public IEnumerable<FieldInfo> FindField( string NAME )
 		{
-			return Fields.FindAll<FieldInfo>(INFO =>
+			return NAME == null ? null : Fields.FindAll<FieldInfo>(INFO =>
 				string.Equals(INFO.Name, NAME)
 			);
 		}
