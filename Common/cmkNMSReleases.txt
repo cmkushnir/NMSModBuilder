@@ -26,9 +26,10 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-4.22, Interceptor, 2023-04-13, 4.22.0.2, v4.22.0-pre2
-4.21, Interceptor, 2023-04-05, 4.20.0.1, v4.20.0-pre1
-4.20, Interceptor, 2023-04-05, 4.20.0.1, v4.20.0-pre1
+4.22,   Interceptor, 2023-04-13, 4.22.0.2, v4.22.0-pre2
+4.21.1, Interceptor, 2023-04-06, 4.22.0.1, v4.22.0-pre1
+4.21,   Interceptor, 2023-04-05, 4.20.0.1, v4.20.0-pre1
+4.20,   Interceptor, 2023-04-05, 4.20.0.1, v4.20.0-pre1
 
 4.15,   Fractal, 2023-03-16, 4.12.1.1, v4.12.1-pre1
 4.14,   Fractal, 2023-03-10, 4.12.1.1, v4.12.1-pre1
