@@ -26,6 +26,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+4.26, Crucible, 2023-06-01, 4.25.0.1, v4.25.0-pre1
 4.25, Crucible, 2023-05-31, 4.25.0.1, v4.25.0-pre1
 
 4.23,   Interceptor, 2023-04-14, 4.22.0.2, v4.22.0-pre2
