@@ -26,6 +26,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+4.30.3, Singularity, 2023-06-08, 4.30.0.1, v4.30.0-pre1
 4.30.1, Singularity, 2023-06-07, 4.30.0.1, v4.30.0-pre1
 4.30,   Singularity, 2023-06-06, 4.30.0.1, v4.30.0-pre1
 
