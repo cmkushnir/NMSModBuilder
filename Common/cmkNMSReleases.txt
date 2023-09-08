@@ -26,7 +26,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-4.43.1, Echoes, 2023-09-04, 4.43.0.1, v4.43.0-pre1
+4.44, Echoes, 2023-09-07, 4.43.0.1, v4.43.0-pre1
 4.43, Echoes, 2023-08-29, 4.41.0.1, v4.41.0-pre1
 4.42, Echoes, 2023-08-25, 4.41.0.1, v4.41.0-pre1
 4.41, Echoes, 2023-08-24, 4.40.0.1, v4.40.0-pre1
