@@ -323,4 +323,10 @@ Determine differences between text items.
 - https://github.com/octokit/octokit.net</br>
 Query GitHub for release information.
 
+- https://github.com/MiloszKrajewski/K4os.Compression.LZ4</br>
+Decompress|compress HGPAK pak files (MacOS).
+
+- https://github.com/ClosedXML/ClosedXML</br>
+Export to Excel .xlsx file.
+
 ---
