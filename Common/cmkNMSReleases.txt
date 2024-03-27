@@ -26,6 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+4.60, Orbital, 2024-03-27, 4.52.0.2, v4.52.0-pre2
+
 4.52,   Omega, 2024-02-22, 4.52.0.2, v4.52.0-pre2
 4.51.1, Omega, 2024-02-19, 4.52.0.1, v4.52.0-pre1
 4.51,   Omega, 2024-02-16, 4.50.0.1, v4.50.0-pre1
