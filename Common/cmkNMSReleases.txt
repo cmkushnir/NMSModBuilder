@@ -26,7 +26,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-4.64.4, Orbital, 2024-04-25, 4.65.0.4, v4.65.0-pre4
+4.65,   Orbital, 2024-04-25, 4.65.0.4, v4.65.0-pre4
 4.64.3, Orbital, 2024-04-21, 4.65.0.3, v4.65.0-pre3
 4.64.2, Orbital, 2024-04-18, 4.65.0.2, v4.65.0-pre2
 4.64.1, Orbital, 2024-04-10, 4.65.0.1, v4.65.0-pre1
