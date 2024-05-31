@@ -26,7 +26,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-4.70, Adrift, 2024-05-27, 4.70.0.1, v4.70.0-pre1
+4.70.1, Adrift, 2024-05-30, 4.70.0.2, v4.70.0-pre2
+4.70,   Adrift, 2024-05-27, 4.70.0.1, v4.70.0-pre1
 
 4.65,   Orbital, 2024-04-25, 4.65.0.4, v4.65.0-pre4
 4.64.3, Orbital, 2024-04-21, 4.65.0.3, v4.65.0-pre3
