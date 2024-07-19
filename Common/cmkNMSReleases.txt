@@ -26,6 +26,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+5.00.1, Worlds Part 1, 2024-07-18, 5.01.0.1, v5.01.0-pre1
+5.00,   Worlds Part 1, 2024-07-16, 5.01.0.1, v5.01.0-pre1
+
 4.72.1, Adrift, 2024-06-06, 4.73.0.1, v4.73.0-pre1
 4.72,   Adrift, 2024-06-03, 4.71.0.1, v4.71.0-pre1
 4.71.1, Adrift, 2024-05-30, 4.71.0.1, v4.71.0-pre1
