@@ -46,7 +46,8 @@ A competing product would be one that can compile and execute .NET (e.g. C#) cod
 ---
 
 ## Install
-Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions greater than 3.82.1.</br>
+Requires [.NET Desktop Runtime 8.x x64](https://dotnet.microsoft.com/download/dotnet/8.0) to be installed for versions >= than 5.00.1.0.</br>
+Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions >= than 3.82.1.</br>
 Requires [.NET Desktop Runtime 5.x x64](https://dotnet.microsoft.com/download/dotnet/5.0) to be installed for versions up to 3.82.1.</br>
 
 [Download the latest release](https://github.com/cmkushnir/NMSModBuilder/releases/latest/download/NMSModBuilder.7z), or select a [Release](https://github.com/cmkushnir/NMSModBuilder/releases) and download the corresponding NMSModBuilder.7z Asset.</br>
