@@ -5,7 +5,7 @@
 
 ## Install
 Requires [.NET Desktop Runtime 8.x x64](https://dotnet.microsoft.com/download/dotnet/8.0) to be installed for versions 5 and greater.</br>
-e.g. [https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.10-windows-x64-installer](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.7-windows-x64-installer)
+e.g. https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.7-windows-x64-installer
 
 [Download the latest release](https://github.com/cmkushnir/NMSModBuilder/releases/latest/download/NMSModBuilder.7z) and unzip.
 There is no installer, the 7z contains a NMSModBuilder folder with all the application contents, including default scripts.
