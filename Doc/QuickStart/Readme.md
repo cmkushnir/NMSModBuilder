@@ -26,8 +26,9 @@ Don't unzip a new version over an existing instance.
 - Click a game location toolbar button to load the data for the game instance.
 
 ---
-The left set of tabs are for research.
+The left set of tabs are for research.</br>
 The right set of tabs are for querying data and creating mods
+---
 
 ## Research
 
