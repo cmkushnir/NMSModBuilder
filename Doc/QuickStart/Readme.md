@@ -105,7 +105,7 @@ The Mod Scripts tab is in the right set of tabs.  A number of sample scripts are
 Mod scripts are grouped into _project_ folders.  You must create, delete, rename the project folders before starting NMSMB.
 The project folders are in `nmsmb/Scripts/Mod/` e.g. NMSMB comes with `nmsmb/Scripts/Mod/cmk/` and `nmsmb/Scripts/Mod/new/` project folders.
 The `cmk` project includes all scripts developed as part of the NMSMB development.
-The `new` project contains starter scripts that users can add to.
+The `new` project is an empty folder users can add their to.
 
 The Mod Scripts tab toolbar starts with a combobox to select the current Mod project folder.
 
