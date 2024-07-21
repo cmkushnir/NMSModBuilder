@@ -4,7 +4,7 @@
 ---
 
 ## Install
-Requires [.NET Desktop Runtime 6.x x64](https://dotnet.microsoft.com/download/dotnet/6.0) to be installed for versions greater than 3.82.1.</br>
+Requires [.NET Desktop Runtime 8.x x64](https://dotnet.microsoft.com/download/dotnet/8.0) to be installed for versions 5 and greater.</br>
 e.g. https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.10-windows-x64-installer
 
 [Download the latest release](https://github.com/cmkushnir/NMSModBuilder/releases/latest/download/NMSModBuilder.7z) and unzip.
