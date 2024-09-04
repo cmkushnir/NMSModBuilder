@@ -26,12 +26,12 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-5.05, Worlds Part 1, 2024-08-14, 5.04.0.2, v5.04.0-pre2
+5.10, Aquarius, 2024-09-03, 5.10.0.1, v5.10.0-pre1
 
+5.05,     Worlds Part 1, 2024-08-14, 5.04.0.2, v5.04.0-pre2
 5.03.0.2, Worlds Part 1, 2024-08-07, 5.04.0.2, v5.04.0-pre2
 5.03.0.1, Worlds Part 1, 2024-08-01, 5.04.0.1, v5.04.0-pre1
 5.03,     Worlds Part 1, 2024-07-29, 5.02.0.2, v5.02.0-pre2
-
 5.01.1.3, Worlds Part 1, 2024-07-27, 5.02.0.2, v5.02.0-pre2
 5.01.1.2, Worlds Part 1, 2024-07-26, 5.02.0.1, v5.02.0-pre1
 5.01.1.1, Worlds Part 1, 2024-07-24, 5.02.0.1, v5.02.0-pre1
