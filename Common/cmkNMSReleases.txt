@@ -1,19 +1,24 @@
-- 5 column csv: [release version],[name],[release date],[mbin version],[mbin tag]
--
-- [release version] is used to lookup GoG game instances, and must match what is in the
-- registry Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\ver value
-- e.g. "3.67_Frontiers_78072" -> release version = 3.67.
-- [name] is only used for titlebar display, you can put anything you want there.
-- [release date] is used to lookup Steam game instances and must be <= the NMS.exe build date (in PE header).
-- [mbin version] is from libMBIN.dll|MBINCompiler.exe assembly version.
-- [mbin tag] is the TagName of the release on GitHub.
-- Could use Steam and GoG buildid instead, but difficult to find good record for older versions.
-- List releases in descending order.
--
+- Leading|trailing whitespace in whole and part is trimmed.
 - Lines starting w/ '-' are skipped.
-- Leading|trailing whitespace in each part is trimmed.
-- Date in yyyy-MM-dd format.
+-
+- 5 column csv: [release version],[name],[release date],[mbin version],[mbin tag]
+- [release version]
+  - used to lookup GoG game instances, and must match what is in the registry
+  - Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\GOG.com\Games\1446213994\ver value
+  - e.g. "3.67_Frontiers_78072" -> release version = 3.67.
+- [name]
+  - only used for titlebar display, you can put anything you want there.
+- [release date]
+  - used to lookup Steam game instances and must be <= the NMS.exe build date (in PE header)
+  - in "yyyy-MM-dd @ HH:mm:ss" or "yyyy-MM-dd" format, must match exactly (spaces, punctuation, digit count).
+- [mbin version]
+  - from libMBIN.dll|MBINCompiler.exe assembly version.
+- [mbin tag]
+  - the TagName of the release on GitHub.
+-
+- List releases in descending release date order.
 - Lines w/ < 5 parts are skipped, others had better be valid or parser will throw-up.
+- Could use Steam and GoG buildid instead but difficult to find good record for older versions.
 -
 - Source for guess at older NMS.exe dates: https://nomanssky.fandom.com/wiki/Patch_notes
 - The mbin version is a best-guess, it may need adjustment based on actual encountered data.
@@ -26,7 +31,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-5.10, Aquarius, 2024-09-03, 5.10.0.1, v5.10.0-pre1
+5.10.0.1, Aquarius, 2024-09-03 @ 10:00:00, 5.11.0.1, v5.11.0-pre1
+5.10,     Aquarius, 2024-09-03 @ 00:01:00, 5.10.0.1, v5.10.0-pre1
 
 5.05,     Worlds Part 1, 2024-08-14, 5.04.0.2, v5.04.0-pre2
 5.03.0.2, Worlds Part 1, 2024-08-07, 5.04.0.2, v5.04.0-pre2
