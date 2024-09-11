@@ -31,8 +31,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-5.11, Aquarius, 2024-09-04, 5.11.0.1, v5.11.0-pre1
-5.10, Aquarius, 2024-09-03, 5.10.0.1, v5.10.0-pre1
+5.11.0.1, Aquarius, 2024-09-10, 5.12.0.1, v5.12.0-pre1
+5.11,     Aquarius, 2024-09-04, 5.11.0.1, v5.11.0-pre1
+5.10,     Aquarius, 2024-09-03, 5.10.0.1, v5.10.0-pre1
 
 5.05,     Worlds Part 1, 2024-08-14, 5.04.0.2, v5.04.0-pre2
 5.03.0.2, Worlds Part 1, 2024-08-07, 5.04.0.2, v5.04.0-pre2
