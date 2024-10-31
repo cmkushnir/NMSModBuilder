@@ -31,9 +31,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-5.21.0.1, Cursed, 2024-10-27, 5.22.0.1, v5.22.0-pre1
-5.21,     Cursed, 2024-10-24, 5.21.0.1, v5.21.0-pre1
-5.20,     Cursed, 2024-10-20, 5.20.0.1, v5.20.0-pre1
+5.22, Cursed, 2024-10-27, 5.22.0.1, v5.22.0-pre1
+5.21, Cursed, 2024-10-24, 5.21.0.1, v5.21.0-pre1
+5.20, Cursed, 2024-10-20, 5.20.0.1, v5.20.0-pre1
 
 5.12, Aquarius, 2024-09-10, 5.12.0.1, v5.12.0-pre1
 5.11, Aquarius, 2024-09-04, 5.11.0.1, v5.11.0-pre1
