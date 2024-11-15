@@ -31,6 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+5.26, Cross-Save, 2024-11-07, 5.25.0.1, v5.25.0-pre1
 5.25, Cross-Save, 2024-11-04, 5.25.0.1, v5.25.0-pre1
 
 5.22, Cursed, 2024-10-27, 5.22.0.1, v5.22.0-pre1
