@@ -32,7 +32,7 @@
 - but if they do make local edits we don't overwrite them.
 
 - 5.29 released 2024-12-11, but exe from earlier exp release
-5.29, Holiday 2024 Expeditions, 2024-12-04, 5.25.0.1, v5.25.0-pre1
+5.29, Holiday 2024 Expeditions, 2024-12-04, 5.29.0.1, v5.29.0-pre1
 
 5.28, Cross-Save, 2024-11-19, 5.25.0.1, v5.25.0-pre1
 5.27, Cross-Save, 2024-11-15, 5.25.0.1, v5.25.0-pre1
