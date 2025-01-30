@@ -31,7 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-5.50,  Worlds Part II, 2025-01-20, 5.51.0.1, v5.51.0-pre1
+5.50, Worlds Part II, 2025-01-20, 5.51.0.1, v5.51.0-pre1
 
 - 5.29 released 2024-12-11, but exe from earlier exp release
 5.29, Holiday 2024 Expeditions, 2024-12-04, 5.29.0.1, v5.29.0-pre1
