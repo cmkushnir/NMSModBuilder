@@ -1,5 +1,7 @@
 # NMS Mod Builder
 
+Note: Has not been updated yet to work with NMS 5.5x+.
+
 ## <div align="center"> >>> [Quick Start](Doc/QuickStart/Readme.md) <<< </div>
 
 <div align="center"><img src="Doc/Splash.png" width="540px"></div>
