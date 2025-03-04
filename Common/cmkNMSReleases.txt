@@ -31,6 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+5.58, Worlds Part II, 2025-02-15, 5.58.0.3, v5.58.0-pre3
 5.57, Worlds Part II, 2025-02-14, 5.57.0.1, v5.57.0-pre1
 - missing some here
 5.52, Worlds Part II, 2025-01-30, 5.52.0.1, v5.52.0-pre1
