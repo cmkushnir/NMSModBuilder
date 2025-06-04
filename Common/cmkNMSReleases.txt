@@ -31,6 +31,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+5.70, Beacon, 2025-06-02, 5.63.0.1, v5.63.0-pre1
+
 5.64, Relics, 2025-04-08, 5.63.0.1, v5.63.0-pre1
 5.63, Relics, 2025-04-04, 5.63.0.1, v5.63.0-pre1
 5.62, Relics, 2025-04-01, 5.61.0.1, v5.61.0-pre1
