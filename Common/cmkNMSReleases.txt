@@ -32,7 +32,7 @@
 - but if they do make local edits we don't overwrite them.
 
 - mbinc missed 5.70, however 5.71.0.1 can be used for most mbin's
-5.73.0.3, Beacon, 2025-07-09, 5.74.0.3, v5.74.0-pre3
+5.74, Beacon, 2025-07-09, 5.74.0.3, v5.74.0-pre3
 5.73.0.2, Beacon, 2025-07-08, 5.74.0.2, v5.74.0-pre2
 5.73.0.1, Beacon, 2025-07-02, 5.74.0.1, v5.74.0-pre1
 5.73, Beacon, 2025-06-25, 5.73.0.5, v5.73.0-pre5
