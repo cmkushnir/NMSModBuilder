@@ -1,6 +1,5 @@
 # NMS Mod Builder
 
-Note: Has not been updated yet to work with NMS 5.5x+.
 
 ## <div align="center"> >>> [Quick Start](Doc/QuickStart/Readme.md) <<< </div>
 
@@ -333,3 +332,4 @@ Decompress|compress HGPAK pak files (MacOS).
 Export to Excel .xlsx file.
 
 ---
+
