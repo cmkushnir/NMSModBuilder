@@ -31,6 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
+6.12, Breach, 2025-10-27, 6.11.0.1, v6.11.0-pre1
 6.11, Breach, 2025-10-23, 6.11.0.1, v6.11.0-pre1
 6.10, Breach, 2025-10-17, 6.10.0.1, v6.10.0-pre1
 
@@ -348,6 +349,7 @@
 - 1.13.2 is earliest MBINCompiler release
 - so no point in specifying sub-releases
 1.00, Release, 2016-08-12, 1.13.2, v1.13.2
+
 
 
 
