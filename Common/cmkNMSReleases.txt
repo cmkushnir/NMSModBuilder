@@ -31,7 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-6.23, Remnant, 2026-02-19, 6.22.0.1, v6.22.0-pre1
+6.23.0.1, Remnant, 2026-02-19, 6.24.0.1, v6.24.0-pre1
 6.23, Remnant, 2026-02-18, 6.22.0.1, v6.22.0-pre1
 6.22, Remnant, 2026-02-13, 6.22.0.1, v6.22.0-pre1
 6.21.1, Remnant, 2026-02-13, 6.22.0.1, v6.22.0-pre1
@@ -363,6 +363,7 @@
 - 1.13.2 is earliest MBINCompiler release
 - so no point in specifying sub-releases
 1.00, Release, 2016-08-12, 1.13.2, v1.13.2
+
 
 
 
