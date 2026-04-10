@@ -31,7 +31,9 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-6.30, Xeno Arena, 2026-02-24, 6.30.0.1, v6.30.0-pre1
+6.32, Xeno Arena, 2026-04-10, 6.33.0.1, v6.33.0-pre1
+6.31, Xeno Arena, 2026-04-09, 6.30.0.1, v6.30.0-pre1
+6.30, Xeno Arena, 2026-04-01, 6.30.0.1, v6.30.0-pre1
 
 6.24, Remnant, 2026-02-24, 6.24.0.2, v6.24.0-pre2
 6.23.0.1, Remnant, 2026-02-19, 6.24.0.1, v6.24.0-pre1
