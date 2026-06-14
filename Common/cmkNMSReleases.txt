@@ -31,7 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-6.44.0.1, Swarm, 2026-06-11, 6.45.0.1, v6.45.0-pre1
+6.44.0.1, Swarm, 2026-06-10, 6.45.0.1, v6.45.0-pre1
 6.44, Swarm, 2026-06-03, 6.44.0.2, v6.44.0-pre2
 6.43.0.1, Swarm, 2026-06-01, 6.44.0.1, v6.44.0-pre1
 6.42.0.1, Swarm, 2026-05-29, 6.43.0.1, v6.43.0-pre1
