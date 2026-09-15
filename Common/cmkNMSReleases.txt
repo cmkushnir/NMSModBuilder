@@ -31,7 +31,8 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-7.02, Cosmos, 2026-09-15, 7.2.0.1, v7.02.0-pre1
+7.02.0.1, Cosmos, 2026-09-15, 7.2.0.2, v7.02.0-pre2
+7.02, Cosmos, 2026-09-11, 7.2.0.1, v7.02.0-pre1
 7.01.0.2, Cosmos, 2026-09-14, 7.2.0.2, v7.02.0-pre2
 7.01.0.1, Cosmos, 2026-09-11, 7.2.0.1, v7.02.0-pre1
 7.01, Cosmos, 2026-09-09, 7.1.0.1, v7.01.0-pre1
