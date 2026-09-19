@@ -32,6 +32,7 @@
 - but if they do make local edits we don't overwrite them.
 
 - 7.02 pub, nms.exe reverted to 7.01.0.1 exp
+7.03.1.2, Cosmos, 2026-09-19, 7.3.2.2, v7.03.2-pre2
 7.03.1.1, Cosmos, 2026-09-17, 7.3.2.1, v7.03.2-pre1
 7.03.1, Cosmos, 2026-09-16, 7.2.0.2, v7.02.0-pre2
 7.03, Cosmos, 2026-09-15, 7.2.0.2, v7.02.0-pre2
