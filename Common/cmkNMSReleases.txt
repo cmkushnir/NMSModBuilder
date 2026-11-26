@@ -31,7 +31,7 @@
 - so users in general wouldn't need to edit this file,
 - but if they do make local edits we don't overwrite them.
 
-7.15, Forsaken, 2026-11-24, 7.14.0.1, v7.14.0-pre1
+7.15, Forsaken, 2026-11-24, 7.15.0.1, v7.15.0-pre1
 7.14, Forsaken, 2026-11-05, 7.14.0.1, v7.14.0-pre1
 7.13.0.1, Forsaken, 2026-11-03, 7.14.0.1, v7.14.0-pre1
 7.10, Forsaken, 2026-10-27, 7.10.0.1, v7.10.0-pre1
